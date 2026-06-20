@@ -1,4 +1,4 @@
-# salesx-skills
+# dogfu-skills
 
 A Claude **Cowork plugin marketplace**. It currently ships one plugin:
 
@@ -9,10 +9,10 @@ A Claude **Cowork plugin marketplace**. It currently ships one plugin:
 ## Layout
 
 ```
-salesx-skills/
+dogfu-skills/
 ├── .claude-plugin/
 │   └── marketplace.json          # marketplace catalog (lists the plugins below)
-└── salesx/                        # the dogfu plugin (source directory)
+└── dogfu/                         # the dogfu plugin (source directory)
     ├── .claude-plugin/
     │   └── plugin.json            # plugin manifest
     └── skills/
@@ -49,6 +49,6 @@ but can't pull data or write to the CRM.
 
 ## Editing
 
-Edit the markdown under `salesx/skills/lead-research/` (see that folder's `README.md`),
+Edit the markdown under `dogfu/skills/lead-research/` (see that folder's `README.md`),
 then reinstall/update the `dogfu` plugin from this marketplace to pick up the changes.
-Bump `version` in `salesx/.claude-plugin/plugin.json` when you ship a change.
+Bump `version` in `dogfu/.claude-plugin/plugin.json` when you ship a change.

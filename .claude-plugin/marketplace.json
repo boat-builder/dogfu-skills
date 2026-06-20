@@ -1,5 +1,5 @@
 {
-  "name": "salesx-skills",
+  "name": "dogfu-skills",
   "owner": {
     "name": "Sherin Thomas"
   },
@@ -7,7 +7,7 @@
     {
       "name": "dogfu",
       "displayName": "Dogfu",
-      "source": "./salesx",
+      "source": "./dogfu",
       "description": "Lead research pipeline — Discover → Qualify → Enrich → CRM — powered by the dogfu CLI."
     }
   ]
