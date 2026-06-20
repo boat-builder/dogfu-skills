@@ -1,0 +1,8 @@
+{
+  "name": "dogfu",
+  "version": "0.3.0",
+  "description": "Run the lead-research pipeline (Discover → Qualify → Enrich → CRM) using the dogfu CLI.",
+  "author": {
+    "name": "Sherin Thomas"
+  }
+}

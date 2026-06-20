@@ -1,14 +1,14 @@
 {
-  "name": "salesx-skills",
+  "name": "dogfu-skills",
   "owner": {
     "name": "Sherin Thomas"
   },
   "plugins": [
     {
-      "name": "salesx",
-      "displayName": "SalesX",
-      "source": "./salesx",
-      "description": "Lead research pipeline — Discover → Qualify → Enrich → CRM — powered by the salesx CLI."
+      "name": "dogfu",
+      "displayName": "Dogfu",
+      "source": "./dogfu",
+      "description": "Lead research pipeline — Discover → Qualify → Enrich → CRM — powered by the dogfu CLI."
     }
   ]
 }

@@ -1,18 +1,19 @@
-# `salesx` command catalog
+# `dogfu` command catalog
 
-Read this once so you don't spend calls on `--help`. Run everything from inside the
-mounted `salesx` directory:
+Read this once so you don't spend calls on `--help`. Once the dogfu MCP's
+`get_setup_instructions` flow has installed and configured the CLI, run any command from
+anywhere on your PATH:
 
 ```bash
-UV_LINK_MODE=copy uv run salesx <group> <cmd> [flags]
+dogfu <group> <cmd> [flags]
 ```
 
 JSON to stdout by default. Use `-o FILE` to dump large payloads to a file and read back
 only the fields you need. The hidden `--raw` flag exists but is undocumented — work with
 the canonical models (the default).
 
-**Run calls one at a time** — `salesx` holds a single-process lock; concurrent
-invocations fail with `RPC error: ... already running`.
+Calls are independent HTTP requests — there's no single-process lock, so you may run them
+concurrently. Cost discipline still applies: pick the cheapest informative call next.
 
 ## Common output flags (all leaf commands)
 - `-f, --format [json|table]` — default `json`. Use `json`.
@@ -74,7 +75,7 @@ default to `2840` / `en` and say so. `google` also accepts `--country` (ISO alph
 - **`whoami`** → current user (id, name, email).
 - **`status list`** → LeadStatus[] (id, label). Resolve IDs here; never hardcode.
 - **Leads** (`crm lead ...`): `create -n <name> [-u url] [-d desc] [-s status_id] [curated flags]` · `list [-l N] [-s status_id] [--sort ..]` · `search [-n name] [-q query] [-s status_id] [-l N]` · `get <lead_id>` · `update <lead_id> [-n] [-u] [-d] [-s] [curated flags]` · `delete <lead_id> [-y]`. → Lead: id, name, url, description, status_id, status_label, **industry, employees, revenue, business_model, seo_pages**, contacts[].
-  - **Curated custom-field flags** (on `create`/`update`): `--employees <n>`, `--revenue <usd>`, `--business-model <text>`, `--industry <choice>` (validated against Close's allowed list — closest match, e.g. SaaS→Software), `--seo-pages <n>`. Set only the ones you have; everything else → `-d`/note. These five are the *only* custom fields salesx sets.
+  - **Curated custom-field flags** (on `create`/`update`): `--employees <n>`, `--revenue <usd>`, `--business-model <text>`, `--industry <choice>` (validated against Close's allowed list — closest match, e.g. SaaS→Software), `--seo-pages <n>`. Set only the ones you have; everything else → `-d`/note. These five are the *only* custom fields dogfu sets.
 - **Contacts** (`crm contact ...`): `create <lead_id> -n <name> [-t title] [-e email]... [-p phone]... [-u url]...` · `list <lead_id>` · `get <contact_id>` · `update <contact_id> [-n] [-t]` · `delete <contact_id> [-y]`. **`-u`/`-e`/`-p` are native Close fields** (urls/emails/phones) — a person's LinkedIn/X go in `-u` and render on the contact card; repeatable.
 - **Tasks** (`crm task ...`): `create -l <lead_id> -t <text> [-d due] [-a user]` · `list [-l lead_id] [-p]` · `update <task_id> ...` · `complete <task_id>` · `delete <task_id> [-y]`.
 - **Notes** (`crm note ...`): `create <lead_id> -t "<text>"` · `list <lead_id> [-l N]`. ← put the rich qualification write-up + DM hooks here. **Note bodies are HTML-escaped** on write (`&`→`&amp;`, `<`/`>`/`'`→entities); use plain text, not literal `<`/`>`/`&` for structure.
@@ -83,7 +84,7 @@ default to `2840` / `en` and say so. `google` also accepts `--country` (ISO alph
 LinkedIn/X (repeatable, renders on the card). Curated lead custom fields = the five flags
 above (`--employees/--revenue/--business-model/--industry/--seo-pages`) — set what you have.
 Everything else (company socials, verdict, metrics, hooks) → the lead description (brief) or
-the note. salesx exposes **no other** custom-field setters by design — don't try to set
+the note. dogfu exposes **no other** custom-field setters by design — don't try to set
 fields outside the curated five.
 
 ### Upsert pattern
