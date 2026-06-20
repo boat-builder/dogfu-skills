@@ -11,7 +11,7 @@ LinkedIn/X URL, possibly buried in messy text. Do not expect any other field. Tw
 *might* come from the prompt; everything else you derive:
 
 - **Target** — extract it, then resolve to a single canonical company + root domain. If given a person, resolve to the company they currently work at. This is step one of Stage A.
-- **ICP definition** — the qualification yardstick. **This is a required input the caller supplies** (inline or as a file path you read). Judge against it. If it isn't provided, ask for it before qualifying; do not invent or assume one.
+- **ICP definition** — the qualification yardstick. The skill **ships its ICPs in `icps/`**; use the default unless the caller supplied their own or named a specific one (see "The ICP" in `SKILL.md`). Judge against it. Only if `icps/` is empty and none was supplied, ask for one before qualifying; never invent or assume one.
 
 You must **derive** (do not wait to be told): business model / segment; geography /
 language / audience; competitors; and the goal (honor a hinted goal like "just qualify"
