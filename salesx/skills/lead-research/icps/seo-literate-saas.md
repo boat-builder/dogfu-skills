@@ -13,7 +13,7 @@ Berlin themselves.
 ## Must-haves (the ICP)
 
 - **Vertical:** SaaS.
-- **Revenue:** 80k – 200k MRR (800k – 25 million ARR). *(see note below)*
+- **Revenue:** 80k – 200k MRR (800k – 2.5 million ARR).
 - **Active SEO:** Already doing real SEO work — not starting from zero.
 - **AI usage:** Already using AI tools like Claude to do the SEO work or marketing work.
 - **Team shape:** A small SEO/marketing team, or a founder doing the SEO themselves.
@@ -37,11 +37,3 @@ following are the practical inversions of the criteria above:
 - Treat **buyer literacy + active SEO + AI usage** as the core thesis — they're what makes
   Berlin land. A SaaS in the revenue band that *doesn't* already do SEO, or isn't
   AI-literate, is a weaker fit even when the firmographics match.
-
----
-
-> **NOTE — resolve before relying on this.** The revenue line mixes **80k–200k MRR** with
-> an ARR range written as **800k – 25 million**. 200k MRR annualises to ~2.4M ARR, not 25M
-> — so either the upper bound is a typo for ~2.5M ARR, or the ICP intentionally stretches up
-> to ~25M ARR companies that still run a small / founder-led SEO motion. Tell me which and
-> I'll tighten the band.
