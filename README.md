@@ -15,6 +15,7 @@ dogfu-skills/
 └── dogfu/                         # the dogfu plugin (source directory)
     ├── .claude-plugin/
     │   └── plugin.json            # plugin manifest
+    ├── .mcp.json                  # bundles the dogfu MCP server (auto-registers on install)
     └── skills/
         └── lead-research/         # the lead-research skill
             ├── SKILL.md
@@ -39,13 +40,23 @@ link, etc.).
 
 ## Requirement: the dogfu MCP + CLI
 
-The `dogfu` plugin is an orchestration layer — it does **not** bundle the `dogfu` CLI.
-`dogfu` is a published CLI (`pip install dogfu`) that you install and authenticate through
-the **dogfu MCP**: connect the MCP, run its `get_setup_instructions` tool, and follow it
-(install the CLI, then `dogfu configure --otp <OTP> --title "…"`). CRM (Close) calls use the
-Close API key you set once in the admin **Console → CRM Integration**. There's no directory
-to mount and no `.env`. Without the dogfu CLI configured, the skill can reason about a target
-but can't pull data or write to the CRM.
+**The plugin bundles the dogfu MCP server** — a remote, OAuth-authenticated MCP at
+`https://backend.agentberlin.ai/dogfu/mcp`, declared in `dogfu/.mcp.json`. In clients that
+honor plugin-declared MCP servers, installing the plugin registers it automatically; approve
+it and authenticate once, and the skill's `get_setup_instructions` flow is available.
+
+> **Cowork note (verify):** Cowork's documented path for remote OAuth MCPs is its own
+> connectors UI (an admin adds the server, members authenticate), so a plugin-bundled OAuth
+> MCP may or may not be picked up automatically. If it isn't, add the same URL
+> (`https://backend.agentberlin.ai/dogfu/mcp`) via Cowork connectors instead — and the
+> `dogfu/.mcp.json` declaration can be reverted with no effect on the rest of the plugin.
+
+The plugin does **not** bundle the `dogfu` CLI. `dogfu` is a published CLI (`pip install
+dogfu`) that you install and authenticate through the dogfu MCP: run its
+`get_setup_instructions` tool and follow it (install the CLI, then `dogfu configure --otp
+<OTP> --title "…"`). CRM (Close) calls use the Close API key you set once in the admin
+**Console → CRM Integration**. There's no directory to mount and no `.env`. Without the dogfu
+CLI configured, the skill can reason about a target but can't pull data or write to the CRM.
 
 ## Editing
 

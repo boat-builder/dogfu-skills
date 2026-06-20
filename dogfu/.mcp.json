@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dogfu": {
+      "type": "http",
+      "url": "https://backend.agentberlin.ai/dogfu/mcp"
+    }
+  }
+}
