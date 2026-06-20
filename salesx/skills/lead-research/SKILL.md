@@ -8,9 +8,10 @@ description: >-
   "research this lead", "qualify this prospect", "is this company a fit / in our ICP",
   "add this company to the CRM", "find the decision-maker and DM hooks", "prospect this
   domain", or just a bare LinkedIn/X/company link dropped in with intent to evaluate it.
-  Also use it for batch prospecting and for recording disqualified leads. The ICP is
-  supplied by the caller at run time (inline or as a file). This is the canonical way to
-  do sales lead research at Berlin — prefer it over ad-hoc web searches.
+  Also use it for batch prospecting and for recording disqualified leads. The skill
+  ships its ICPs in `icps/` and qualifies against the default unless the caller names a
+  specific one or supplies their own. This is the canonical way to do sales lead research
+  at Berlin — prefer it over ad-hoc web searches.
 ---
 
 # Lead Research (powered by `salesx`)
@@ -44,15 +45,26 @@ interpret the result*.
 
 ***
 
-## The ICP is a required input — the caller supplies it
+## The ICP — bundled in `icps/`, with a default
 
-This skill does **not** ship an ICP. The caller provides the ICP at run time, either
-inline in the prompt or as a path to a file (read it). The ICP is your qualification
-yardstick — judge against it and map each phase's evidence back to its specific criteria.
+This skill **ships its ICPs** in the `icps/` folder — one markdown file per ICP. Each ICP
+file has frontmatter (`name`, a human `label`, and `default: true` on exactly one) and a
+body that is your qualification yardstick — judge against it and map each phase's evidence
+back to its specific criteria. (Files named `README.md` or starting with `_` are
+scaffolding, not ICPs — ignore them.)
 
-If no ICP is provided, **ask the caller for one (or a file path) before qualifying** — do
-not invent or assume one. (You can still run Stage A discovery while waiting, since that
-doesn't depend on the ICP.)
+**Choose which ICP to qualify against, in this order:**
+
+1. **Caller override** — if the caller pasted an ICP inline or gave a file path, use that.
+2. **Named ICP** — if the caller named one (e.g. "use the enterprise ICP"), match it to an
+   `icps/*.md` file by its `name`/`label` and use that file.
+3. **Default** — otherwise use the file marked `default: true` (or the only ICP, if there
+   is just one).
+
+Read the chosen file and treat its body as the ICP for this run. **Only ask the caller for
+an ICP** if `icps/` has none and the caller supplied none — never invent one. When several
+ICPs exist but none is marked `default` and the caller didn't name one, **ask which**.
+(Stage A discovery can run meanwhile; it doesn't depend on the ICP.)
 
 ***
 
@@ -209,7 +221,7 @@ fit → **Qualified**; not in ICP → **Bad Fit**; unsure / not yet worked → *
 
 ## Workflow
 
-1. **Get the ICP.** It's a required input — read it from the prompt or the file path the caller gives. If none is provided, ask for one before qualifying (Stage A can run meanwhile).
+1. **Pick the ICP.** Use the caller's ICP if they pasted one or named a specific `icps/*.md`; otherwise read the bundled default (see "The ICP" above). Only ask if `icps/` is empty and none was supplied (Stage A can run meanwhile).
 2. **Stage A — Discover.** Resolve the target → domain. Web-fetch the company's own pages to derive segment, audience, geography/language, and the problem statement (you need these to calibrate every SEO threshold and to discover competitors). Find and record the company's LinkedIn + X URLs and each decision-maker's LinkedIn + X URLs (use Google search / AI-mode to locate any you weren't handed) — you persist these regardless of fit.
 3. **Stage B — Qualify.** **First, apply the competitive-conflict gate** (above) using what Stage A told you about the business — if the target builds/sells/markets SEO/AEO capability (directly or via a broader AI/automation/agent platform), stop and mark **excluded (competitor)**, skipping the paid SEO calls. Otherwise read `references/pipeline.md`, then run the phases with the commands above, **cheap signals first**. Set the SEO data's market with `--location-code` / `--language-code` (see the codes in `references/salesx-commands.md`) from the geography you derived. Calibrate to the segment and to discovered competitors (ratios, not absolute numbers). Stop early and mark "not in ICP" if cheap signals clearly disqualify. Produce a verdict: **strong / partial / weak**.
 4. **Stage C — Enrich** (only if strong/partial). Deep-read each decision-maker (LinkedIn + X profile and recent posts). Pull personal hooks, company hooks (the SEO/AEO gaps from Stage B, framed as openings), and the relevance bridge to Berlin.
@@ -229,7 +241,7 @@ In addition to the CRM write, return:
 
 ## Operating rules
 
-- **Treat a sparse prompt as normal.** Derive segment, geography, audience, and competitors yourself before qualifying; don't stop to ask for things you can research (the ICP is the one thing you must be given).
+- **Treat a sparse prompt as normal.** Derive segment, geography, audience, and competitors yourself before qualifying; don't stop to ask for things you can research (the ICP comes from `icps/` — only ask if none is bundled and none was supplied).
 - **Exclude competitors.** Before paid qualification, run the competitive-conflict gate: if the target builds/sells/markets SEO/AEO capability to others (incl. adjacent AI automation/agent platforms), mark it excluded (competitor) and don't reach out — but still record it so it isn't re-prospected.
 - **Cost discipline.** Cheap, high-signal first (`site:` count, `domain-overview`); go deep (`ranked-keywords`, `lighthouse`, `bulk-traffic-estimation` on competitors, deep social reads) only once the target looks plausibly in-ICP.
 - **Never waste research.** Whatever you spent money to discover gets written to the CRM in Stage D — contacts, links, metrics, and findings — fit or not.

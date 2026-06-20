@@ -8,6 +8,7 @@ LinkedIn/X URL) and ask to research, qualify, enrich, or CRM it.
 - `SKILL.md` — the operating manual: the four stages, how to invoke `salesx`, the capability→command map, and the CRM write rules. The YAML frontmatter `name` / `description` controls when the skill triggers.
 - `references/pipeline.md` — how to interpret the qualification (the B1–B8 phases, synthesis, calibration). Read before running Stage B.
 - `references/salesx-commands.md` — the `salesx` command catalog (flags + output fields + market codes).
+- `icps/` — the Ideal Customer Profiles the skill qualifies against (one file per ICP, with a default). The skill loads one automatically, so you don't paste an ICP into every request. See `icps/README.md` for the convention.
 
 ## The `salesx` CLI dependency
 The skill is the orchestration layer; the data and CRM actions come from the `salesx`
