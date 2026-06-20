@@ -1,0 +1,14 @@
+{
+  "name": "salesx-skills",
+  "owner": {
+    "name": "Sherin Thomas"
+  },
+  "plugins": [
+    {
+      "name": "salesx",
+      "displayName": "SalesX",
+      "source": "./salesx",
+      "description": "Lead research pipeline — Discover → Qualify → Enrich → CRM — powered by the salesx CLI."
+    }
+  ]
+}
