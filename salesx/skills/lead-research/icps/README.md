@@ -31,7 +31,7 @@ skill should judge a target against>
 ## Adding more ICPs
 
 Drop in another `*.md` file with its own `name`/`label`. Keep `default: true` on exactly
-one of them. Then reinstall/update the `salesx` plugin so the new ICP ships with it.
+one of them. Then reinstall/update the `dogfu` plugin so the new ICP ships with it.
 
 ## Notes
 

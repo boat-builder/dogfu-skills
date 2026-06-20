@@ -1,6 +1,6 @@
 # Pipeline detail — interpretation manual
 
-This is the *how to interpret* companion to SKILL.md. SKILL.md tells you which `salesx`
+This is the *how to interpret* companion to SKILL.md. SKILL.md tells you which `dogfu`
 command to run; this file tells you what the result means and how to judge fit. Read it
 before running Stage B.
 
@@ -154,7 +154,7 @@ mark **excluded (competitor)** even when the behavioral fit is perfect — we do
 competitors. Strong/partial → Stage C. Weak → skip Stage C, go
 to Stage D (still record the result and the reason).
 
-**Revenue / size criteria, if the ICP has one.** `salesx` exposes **no MRR/revenue
+**Revenue / size criteria, if the ICP has one.** `dogfu` exposes **no MRR/revenue
 signal** — only headcount and funding (via `linkedin companies`) and whatever customer
 counts the company publishes. So a revenue band is not directly measurable: infer size
 loosely from those proxies. Unless the caller's ICP says size is a hard cutoff, treat it
@@ -197,9 +197,9 @@ Put each piece of data **where it belongs in the Close UI** — don't dump every
 - **Contacts** (one per person you found — *always, fit or not*): name, title, role-in-decision, and **every profile URL (LinkedIn, X) in the native contact `urls` field** via repeated `-u` flags (plus `-e` email / `-p` phone if found). The native field renders on the contact card, so Sherin can message them straight from Close — don't leave these links only in prose.
 - **Note** (the depth — "Notes & summaries"): segment / business model, market used, what they do / who they serve, the **company LinkedIn + X links** (these have no native lead field), **ICP-fit verdict**, **investment tier**, key metrics (page footprint, organic traffic est., traffic value est., # keywords, `llms.txt` y/n, AI-answer visibility y/n), competitive gap as ratios, reason for the verdict, date evaluated; and — for fits — background + recent-interest summaries, DM hooks (personal + company) with evidence, and known gaps.
 
-**Custom fields:** Close supports lead/contact custom fields via its API, but `salesx`
+**Custom fields:** Close supports lead/contact custom fields via its API, but `dogfu`
 can't set them yet — so use the native fields above and the note. If dedicated custom
-fields are wanted (e.g. a "Company LinkedIn" field on the lead), that needs a small `salesx`
+fields are wanted (e.g. a "Company LinkedIn" field on the lead), that needs a small `dogfu`
 extension; flag it rather than calling the Close API directly.
 
 **Disqualified leads:** still write the lead, verdict, and reason; set status **Bad Fit** so

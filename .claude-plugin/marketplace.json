@@ -5,10 +5,10 @@
   },
   "plugins": [
     {
-      "name": "salesx",
-      "displayName": "SalesX",
+      "name": "dogfu",
+      "displayName": "Dogfu",
       "source": "./salesx",
-      "description": "Lead research pipeline — Discover → Qualify → Enrich → CRM — powered by the salesx CLI."
+      "description": "Lead research pipeline — Discover → Qualify → Enrich → CRM — powered by the dogfu CLI."
     }
   ]
 }
