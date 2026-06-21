@@ -1,0 +1,36 @@
+{
+  "name": "dogfu",
+  "version": "0.4.0",
+  "description": "Sales toolkit on the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM) and lead-touch (work leads through the outreach cadence in Close).",
+  "author": {
+    "name": "Sherin Thomas"
+  },
+  "homepage": "https://github.com/boat-builder/dogfu-skills",
+  "repository": "https://github.com/boat-builder/dogfu-skills",
+  "keywords": [
+    "sales",
+    "prospecting",
+    "lead-research",
+    "close-crm",
+    "outreach"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Dogfu",
+    "shortDescription": "Research leads and manage outreach in Close",
+    "longDescription": "Research and qualify sales prospects against an ICP, enrich decision-makers, write results to Close CRM, and manage follow-up outreach with the dogfu CLI.",
+    "developerName": "Sherin Thomas",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/boat-builder/dogfu-skills",
+    "defaultPrompt": [
+      "Research and qualify a prospect against our ICP",
+      "Show me which leads need a follow-up today",
+      "Record the outreach I just sent for a lead"
+    ]
+  }
+}
