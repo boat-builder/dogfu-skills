@@ -4,7 +4,7 @@ A Claude **Cowork plugin marketplace**. It currently ships one plugin:
 
 | Plugin | What it does |
 | :-- | :-- |
-| **`dogfu`** | Lead-research pipeline — **Discover → Qualify → Enrich → CRM** — that turns a sparse sales target into a qualified, enriched Close CRM record, powered by the `dogfu` CLI. |
+| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Two skills: **lead-research** (**Discover → Qualify → Enrich → CRM** — turn a sparse sales target into a qualified, enriched Close CRM record) and **lead-touch** (work an existing lead through the outreach cadence in Close — pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel). |
 
 ## Layout
 
@@ -17,10 +17,14 @@ dogfu-skills/
     │   └── plugin.json            # plugin manifest
     ├── .mcp.json                  # bundles the dogfu MCP server (auto-registers on install)
     └── skills/
-        └── lead-research/         # the lead-research skill
+        ├── lead-research/         # the lead-research skill (discover → qualify → enrich → CRM)
+        │   ├── SKILL.md
+        │   ├── README.md
+        │   ├── references/
+        │   └── icps/
+        └── lead-touch/            # the lead-touch skill (CRM & outreach-cadence ops)
             ├── SKILL.md
-            ├── README.md
-            └── references/
+            └── README.md
 ```
 
 Skills are auto-discovered from each plugin's `skills/` directory — they are not listed
@@ -34,9 +38,11 @@ install the **Dogfu** plugin:
 - **From a local path** — point the marketplace at this folder. No git remote required.
 - **From git** — point it at this repo's URL once it's pushed somewhere reachable.
 
-Once installed, the `lead-research` skill triggers automatically when you give Claude a
+Once installed, the skills trigger automatically: **lead-research** when you give Claude a
 sales target ("research this lead", "is this company in our ICP", a bare LinkedIn/company
-link, etc.).
+link, etc.), and **lead-touch** when you want to work an existing lead in the CRM ("who do I
+follow up with today", "I sent the LinkedIn DM to X", "mark this lead replied", "what's our
+funnel look like").
 
 ## Requirement: the dogfu MCP + CLI
 
@@ -60,6 +66,7 @@ CLI configured, the skill can reason about a target but can't pull data or write
 
 ## Editing
 
-Edit the markdown under `dogfu/skills/lead-research/` (see that folder's `README.md`),
-then reinstall/update the `dogfu` plugin from this marketplace to pick up the changes.
-Bump `version` in `dogfu/.claude-plugin/plugin.json` when you ship a change.
+Edit the markdown under each skill's folder — `dogfu/skills/lead-research/` or
+`dogfu/skills/lead-touch/` (see each folder's `README.md`) — then reinstall/update the
+`dogfu` plugin from this marketplace to pick up the changes. Bump `version` in
+`dogfu/.claude-plugin/plugin.json` when you ship a change.
