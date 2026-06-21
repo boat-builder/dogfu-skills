@@ -1,7 +1,7 @@
 {
   "name": "dogfu",
-  "version": "0.3.0",
-  "description": "Run the lead-research pipeline (Discover → Qualify → Enrich → CRM) using the dogfu CLI.",
+  "version": "0.4.0",
+  "description": "Sales toolkit on the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM) and lead-touch (work leads through the outreach cadence in Close).",
   "author": {
     "name": "Sherin Thomas"
   }

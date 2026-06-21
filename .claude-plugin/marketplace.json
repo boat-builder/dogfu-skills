@@ -8,7 +8,7 @@
       "name": "dogfu",
       "displayName": "Dogfu",
       "source": "./dogfu",
-      "description": "Lead research pipeline — Discover → Qualify → Enrich → CRM — powered by the dogfu CLI."
+      "description": "Sales toolkit powered by the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM) and lead-touch (work leads through the outreach cadence in Close)."
     }
   ]
 }
