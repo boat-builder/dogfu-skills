@@ -112,8 +112,7 @@ dogfu crm <command> [flags]
 - **CRM (Close) calls** use the Close API key set once in the admin **Console → CRM
   Integration**. If it's missing, `crm` commands return a "no Close CRM API key configured" /
   `412` — surface that rather than retrying.
-- Read calls are independent HTTP requests; run them concurrently if it helps. Keep
-  **mutations deliberate** — one lead at a time, after confirming (see Operating rules).
+- Read calls are independent HTTP requests; run them concurrently if it helps.
 
 ***
 
@@ -198,10 +197,6 @@ funnel, raise the limit or report "at least N" and say so.
   and that touch 0 (connection request) comes from the Qualified *status* list, not `touch
   due`. Ask one clarifying question when "first touch" is ambiguous.
 - **Never assume a reply.** Only `touch reply` when the BDR states the lead responded.
-- **Confirm before bulk mutations.** For any batch ("mark these five replied", "stop all of
-  these"), echo the exact lead names/ids you're about to change and wait for a go-ahead, then
-  do them **one call at a time**. Single, clearly-specified writes don't need a confirmation
-  round-trip.
 - **Don't double-record.** `record` advances from the current stage; running it twice skips a
   touch. Check `touch_stage` if unsure.
 - **Put data where it belongs:** a person's LinkedIn/X in that contact's `-u` urls; reusable
