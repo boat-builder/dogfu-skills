@@ -8,7 +8,7 @@ notes / tasks / contacts. It's the layer that runs **after** `lead-research`: re
 and qualifies a lead; lead-touch works it through outreach.
 
 ## Files
-- `SKILL.md` — the operating manual: how our leads are organized in Close (the funnel-status vs cadence-state model, the four system-managed touch fields, the cadence table, the "due" rule), how to run `dogfu`, the full `dogfu crm` command surface, and the operating rules. The YAML frontmatter `name` / `description` controls when the skill triggers.
+- `SKILL.md` — the operating manual: how our leads are organized in Close (the funnel-status vs outreach-state model, the system-managed touch fields, the touch-vs-task distinction, the "due" rule and the unified work queue), how to run `dogfu`, the full `dogfu crm` command surface, and the operating rules. The YAML frontmatter `name` / `description` controls when the skill triggers.
 
 There are no `references/` or `icps/` here — unlike `lead-research`, this skill is a single
 self-contained file. The command surface is inline so the agent rarely needs `dogfu --help`.
@@ -22,11 +22,12 @@ through the backend under the Close API key set once in the admin **Console → 
 Integration**. See the **Running `dogfu`** section of `SKILL.md`.
 
 ## The cadence lives in the CLI, not here
-The channel sequence and waits (LinkedIn connection → LinkedIn DM → email → X, with the
-between-touch waits) are defined in the CLI's own `dogfu.cadence` config and applied
-automatically by `dogfu crm touch record`. The table in `SKILL.md` documents the current
-cadence so the agent can reason about it — but the CLI is the source of truth. If the cadence
-config changes, update the table in `SKILL.md` to match.
+The touch schedule — the between-touch waits, and how the next-touch reminder is computed —
+is defined in the CLI's own config and applied automatically by `dogfu crm touch record`.
+Touch 0 is the reach-out, touches 1..N are follow-ups (unbounded), the channel is freeform
+metadata recorded per touch, and the only exits are `reply`/`stop`. `SKILL.md` documents this
+so the agent can reason about it — but the CLI is the source of truth. If the config or flags
+change, update `SKILL.md` to match.
 
 ## How to edit
 1. Edit `SKILL.md` (or ask Claude to).
