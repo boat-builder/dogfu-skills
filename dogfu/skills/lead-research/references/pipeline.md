@@ -154,13 +154,17 @@ mark **excluded (competitor)** even when the behavioral fit is perfect — we do
 competitors. Strong/partial → Stage C. Weak → skip Stage C, go
 to Stage D (still record the result and the reason).
 
-**Revenue / size criteria, if the ICP has one.** `dogfu` exposes **no MRR/revenue
-signal** — only headcount and funding (via `linkedin companies`) and whatever customer
-counts the company publishes. So a revenue band is not directly measurable: infer size
-loosely from those proxies. Unless the caller's ICP says size is a hard cutoff, treat it
-as a **soft guide** — a behaviorally strong lead that looks larger (or smaller) than the
-band is still a fit; **flag the size caveat prominently** rather than down-ranking it, and
-let the human decide. Don't silently disqualify a behaviorally perfect lead for size.
+**Revenue / size criteria, if the ICP has one.** For the Stage B verdict you have **no
+direct MRR/revenue signal** — only headcount and funding (via `linkedin companies`) and
+whatever customer counts the company publishes; infer size loosely from those proxies
+(don't pull Apollo to qualify — qualify on cheap signals first). Unless the caller's ICP
+says size is a hard cutoff, treat it as a **soft guide** — a behaviorally strong lead that
+looks larger (or smaller) than the band is still a fit; **flag the size caveat prominently**
+rather than down-ranking it, and let the human decide. Don't silently disqualify a
+behaviorally perfect lead for size. **For fits, Stage C's Apollo `org enrich` returns an
+estimated `annual_revenue` + `marketing_headcount`** that firm up (or correct) this read and
+fill the `--revenue` field — still a modeled estimate (coarse for small private SaaS), so
+keep flagging it as an estimate.
 
 **Vertical / segment criteria, if the ICP has one.** Treat the vertical the same way —
 as a **soft cluster signal**, not a hard gate, unless the ICP explicitly says the vertical
@@ -174,8 +178,21 @@ segment caveat and let the human decide whether to chase that profile.
 
 ## Stage C — Enrich (fit only)
 
-Run only if strong/partial — this is the expensive deep read. Read each decision-maker on
-**both LinkedIn and X**:
+Run only if strong/partial — this is the expensive, **credit-bearing** stage.
+
+**First, firmographics + contacts (Apollo).** These cost Apollo credits, which is exactly
+why they wait until the verdict is a fit:
+- `dogfu apollo org enrich --domain <d> --with-people [--title "Head of Marketing" ...]` —
+  returns the **estimated revenue, employee count, marketing-team headcount, funding, and
+  tech stack** that the SEO data can't measure (firm up the ICP size/revenue read here), plus
+  the **decision-makers** (`people[]`: name, title, seniority, `linkedin_url` — no email). The
+  people search is free but needs a master key. Corroborate those people against your Stage A
+  discovery — they're the same humans, so reconcile rather than double-count.
+- `dogfu apollo people email --linkedin-url <url>` (or `--name --domain`) — the **verified
+  work email** for the **1–2 decision-makers you'll actually contact**. Consumes credits per
+  person, so don't resolve everyone. This is what unlocks the email outreach channel.
+
+**Then deep-read each decision-maker on both LinkedIn and X:**
 - **Background / history** — what they've built, prior companies/roles — reveals what they care about and how to speak to them.
 - **Recent posts** — their latest posts reveal current interests and what's top of mind — the freshest, most personalizable signal.
 - **Topics & voice** — what they post about and how they talk.
@@ -186,8 +203,10 @@ framed as the opening, not a critique); *relevance bridge* (why Berlin specifica
 their situation, in their language). **Note what's missing** — unfound profiles, thin
 hooks, unknowns — so the DM step knows what's solid vs inferred.
 
-**Stage C output:** per decision-maker — background summary, recent-interest summary, and a
-short list of ready-to-use DM hooks (personal + company), each tied to its evidence.
+**Stage C output:** the firmographics (revenue / headcount / marketing-team size / funding)
+and the contactable verified email(s); and per decision-maker — background summary,
+recent-interest summary, and a short list of ready-to-use DM hooks (personal + company),
+each tied to its evidence.
 
 ***
 
@@ -201,8 +220,8 @@ resolved domain (search before create). Map this record onto Close:
 Put each piece of data **where it belongs in the Close UI** — don't dump everything in one place:
 
 - **Lead** (company): name, url (domain), a **brief** description (1–2 lines: segment + verdict + the single lead-with angle — keep the lead view scannable), and status (from verdict: Qualified / Bad Fit / Potential).
-- **Curated lead fields** (set the ones you have, via the named flags — these are the *only* custom fields to fill): `--employees` (headcount), `--business-model` (e.g. SaaS), `--industry` (closest Close choice, e.g. Software), `--seo-pages` (B1 footprint), `--revenue` (USD, only if actually found). Skip any you don't have; don't pass blanks.
-- **Contacts** (one per person you found — *always, fit or not*): name, title, role-in-decision, and **every profile URL (LinkedIn, X) in the native contact `urls` field** via repeated `-u` flags (plus `-e` email / `-p` phone if found). The native field renders on the contact card, so Sherin can message them straight from Close — don't leave these links only in prose.
+- **Curated lead fields** (set the ones you have, via the named flags — these are the *only* custom fields to fill): `--employees` (headcount), `--business-model` (e.g. SaaS), `--industry` (closest Close choice, e.g. Software), `--seo-pages` (B1 footprint), `--revenue` (USD — from Apollo `annual_revenue` for fits, a modeled estimate; else skip). Skip any you don't have; don't pass blanks.
+- **Contacts** (one per person you found — *always, fit or not*): name, title, role-in-decision, and **every profile URL (LinkedIn, X) in the native contact `urls` field** via repeated `-u` flags (plus `-e` email — the Apollo verified work email for fits — / `-p` phone if found). The native field renders on the contact card, so Sherin can message them straight from Close — don't leave these links only in prose.
 - **Note** (the depth — "Notes & summaries"): segment / business model, market used, what they do / who they serve, the **company LinkedIn + X links** (these have no native lead field), **ICP-fit verdict**, **investment tier**, key metrics (page footprint, organic traffic est., traffic value est., # keywords, `llms.txt` y/n, AI-answer visibility y/n), competitive gap as ratios, reason for the verdict, date evaluated; and — for fits — background + recent-interest summaries, DM hooks (personal + company) with evidence, and known gaps.
 
 **Custom fields:** Close supports lead/contact custom fields via its API, but `dogfu`
