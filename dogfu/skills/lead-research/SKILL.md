@@ -254,7 +254,7 @@ In addition to the CRM write, return:
 1. **Snapshot** — target, resolved domain, segment, market, decision-maker(s), ICP-fit verdict, in 2–3 sentences.
 2. **Profile table** — the Stage B dimension table, each row a headline number + one-line read.
 3. **Competitive gap** — target vs leader/median as ratios.
-4. **Contacts & links** — decision-maker(s) with their LinkedIn/X URLs and (if a fit) ready-to-use DM hooks.
+4. **Contacts & links** — decision-maker(s) with their LinkedIn/X URLs and (if a fit) ready-to-use DM hooks. **For a qualified lead, also include a "touch 0" starter the BDR can act on immediately: the profile(s) to send a connection request to, and 1–3 specific recent posts (with their URLs, from the Stage C reads) to like or comment on. Touch 0 is one or more of just those three actions — connection request, like, or comment; the BDR does it by hand, then records it via the lead-touch skill.**
 5. **Key gaps & angles** — the divergences found, framed as outreach openings.
 6. **Evidence appendix** — the exact `dogfu` commands run and key fields pulled, so the run is reproducible. Keep all traffic/keyword numbers labeled as estimates.
 
