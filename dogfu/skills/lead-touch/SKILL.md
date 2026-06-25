@@ -60,7 +60,8 @@ A lead is worked as a sequence of **touches**. A **touch is one attempt to reach
 recorded *after* the BDR sends it. The number is the *attempt order*:
 
 - **Reach-out** — the **first** attempt to make contact (internally touch `0`). On **any**
-  channel the BDR chooses.
+  channel the BDR chooses, and it can be a **light touch** — a connection request, a like, or
+  a comment — not only a DM or email.
 - **Follow-up 1, 2, 3, … N** — each subsequent attempt (touch `1..N`). Also on any channel.
   **There is no fixed limit** — a deal that's too good to ignore can be nudged as many times
   as the BDR wants. The sequence does **not** auto-end.
