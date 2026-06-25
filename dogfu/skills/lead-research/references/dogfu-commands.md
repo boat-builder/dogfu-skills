@@ -90,5 +90,14 @@ fields outside the curated five.
 ### Upsert pattern
 1. `crm status list` → pick the status_id for the verdict (Qualified / Bad Fit / Potential).
 2. `crm lead search -n "<company>"` (or `-q` with the domain) → if a match exists, `lead update`; else `lead create` with a **brief** `-d` description **plus the curated flags you have** (`--employees`, `--business-model`, `--industry`, `--seo-pages`, `--revenue`).
-3. `crm contact create <lead_id> -n "<name>" -t "<title>" -u <linkedin> -u <x>` for each person (links in the native `urls` field).
+3. `crm contact create <lead_id> -n "<name>" -t "<title>" -u <linkedin> -u <x> [-e <email>]` for each person (links in the native `urls` field; `-e` = the Apollo verified email for fits).
 4. `crm note create <lead_id> -t "<structured profile + metrics + verdict + company links + hooks>"`.
+
+## `apollo` (enrichment — Stage C, fits only)
+Per-user Apollo key, connected in the Console → **Apollo Integration** (like the Close key).
+A `412` "no Apollo API key configured" = not connected; surface it, don't retry.
+**Credit-bearing — run only for ICP fits.** Identify a company by `--domain` (preferred) or `--name`.
+- **`org enrich --domain <d> | --name <n> [--with-people/--no-people] [--title <t>...] [--seniority <s>...] [--limit N]`**
+  → ApolloOrganization: id, name, domain, website_url, industry, employee_count, **annual_revenue** (modeled estimate — coarse for small private SaaS), **marketing_headcount**, total_funding, latest_funding_round, latest_funding_date, founded_year, linkedin_url, phone, technologies[], people[] (ApolloPerson: name, title, seniority, linkedin_url — **no email**). `--with-people` (default on) runs a *free* people search by title/seniority at the domain (`--limit` caps it, default 10); it needs a master key (else the org returns with `people[]` empty). ~1 Apollo credit.
+- **`people email --linkedin-url <url> | --name "<full name>" [--first-name <f>] [--last-name <l>] [--domain <d>] [--organization-name <n>]`**
+  → ApolloPerson[] (0 or 1): name, title, seniority, **email**, email_status (verified | likely to engage | unavailable), linkedin_url, organization_name, organization_domain. Resolves ONE person → verified work email; **consumes credits** (resolve only people you'll contact). Take the person from the `org enrich --with-people` list; `--linkedin-url` matches best, else `--name` + `--domain`. Best-match, not exact.
