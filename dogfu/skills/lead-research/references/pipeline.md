@@ -162,6 +162,14 @@ as a **soft guide** — a behaviorally strong lead that looks larger (or smaller
 band is still a fit; **flag the size caveat prominently** rather than down-ranking it, and
 let the human decide. Don't silently disqualify a behaviorally perfect lead for size.
 
+**Vertical / segment criteria, if the ICP has one.** Treat the vertical the same way —
+as a **soft cluster signal**, not a hard gate, unless the ICP explicitly says the vertical
+is a cutoff. Some ICPs deliberately keep the vertical *open* to allow experimentation with
+close-adjacent profiles (the bundled default says so outright). So when a target has the
+right **buyer shape and SEO/AEO behavior** but sits in a *different* (adjacent) vertical,
+score it **partial and surface it** — don't drop it to "weak" on vertical alone. Flag the
+segment caveat and let the human decide whether to chase that profile.
+
 ***
 
 ## Stage C — Enrich (fit only)
