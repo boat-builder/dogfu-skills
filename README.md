@@ -4,7 +4,7 @@ A plugin marketplace for both **Claude Cowork** and **Codex**. It currently ship
 
 | Plugin | What it does |
 | :-- | :-- |
-| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Two skills: **lead-research** (**Discover → Qualify → Enrich → CRM** — turn a sparse sales target into a qualified, enriched Close CRM record) and **lead-touch** (work an existing lead through the outreach cadence in Close — pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel). |
+| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Three skills: **lead-research** (**Discover → Qualify → Enrich → CRM** — turn a sparse sales target into a qualified, enriched Close CRM record), **lead-touch** (work an existing lead through the outreach cadence in Close — pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
 
 ## Layout
 
@@ -27,7 +27,10 @@ dogfu-skills/
         │   ├── README.md
         │   ├── references/
         │   └── icps/
-        └── lead-touch/            # the lead-touch skill (CRM & outreach-cadence ops)
+        ├── lead-touch/            # the lead-touch skill (CRM & outreach-cadence ops)
+        │   ├── SKILL.md
+        │   └── README.md
+        └── berlin-theme/          # the berlin-theme skill (brand style guide, no CLI)
             ├── SKILL.md
             └── README.md
 ```
@@ -45,9 +48,11 @@ install the **Dogfu** plugin:
 
 Once installed, the skills trigger automatically: **lead-research** when you give Claude a
 sales target ("research this lead", "is this company in our ICP", a bare LinkedIn/company
-link, etc.), and **lead-touch** when you want to work an existing lead in the CRM ("who do I
+link, etc.), **lead-touch** when you want to work an existing lead in the CRM ("who do I
 follow up with today", "I sent the LinkedIn DM to X", "mark this lead replied", "what's our
-funnel look like").
+funnel look like"), and **berlin-theme** when you ask Claude to design a Berlin-branded asset
+("make this landing page on-brand", "build a sales one-pager", "design a social poster in our
+brand").
 
 ## Install in Codex
 
@@ -95,8 +100,8 @@ CLI configured, the skill can reason about a target but can't pull data or write
 
 ## Editing
 
-Edit the markdown under each skill's folder — `dogfu/skills/lead-research/` or
-`dogfu/skills/lead-touch/` (see each folder's `README.md`) — then reinstall/update the
+Edit the markdown under each skill's folder — `dogfu/skills/lead-research/`,
+`dogfu/skills/lead-touch/`, or `dogfu/skills/berlin-theme/` (see each folder's `README.md`) — then reinstall/update the
 `dogfu` plugin from the relevant marketplace to pick up the changes. When shipping a
 change, keep the `version` fields in `dogfu/.claude-plugin/plugin.json` and
 `dogfu/.codex-plugin/plugin.json` in sync.
