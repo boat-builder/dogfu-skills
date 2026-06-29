@@ -10,7 +10,7 @@ default: false
 
 ## Who we are
 What we sell and what we replace (so the skill can judge relevance and run the
-competitive-conflict gate). e.g. "Berlin — an AI SEO/AEO platform that replaces hiring an
+competitive-conflict gate). e.g. "We're an AI SEO/AEO platform that replaces hiring an
 SEO agency or in-house SEO team."
 
 ## Who we target (must-haves)

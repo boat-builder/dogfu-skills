@@ -1,7 +1,7 @@
 {
   "name": "dogfu",
   "version": "0.7.0",
-  "description": "Sales toolkit on the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM) and lead-touch (work leads through the outreach cadence in Close), plus berlin-theme — Berlin's brand style guide for on-brand sales collateral.",
+  "description": "Sales toolkit on the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM) and lead-touch (work leads through the outreach cadence in Close), plus brand-theme — our brand style guide for on-brand sales collateral.",
   "author": {
     "name": "Sherin Thomas"
   }

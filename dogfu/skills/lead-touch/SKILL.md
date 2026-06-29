@@ -1,7 +1,7 @@
 ---
 name: lead-touch
 description: >-
-  Manage Agent Berlin's leads in the Close CRM after the BDR has done the actual
+  Manage our leads in the Close CRM after the BDR has done the actual
   outreach — using the `dogfu` CLI. Use this whenever someone wants to interact with
   the CRM about leads that already exist: check a lead's status or where it stands in
   the outreach sequence, pull the leads to act on now ("who do I message today", "my

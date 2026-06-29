@@ -10,7 +10,7 @@ Each ICP is a markdown file with frontmatter + a body:
 
 ```markdown
 ---
-name: berlin-saas          # short slug, used to match "use the berlin-saas ICP"
+name: saas-seo             # short slug, used to match "use the saas-seo ICP"
 label: B2B SaaS doing its own SEO   # human-readable name
 default: true              # exactly ONE file should set this
 ---

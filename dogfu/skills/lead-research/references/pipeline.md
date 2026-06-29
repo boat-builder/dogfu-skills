@@ -54,7 +54,7 @@ This is deliberately broad — include adjacent cases: other AI SEO/AEO tools or
 content / "marketing agent" tools positioned for ranking or answer-engine visibility; and
 **general AI automation / agent-builder platforms that offer or market SEO/AEO agents or
 content-automation use cases**, even when SEO/AEO isn't their headline. If the platform
-produces SEO/AEO outcomes for its users, it overlaps with Berlin. Look for product / pricing
+produces SEO/AEO outcomes for its users, it overlaps with us. Look for product / pricing
 / marketing language like "AI SEO", "AEO/GEO", "LLM visibility", "content automation for
 ranking", "autonomous SEO", or SEO/AEO agents.
 
@@ -199,7 +199,7 @@ why they wait until the verdict is a fit:
 
 Then **pull the message hooks**: *personal hooks* (a recent post, a shared interest, a
 milestone, a take they've voiced); *company hooks* (the specific SEO/AEO gaps from Stage B,
-framed as the opening, not a critique); *relevance bridge* (why Berlin specifically maps to
+framed as the opening, not a critique); *relevance bridge* (why we specifically map to
 their situation, in their language). **Note what's missing** — unfound profiles, thin
 hooks, unknowns — so the DM step knows what's solid vs inferred.
 

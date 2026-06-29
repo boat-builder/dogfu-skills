@@ -14,7 +14,7 @@ default: false
 
 ## Who we are
 
-Berlin — an AI SEO/AEO platform. Up-market we lead with **AEO (answer-engine
+We're an AI SEO/AEO platform. Up-market we lead with **AEO (answer-engine
 optimization)**: we map which sources the LLMs actually pull a category's answers from and
 act on it faster and cheaper than an SEO-era agency or in-house team can. Classic
 SEO/organic work is the **expansion**, sold once we're inside and trusted.

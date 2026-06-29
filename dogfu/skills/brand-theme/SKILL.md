@@ -1,21 +1,21 @@
 ---
-name: berlin-theme
+name: brand-theme
 description: >-
-  Berlin's brand theme — the editorial cream/paper visual identity to apply whenever you
-  design or build any branded visual asset for Berlin. Use this for landing pages, pitch /
+  Our house brand theme — the editorial cream/paper visual identity to apply whenever you
+  design or build any branded visual asset for us. Use this for landing pages, pitch /
   proposal pages, one-pagers, social posters, ad creative, email layouts, decks, PDFs, or
-  any HTML/CSS/graphic where the output should look and read like Berlin. It supplies the
+  any HTML/CSS/graphic where the output should look and read on-brand. It supplies the
   palette, typography, layout, components, motion, and copy voice; the user decides the
   output format and content — this skill only tells you the theme so the result is on-brand.
-  Trigger phrases include "make it on-brand", "design a Berlin landing/pitch page", "build a
+  Trigger phrases include "make it on-brand", "design an on-brand landing/pitch page", "build a
   sales one-pager", "create a social poster / ad", "style this in our brand", or any request
-  to produce a Berlin-branded visual. This is Berlin's house style, distinct from the generic
+  to produce an on-brand visual. This is our house style, distinct from the generic
   `design:*` critique/handoff skills — reach for this when the task is *applying our brand*.
 ---
 
-# Berlin — Brand Theme
+# Brand Theme
 
-This skill is the **style brief for anything that should look like Berlin**. You bring the
+This skill is the **style brief for anything that should look on-brand**. You bring the
 asset the user asked for (an HTML page, a poster, an email, a deck slide, a PDF) — this file
 tells you how to make it on-brand. The user decides *what* to build and *what it says*; you
 own *how it looks and reads*.
@@ -127,7 +127,7 @@ Three families, each with a clear job. The serif/sans contrast is the heart of t
   very soft shadow. Flat and crisp — not glassy, not heavily shadowed.
 * **Corners**: small radii (4–6px) on surfaces; pills (999px) only for buttons/tags.
 * **Live dot**: 6px green circle that gently pulses — the "always-on" motif.
-* **Wordmark**: "*Berlin*" in italic serif + a mono `/services` suffix in mute.
+* **Wordmark**: the brand name in *italic serif* + a mono `/services` suffix in mute.
 
 ***
 

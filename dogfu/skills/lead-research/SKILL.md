@@ -1,7 +1,7 @@
 ---
 name: lead-research
 description: >-
-  Run Agent Berlin's full lead-research pipeline — Discover → Qualify → Enrich → CRM —
+  Run our full lead-research pipeline — Discover → Qualify → Enrich → CRM —
   using the `dogfu` CLI. Use this whenever the user hands you a sales target (a company
   name, a domain, a person, or a LinkedIn/X URL) and wants it researched, qualified
   against an ICP, enriched for outreach, or pushed into the Close CRM. Triggers include
@@ -11,7 +11,7 @@ description: >-
   Also use it for batch prospecting and for recording disqualified leads. The skill
   ships its ICPs in `icps/` and qualifies against the default unless the caller names a
   specific one or supplies their own. This is the canonical way to do sales lead research
-  at Berlin — prefer it over ad-hoc web searches.
+  here — prefer it over ad-hoc web searches.
 ---
 
 # Lead Research (powered by `dogfu`)
@@ -71,7 +71,7 @@ ICPs exist but none is marked `default` and the caller didn't name one, **ask wh
 
 ## Competitive-conflict gate — exclude competitors before qualifying
 
-Berlin is an **AI SEO/AEO platform** that replaces hiring an SEO agency or in-house team.
+We're an **AI SEO/AEO platform** that replaces hiring an SEO agency or in-house team.
 We don't pitch companies that compete with that. So before spending on qualification, apply
 one test to what Stage A told you about *what the company does*:
 
@@ -81,7 +81,7 @@ one test to what Stage A told you about *what the company does*:
 "Competitor" is broader than direct rivals — catch the **adjacent** cases too:
 - Other AI SEO/AEO platforms, tools, or agencies productizing AI for SEO/AEO/GEO.
 - AI content / writing / "marketing agent" tools positioned for ranking or answer-engine visibility.
-- **General AI automation / agent-builder platforms that offer or market SEO/AEO agents or content-automation use cases** — even when SEO/AEO isn't their headline. If their platform produces SEO/AEO outcomes for *their* users, it overlaps with what Berlin sells.
+- **General AI automation / agent-builder platforms that offer or market SEO/AEO agents or content-automation use cases** — even when SEO/AEO isn't their headline. If their platform produces SEO/AEO outcomes for *their* users, it overlaps with what we sell.
 
 Signals on their site / product / pricing / marketing: they offer users things like "AI SEO",
 "AEO / answer-engine optimization", "GEO", "LLM visibility", "content automation at scale for
@@ -103,7 +103,7 @@ strong behavioral fit.
 
 `dogfu` is a published CLI (`pip install dogfu`, or `uv tool install dogfu`), authenticated
 through the **dogfu MCP**. It is **not** bundled with this skill — there is no directory to
-mount and no `.env`. The CLI talks to the Agent Berlin backend over an authenticated session
+mount and no `.env`. The CLI talks to the dogfu backend over an authenticated session
 token.
 
 **Setup (usually already done when the dogfu MCP is connected).** If `dogfu` isn't installed
@@ -250,7 +250,7 @@ fit → **Qualified**; not in ICP → **Bad Fit**; unsure / not yet worked → *
 1. **Pick the ICP.** Use the caller's ICP if they pasted one or named a specific `icps/*.md`; otherwise read the bundled default (see "The ICP" above). Only ask if `icps/` is empty and none was supplied (Stage A can run meanwhile).
 2. **Stage A — Discover.** Resolve the target → domain. Web-fetch the company's own pages to derive segment, audience, geography/language, and the problem statement (you need these to calibrate every SEO threshold and to discover competitors). Find and record the company's LinkedIn + X URLs and each decision-maker's LinkedIn + X URLs (use Google search / AI-mode to locate any you weren't handed) — you persist these regardless of fit.
 3. **Stage B — Qualify.** **First, apply the competitive-conflict gate** (above) using what Stage A told you about the business — if the target builds/sells/markets SEO/AEO capability (directly or via a broader AI/automation/agent platform), stop and mark **excluded (competitor)**, skipping the paid SEO calls. Otherwise read `references/pipeline.md`, then run the phases with the commands above, **cheap signals first**. Set the SEO data's market with `--location-code` / `--language-code` (see the codes in `references/dogfu-commands.md`) from the geography you derived. Calibrate to the segment and to discovered competitors (ratios, not absolute numbers). Stop early and mark "not in ICP" if cheap signals clearly disqualify. Produce a verdict: **strong / partial / weak**.
-4. **Stage C — Enrich** (only if strong/partial — this is where the credit-bearing Apollo pulls live). Run `dogfu apollo org enrich --domain <d> --with-people` to firm up the size/revenue read (est. revenue, headcount, marketing-team size, funding) and surface the decision-makers; then `dogfu apollo people email` (by `--linkedin-url`, else `--name --domain`) for the verified work email of the **1–2 people you'll actually contact**. Deep-read each decision-maker (LinkedIn + X profile and recent posts). Pull personal hooks, company hooks (the SEO/AEO gaps from Stage B, framed as openings), and the relevance bridge to Berlin.
+4. **Stage C — Enrich** (only if strong/partial — this is where the credit-bearing Apollo pulls live). Run `dogfu apollo org enrich --domain <d> --with-people` to firm up the size/revenue read (est. revenue, headcount, marketing-team size, funding) and surface the decision-makers; then `dogfu apollo people email` (by `--linkedin-url`, else `--name --domain`) for the verified work email of the **1–2 people you'll actually contact**. Deep-read each decision-maker (LinkedIn + X profile and recent posts). Pull personal hooks, company hooks (the SEO/AEO gaps from Stage B, framed as openings), and the relevance bridge to our platform.
 5. **Stage D — CRM write (always, fields in their proper place).** Upsert the lead on its domain with a **brief** description, and set the curated lead flags (`--employees`, `--business-model`, `--industry`, `--seo-pages`, `--revenue`) for whatever you found — skip any you don't have. Add **every person you found as a contact, with their LinkedIn/X in the native `urls` field**. Write a note with **all the research** — what they do, who they serve, company LinkedIn/X links, SEO/AEO metrics, verdict + reason, and (for fits) the DM hooks. **Do this for non-fits too:** mark them Bad Fit with the reason, but still save the contacts, their links, and everything you found — the research cost real money and effort, so none of it should be discarded. Set status from the verdict.
 6. **Return the run summary** in the output format below.
 

@@ -1,9 +1,9 @@
-# berlin-theme — skill source
+# brand-theme — skill source
 
-This is the `berlin-theme` skill, shipped inside the **`dogfu`** plugin. It triggers when
-someone asks you to design or build a **Berlin-branded visual asset** — a landing or pitch
+This is the `brand-theme` skill, shipped inside the **`dogfu`** plugin. It triggers when
+someone asks you to design or build an **on-brand visual asset** — a landing or pitch
 page, a sales one-pager, a social poster, ad creative, an email layout, a deck slide, a PDF,
-or any HTML/CSS/graphic that should look and read like Berlin. Unlike `lead-research` and
+or any HTML/CSS/graphic that should look and read on-brand. Unlike `lead-research` and
 `lead-touch`, it does **not** shell out to the `dogfu` CLI — it carries no data and runs no
 commands. Its only job is to **tell the agent the brand theme** so whatever the user asks for
 comes out on-brand. The user owns the output format and content; this skill owns the look,
@@ -18,7 +18,7 @@ type, motion, and copy voice.
 ## Self-contained
 `SKILL.md` is the complete, self-contained brand brief — it carries every token, rule, and
 guideline an agent needs, with no pointers to external files or repos (agents using this skill
-won't have the Berlin web app on hand). Keep it that way: when the brand evolves, edit the
+won't have the web app on hand). Keep it that way: when the brand evolves, edit the
 values directly in `SKILL.md`.
 
 ## How to edit

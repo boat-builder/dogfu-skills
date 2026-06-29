@@ -9,14 +9,14 @@ default: true
 Fast-growing B2B / B2B2C SaaS or marketplace companies where a **founder (or a
 founder-delegated growth/marketing lead) signs**, there is already a **1–3 person in-house
 marketing/SEO function** doing real SEO work, and the buyer personally understands SEO/AEO
-well enough to operate a platform like Berlin with their own team.
+well enough to operate a platform like ours with their own team.
 
 This is the bullseye — the shape of the customer we already win. The job is to find more of
 exactly this.
 
 ## Who we are
 
-Berlin — an AI SEO/AEO platform that replaces hiring an SEO agency or building a large
+We're an AI SEO/AEO platform that replaces hiring an SEO agency or building a large
 in-house SEO team. We redirect the SEO / content / agency budget a company **already
 spends**; we don't ask for net-new budget. (This also drives the skill's
 competitive-conflict gate: companies that *build or sell* SEO/AEO capability to others are
@@ -33,7 +33,7 @@ competitors, not customers.)
   operator-founder doing the SEO themselves. There must be *someone in-house who can carry
   execution* — this is what makes the account work.
 - **Active SEO:** already doing real SEO / content work — not starting from zero. They
-  already spend on SEO / content / an agency, so adopting Berlin is a **reallocation**, not
+  already spend on SEO / content / an agency, so adopting our platform is a **reallocation**, not
   a new budget line.
 - **Buyer:** a **founder, or a founder-delegated growth/marketing lead** — someone who can
   give a fast, single-threaded yes. Thesis-driven, buys on conviction, typically active on
