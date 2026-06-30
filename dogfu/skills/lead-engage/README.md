@@ -21,12 +21,9 @@ lead-research  →  lead-touch        →  lead-engage
   vs **opportunity** = the forecastable deal), the **qualification gate** (open an opportunity
   only after a call confirms a real deal — never on a reply), the lean pipeline (Discovery →
   Trial → Proposal → Won/Lost), the **next-step**-driven work queue (due / dropped-ball /
-  stalled), inbound intake, the `dogfu crm` command surface incl. the new `opportunity` verbs,
+  stalled), inbound intake, the `dogfu crm` command surface incl. the `opportunity` verbs,
   and the operating rules. The YAML frontmatter `name` / `description` controls when the skill
   triggers.
-
-(The opportunity build spec and its follow-up deltas live with the CLI devs, not in this repo —
-see the dependency note below.)
 
 ## The `dogfu` CLI dependency
 Same as the other dogfu skills: the skill is the orchestration layer and shells out to the
@@ -37,10 +34,10 @@ Integration**.
 
 ## Status — CLI shipped; pending the Close opportunity pipeline
 The **`dogfu crm opportunity …`** commands have shipped and the **`Engaged`** lead status is live
-(with `Trial` removed). What remains before the skill is fully operational is the Close
-**opportunity pipeline** (Discovery → Trial → Proposal → Won/Lost) and the **`Deal Type`** custom
-field. Until those exist, the skill can read/move lead **statuses** but can't yet work
-opportunities. The full build spec and its follow-up deltas live with the CLI devs, not in this repo.
+(with `Trial` removed). What remains before the skill is fully operational is the Close-side admin
+setup: the **opportunity pipeline** (Discovery → Trial → Proposal → Won/Lost) and the **`Deal
+Type`** custom field, created once in the Close UI. Until those exist, the skill can read/move lead
+**statuses** but can't yet work opportunities.
 
 ## Why a separate skill (not a mode of `lead-touch`)
 The cold and warm phases are different machines. Cold runs on a **cadence** (fixed waits, a
@@ -54,7 +51,7 @@ mirrors the real handoff (`reply → Engaged`) in the funnel.
 2. To change *what it does*, edit the body. To change *when it fires*, edit the `description`
    in the frontmatter.
 3. If the opportunity commands or Close setup change, update `SKILL.md`'s command surface to match
-   (the canonical build spec lives with the CLI devs).
+   (the commands live in the `dogfu` CLI, in the berlin backend repo).
 4. Keep it tight and self-contained; the inline command semantics are what let the agent avoid
    `--help`.
 

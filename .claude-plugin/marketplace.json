@@ -8,7 +8,7 @@
       "name": "dogfu",
       "displayName": "Dogfu",
       "source": "./dogfu",
-      "description": "Sales toolkit powered by the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM), lead-touch (cold outreach cadence in Close), lead-engage (work live deals — opportunities — from first engagement to close), crm-cleanup (read-only audit of the CRM for leads/tasks that fell out of the flow), first-audit (publish a first-touch outside-in SEO/AEO prospect audit and record it on the lead), and berlin-theme (Berlin's brand style guide for on-brand sales collateral)."
+      "description": "Sales toolkit powered by the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM), lead-touch (cold outreach cadence in Close), lead-engage (work live deals — opportunities — from first engagement to close), lead-worklist (read-only cross-phase worklist — the prioritized leads to work now, across all stages, with context), crm-cleanup (read-only audit of the CRM for leads/tasks that fell out of the flow), first-audit (publish a first-touch outside-in SEO/AEO prospect audit and record it on the lead), and berlin-theme (Berlin's brand style guide for on-brand sales collateral)."
     }
   ]
 }

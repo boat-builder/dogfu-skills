@@ -10,8 +10,10 @@ description: >-
   Proposal, mark a deal won or lost, intake an inbound lead, or report the deal pipeline /
   forecast. This is the counterpart to `lead-touch`: lead-touch runs the *cold* outreach
   cadence and hands a lead off the moment it replies (→ **Engaged**); lead-engage takes it from
-  there and works it to a close. For cold prospecting cadence use `lead-touch`; for researching
-  or qualifying a brand-new target use `lead-research`.
+  there and works it to a close. For the cross-phase worklist of everything to work today ("what
+  should I work on", any or all stages, read-only, with context) use `lead-worklist`; for cold
+  prospecting cadence use `lead-touch`; for researching or qualifying a brand-new target use
+  `lead-research`.
 ---
 
 # Lead engage — work live deals in Close (powered by `dogfu`)
@@ -191,9 +193,9 @@ All leaf commands take `-f json|table` (default json) and `-o FILE`.
 | Opportunity pipelines & their stage statuses + ids (do first for deals) | `dogfu crm opportunity pipelines` |
 | Engaged leads (the warm book) | `dogfu crm lead list -s <Engaged id>` |
 | Full lead incl. contacts | `dogfu crm lead get <lead_id>` |
-| A lead's open/closed opportunities | `dogfu crm opportunity list [-l <lead_id>] [--open]` |
+| A lead's open/closed opportunities | `dogfu crm opportunity list [-l <lead_id>] [--status open]` |
 | One opportunity in full | `dogfu crm opportunity get <opp_id>` |
-| **The deal queue** (next-steps due now; stalled if supported) | `dogfu crm opportunity due [-l N]` |
+| **The deal queue** (due next-steps, dropped balls, and stalled deals) | `dogfu crm opportunity due [-l N]` |
 | A lead's notes / tasks | `dogfu crm note list <lead_id>` · `dogfu crm task list -l <lead_id> [-p]` |
 
 ### The gate & moving a deal
@@ -201,8 +203,8 @@ All leaf commands take `-f json|table` (default json) and `-o FILE`.
 | What happened | Command | Effect |
 | :-- | :-- | :-- |
 | **Discovery call confirmed a real deal** | `dogfu crm opportunity create <lead_id> --value <mrr> --period monthly --deal-type co-pilot\|fully-run [--confidence N] [--next "<action>" --next-due YYYY-MM-DD] --note "<scope>"` | opens the opportunity at **Discovery** and (with `--next`) its first `[dogfu:deal]` task. Lead stays **Engaged**. |
-| They **started a trial / POC** | `dogfu crm opportunity advance <opp_id> --stage trial` | moves the deal to **Trial** |
-| **Sent the proposal / terms** | `dogfu crm opportunity advance <opp_id> --stage proposal` | moves the deal to **Proposal** |
+| They **started a trial / POC** | `dogfu crm opportunity update <opp_id> --stage trial` | moves the deal to **Trial** |
+| **Sent the proposal / terms** | `dogfu crm opportunity update <opp_id> --stage proposal` | moves the deal to **Proposal** |
 | **Signed / closed-won** | `dogfu crm opportunity win <opp_id> [--value <final>] [--close YYYY-MM-DD]` then `dogfu crm lead update <lead_id> -s <Customer id>` | marks the opp **Won**; set lead status **Customer** |
 | **Dead / lost** | `dogfu crm opportunity lose <opp_id> [--reason "<why>"]` then `dogfu crm lead update <lead_id> -s <Not Interested\|Bad Fit id>` | marks the opp **Lost**; set the terminal lead status |
 | **Customer churned** | `dogfu crm opportunity lose <opp_id> --reason "churn: <why>"` then `lead update <lead_id> -s <Canceled id>` | for an existing Customer |
@@ -254,7 +256,7 @@ An inbound lead (someone reached out to us) skips the cold sequence entirely:
 
 No aggregate endpoint — compose from list calls:
 
-1. `crm opportunity list --open` → every open deal with stage + value.
+1. `crm opportunity list --status open` → every open deal with stage + value.
 2. **Pipeline by stage:** count and sum value across *Discovery / Trial / Proposal*.
 3. **Weighted forecast:** Σ (value × confidence) over open opps — the realistic number.
 4. **Needs-action:** the deal queue (next-steps due) + **dropped balls** (no next step) +
