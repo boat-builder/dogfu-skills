@@ -10,8 +10,10 @@ description: >-
   Proposal, mark a deal won or lost, intake an inbound lead, or report the deal pipeline /
   forecast. This is the counterpart to `lead-touch`: lead-touch runs the *cold* outreach
   cadence and hands a lead off the moment it replies (→ **Engaged**); lead-engage takes it from
-  there and works it to a close. For cold prospecting cadence use `lead-touch`; for researching
-  or qualifying a brand-new target use `lead-research`.
+  there and works it to a close. For the cross-phase worklist of everything to work today ("what
+  should I work on", any or all stages, read-only, with context) use `lead-worklist`; for cold
+  prospecting cadence use `lead-touch`; for researching or qualifying a brand-new target use
+  `lead-research`.
 ---
 
 # Lead engage — work live deals in Close (powered by `dogfu`)

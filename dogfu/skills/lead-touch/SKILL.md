@@ -4,14 +4,15 @@ description: >-
   Manage Agent Berlin's leads in the Close CRM after the BDR has done the actual
   outreach — using the `dogfu` CLI. Use this whenever someone wants to interact with
   the CRM about leads that already exist: check a lead's status or where it stands in
-  the outreach sequence, pull the leads to act on now ("who do I message today", "my
-  work queue"), record a touch they just sent (a reach-out or a follow-up, on any
-  channel), mark a lead as replied / engaged / not interested / nurture, change a
-  lead's status, read a lead's touch history, add a note or contact or follow-up task
-  to a lead, or report on the funnel / outreach load. The BDR sends the messages
-  themselves; this skill is how they tell the CRM what happened and ask it what to do
-  next. For researching or qualifying a brand-new target, use the lead-research skill
-  instead — this is the layer that runs after that.
+  the outreach sequence, pull what's due in the cold cadence and record the touches they
+  just sent (a reach-out or a follow-up, on any channel), mark a lead as replied / engaged
+  / not interested / nurture, change a lead's status, read a lead's touch history, add a
+  note or contact or follow-up task to a lead, or report on the funnel / outreach load. The
+  BDR sends the messages themselves; this skill is how they tell the CRM what happened and
+  ask it what to do next. For the cross-phase worklist of everything to work today ("what
+  should I work on", any or all stages, read-only, with context), use the lead-worklist
+  skill; for researching or qualifying a brand-new target, use the lead-research skill —
+  this is the layer that runs after that.
 ---
 
 # Lead touch — CRM & outreach ops (powered by `dogfu`)
@@ -131,10 +132,14 @@ So: **the reach-out and every follow-up stay *touches* (events). The forward rem
 
 ***
 
-## The work queue — one list, two kinds of action
+## The cold work queue — one list, two kinds of action
 
-The BDR's daily question is "who do I act on today?" **Run `crm touch due`** — it returns the
-whole queue as **one list**, most-overdue first, each row tagged with its next action:
+This is the **cold** in-session queue you run while working the cadence here. (For the *cross-phase*
+worklist — cold **plus** live deals plus pre-gate Engaged leads, "what should I work on across
+everything", read-only — that's the **lead-worklist** skill. This section is the cold half it pulls.)
+
+When the BDR is working the cadence, **run `crm touch due`** — it returns the cold queue as **one
+list**, most-overdue first, each row tagged with its next action:
 
 1. **Reach-outs** — Qualified leads with **no touch yet** (`touch_stage` null). "New people to
    say hello to."

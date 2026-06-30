@@ -9,8 +9,8 @@ description: >-
   qualified leads with no contacts / no research / no website", "find duplicate leads",
   "overdue follow-ups", "unassigned tasks", or "reconcile the outreach state". It detects and
   reports anomalies (and the exact command to fix each); it does **not** write to the CRM.
-  For pulling today's work queue or recording outreach, use the lead-touch skill; for
-  researching a new target, use lead-research.
+  For pulling today's work queue (across all stages, read-only) use the lead-worklist skill;
+  for recording outreach use lead-touch; for researching a new target, use lead-research.
 ---
 
 # CRM cleanup — read-only health audit (powered by `dogfu`)
