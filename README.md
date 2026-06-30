@@ -4,13 +4,15 @@ A plugin marketplace for both **Claude Cowork** and **Codex**. It currently ship
 
 | Plugin | What it does |
 | :-- | :-- |
-| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Five skills: **lead-research** (**Discover → Qualify → Enrich → CRM** — turn a sparse sales target into a qualified, enriched Close CRM record), **lead-touch** (work an existing lead through the **cold** outreach cadence in Close — pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel), **lead-engage** (the **warm** counterpart — once a lead engages, run discovery, open/advance/close an **opportunity** (Discovery → Trial → Proposal → Won/Lost), set the next step, surface deals due or stalled, and forecast the pipeline), **crm-cleanup** (read-only health audit — find the leads and tasks that fell out of the flow, each with the exact fix command), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
+| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Six skills: **lead-research** (**Discover → Qualify → Enrich → CRM** — turn a sparse sales target into a qualified, enriched Close CRM record), **lead-touch** (work an existing lead through the **cold** outreach cadence in Close — pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel), **lead-engage** (the **warm** counterpart — once a lead engages, run discovery, open/advance/close an **opportunity** (Discovery → Trial → Proposal → Won/Lost), set the next step, surface deals due or stalled, and forecast the pipeline), **lead-worklist** (read-only **cross-phase worklist** — the single prioritized list of leads to work now, in one stage or across all stages, each row with the contact and context to act, handed off to the skill that records it), **crm-cleanup** (read-only health audit — find the leads and tasks that fell out of the flow, each with the exact fix command), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
 
 The three CRM-operating skills form one lifecycle: **lead-research** produces a qualified lead →
 **lead-touch** runs cold outreach and hands off when the lead replies (→ *Engaged*) →
-**lead-engage** works the live deal (a Close opportunity) to a close. **crm-cleanup** audits all
-of it read-only. The opportunity support `lead-engage` uses is shipped in the `dogfu` CLI; it
-needs a Close opportunity pipeline and the `Engaged` lead status set up once by a Close admin.
+**lead-engage** works the live deal (a Close opportunity) to a close. **lead-worklist** reads
+across all of it to answer "what should I work on now" (read-only; it hands each row to the action
+skill), and **crm-cleanup** audits all of it read-only. The opportunity support `lead-engage` uses
+is shipped in the `dogfu` CLI; it needs a Close opportunity pipeline and the `Engaged` lead status
+set up once by a Close admin.
 
 ## Layout
 
@@ -39,6 +41,9 @@ dogfu-skills/
         ├── lead-engage/           # the lead-engage skill (warm phase — live deals / opportunities)
         │   ├── SKILL.md
         │   └── README.md
+        ├── lead-worklist/         # the lead-worklist skill (read-only cross-phase "what to work on" queue)
+        │   ├── SKILL.md
+        │   └── README.md
         ├── crm-cleanup/           # the crm-cleanup skill (read-only CRM health audit)
         │   ├── SKILL.md
         │   └── README.md
@@ -64,8 +69,10 @@ link, etc.), **lead-touch** when you want to work an existing lead through *cold
 ("who do I follow up with today", "I sent the LinkedIn DM to X", "mark this lead replied",
 "what's our funnel look like"), **lead-engage** once a lead has *engaged* ("a lead replied and
 we had an intro call", "open a deal for X", "move this deal to trial", "which deals need action
-today", "what's our pipeline / forecast", "an inbound lead reached out"), **crm-cleanup** for a
-read-only health pass ("audit the CRM", "what's broken in Close", "find leads stuck in the
+today", "what's our pipeline / forecast", "an inbound lead reached out"), **lead-worklist** when
+you want the read-only cross-phase worklist ("who do I work on today", "what's on my plate", "give
+me the next N leads", "just my reach-outs", "leads across all stages with context"), **crm-cleanup**
+for a read-only health pass ("audit the CRM", "what's broken in Close", "find leads stuck in the
 flow"), and **berlin-theme** when you ask Claude to design a Berlin-branded asset ("make this
 landing page on-brand", "build a sales one-pager", "design a social poster in our brand").
 
@@ -116,7 +123,7 @@ CLI configured, the skill can reason about a target but can't pull data or write
 ## Editing
 
 Edit the markdown under each skill's folder — `dogfu/skills/lead-research/`,
-`dogfu/skills/lead-touch/`, `dogfu/skills/lead-engage/`, `dogfu/skills/crm-cleanup/`, or `dogfu/skills/berlin-theme/` (see each folder's `README.md`) — then reinstall/update the
+`dogfu/skills/lead-touch/`, `dogfu/skills/lead-engage/`, `dogfu/skills/lead-worklist/`, `dogfu/skills/crm-cleanup/`, or `dogfu/skills/berlin-theme/` (see each folder's `README.md`) — then reinstall/update the
 `dogfu` plugin from the relevant marketplace to pick up the changes. When shipping a
 change, keep the `version` fields in `dogfu/.claude-plugin/plugin.json` and
 `dogfu/.codex-plugin/plugin.json` in sync.

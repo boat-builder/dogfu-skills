@@ -1,7 +1,7 @@
 {
   "name": "dogfu",
-  "version": "0.11.0",
-  "description": "Sales toolkit on the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM), lead-touch (cold outreach cadence in Close), lead-engage (work live deals — opportunities — from first engagement to close), and crm-cleanup (read-only CRM health audit), plus berlin-theme — Berlin's brand style guide for on-brand sales collateral.",
+  "version": "0.12.0",
+  "description": "Sales toolkit on the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM), lead-touch (cold outreach cadence in Close), lead-engage (work live deals — opportunities — from first engagement to close), lead-worklist (read-only cross-phase worklist — the prioritized leads to work now, across all stages, with context), and crm-cleanup (read-only CRM health audit), plus berlin-theme — Berlin's brand style guide for on-brand sales collateral.",
   "author": {
     "name": "Sherin Thomas"
   },
@@ -19,7 +19,7 @@
   "interface": {
     "displayName": "Dogfu",
     "shortDescription": "Research leads and manage outreach in Close",
-    "longDescription": "Research and qualify sales prospects against an ICP, enrich decision-makers, write results to Close CRM, manage cold follow-up outreach, work live deals (opportunities) from first engagement to close, and audit the CRM for leads that fell out of the flow — all with the dogfu CLI. Includes berlin-theme — Berlin's brand style guide so any sales collateral you design (pages, one-pagers, posters, emails) comes out on-brand.",
+    "longDescription": "Research and qualify sales prospects against an ICP, enrich decision-makers, write results to Close CRM, manage cold follow-up outreach, work live deals (opportunities) from first engagement to close, pull the read-only cross-phase worklist of leads to work now (across all stages, with the context to act), and audit the CRM for leads that fell out of the flow — all with the dogfu CLI. Includes berlin-theme — Berlin's brand style guide so any sales collateral you design (pages, one-pagers, posters, emails) comes out on-brand.",
     "developerName": "Sherin Thomas",
     "category": "Productivity",
     "capabilities": [
@@ -29,6 +29,7 @@
     "websiteURL": "https://github.com/boat-builder/dogfu-skills",
     "defaultPrompt": [
       "Research and qualify a prospect against our ICP",
+      "Who should I work on today across all stages?",
       "Show me which leads need a follow-up today",
       "Which live deals need action today?",
       "A lead replied and we had an intro call — open the deal"
