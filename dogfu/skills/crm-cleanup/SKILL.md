@@ -23,12 +23,6 @@ each with the lead, the problem, and the exact command to fix it by hand. It nev
 It is the audit counterpart to `lead-touch` (which *operates* the flow). The full model lives
 in **lead-touch/SKILL.md**; this skill assumes it and only recaps what the checks need.
 
-> **Why this exists.** BDRs aren't supposed to edit Close directly, but humans make mistakes
-> and some state is computed, not stored — so leads quietly fall off the queue: a reminder
-> closed by hand, a lead still chased after it replied, a Qualified lead with nobody to
-> message. This skill surfaces those. A future `dogfu crm touch reconcile --fix` will repair
-> them automatically; until then, this finds them and tells you the fix.
-
 ***
 
 ## The model, in one breath (see lead-touch for depth)

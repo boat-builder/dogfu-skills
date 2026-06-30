@@ -102,8 +102,6 @@ ways a lead leaves the sequence are `reply` and `stop`.** Because there's no aut
 
 ## Touch vs Task — keep them distinct
 
-This trips people up; hold the line:
-
 | | **Touch** | **Task** |
 | :-- | :-- | :-- |
 | Tense | **Past** — "I reached out / followed up" | **Future** — "do X by this date" |
