@@ -24,10 +24,9 @@ lead-research  →  lead-touch        →  lead-engage
   stalled), inbound intake, the `dogfu crm` command surface incl. the new `opportunity` verbs,
   and the operating rules. The YAML frontmatter `name` / `description` controls when the skill
   triggers.
-- `references/opportunity-spec-followup.md` — the **follow-up changes** to the opportunity build
-  (the full `dogfu crm opportunity` spec was already handed to the CLI devs): delete the `Trial`
-  lead status + seeded example opportunities; make `touch reply` default the status to `Engaged`;
-  the final `TERMINAL_STATUSES`. Apply on top of the spec the devs have.
+
+(The opportunity build spec and its follow-up deltas live with the CLI devs, not in this repo —
+see the dependency note below.)
 
 ## The `dogfu` CLI dependency
 Same as the other dogfu skills: the skill is the orchestration layer and shells out to the
@@ -42,12 +41,13 @@ Unlike `lead-touch`, this skill depends on capability that **does not exist yet*
 2. a Close **opportunity pipeline** (Discovery → Trial → Proposal → Won/Lost), and
 3. the **`dogfu crm opportunity …`** commands.
 
-The full build spec is with the CLI devs; `references/opportunity-spec-followup.md` carries the
-later refinements (Trial-status deletion, the `touch reply` → Engaged default, final
-`TERMINAL_STATUSES`). Until the CLI + Close setup land, the skill can read/move lead **statuses**
-but can't work opportunities. The downstream skill tidy-ups to do once they ship are listed at the
-bottom of that follow-up file (drop `--status` from `lead-touch`'s reply row; fix `crm-cleanup`'s
-status classification).
+The full build spec — and the follow-up deltas (delete the `Trial` lead status + seeded example
+opportunities; make `touch reply` default the lead status to `Engaged`; the final
+`TERMINAL_STATUSES`) — are with the CLI devs, not in this repo. Until the CLI + Close setup land,
+the skill can read/move lead **statuses** but can't work opportunities. Two downstream skill
+tidy-ups to do once they ship: drop `--status <Engaged id>` from `lead-touch`'s reply row, and fix
+`crm-cleanup`'s status classification (engaged = {Engaged}; terminal — drop `Nurture`, add
+`Canceled`/`DNC`).
 
 ## Why a separate skill (not a mode of `lead-touch`)
 The cold and warm phases are different machines. Cold runs on a **cadence** (fixed waits, a
@@ -61,8 +61,7 @@ mirrors the real handoff (`reply → Engaged`) in the funnel.
 2. To change *what it does*, edit the body. To change *when it fires*, edit the `description`
    in the frontmatter.
 3. If the opportunity commands or Close setup change, update `SKILL.md`'s command surface to match
-   (the canonical build spec lives with the CLI devs; `references/opportunity-spec-followup.md`
-   tracks the deltas since).
+   (the canonical build spec lives with the CLI devs).
 4. Keep it tight and self-contained; the inline command semantics are what let the agent avoid
    `--help`.
 
