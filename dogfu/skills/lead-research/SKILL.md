@@ -128,7 +128,7 @@ dogfu <group> <command> [flags]
 
 **Output is canonical JSON by default** — pipe nothing, just read stdout. Add `-o FILE`
 to save a large payload to a file instead of flooding your context, then read back only
-the fields you need. `-f table` is for humans, not for you.
+the fields you need (see the "unique run dir" rule below). `-f table` is for humans, not for you.
 
 You can run calls concurrently if it helps — the CLI is a stateless HTTP client with no
 single-process lock. **Cost discipline still applies:** prefer the cheapest informative call
@@ -273,6 +273,7 @@ In addition to the CRM write, return:
 - **Apollo is fit-gated.** `apollo org enrich` and `apollo people email` consume Apollo credits — run them **only for strong/partial fits** (Stage C), never to qualify. They supply the revenue/headcount the SEO data can't and the decision-maker's verified work email; resolve emails only for the 1–2 people you'll actually contact.
 - **Never waste research.** Whatever you spent money to discover gets written to the CRM in Stage D — contacts, links, metrics, and findings — fit or not.
 - **Put data in its proper place.** Brief lead description; person links in the contact `urls` field; everything else in the note.
+- **Write scratch files to a unique run dir.** Anything this run saves to disk — `dogfu -o` dumps, research/brand-profile notes, any future scratch file — goes inside **one** directory made with `mktemp -d` at the start; never a fixed or target-derived path. Parallel runs (batch prospecting, concurrent calls) clobber shared paths.
 - **Numbers are modeled estimates.** Use them comparatively (target vs competitor vs segment); say so when one looks implausible rather than reporting it straight.
 - **Specify the market.** SEO data is market-specific. A global SaaS may warrant checking more than one market.
 - **The CRM write always happens** — keyed on the domain to avoid duplicates.
