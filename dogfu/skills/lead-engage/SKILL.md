@@ -48,13 +48,14 @@ Hold these apart; everything else follows from the split.
   only flips to **Customer** when the deal is won.
 - **Opportunity** = the **deal itself** — the thing you forecast. It lives *on* a lead and
   carries a **pipeline stage**, a **value** (recurring MRR), a **deal type** (Co-Pilot vs
-  Fully-Run), and a **confidence**. **One open opportunity per active
-  deal.**
+  Fully-Run), and a **confidence**. A lead usually has one open opportunity, but can carry more
+  than one (e.g. a Co-Pilot *and* a Fully-Run deal) — each its own opportunity with its own stage
+  and next step.
 
 So an Engaged lead is in one of two states:
 - **No opportunity yet** — it replied / came inbound, but no call has confirmed a real deal.
   The job is to *get the qualifying call to happen*.
-- **One open opportunity** — a call confirmed a deal; it's now a tracked deal moving through
+- **One or more open opportunities** — a call confirmed a deal; it's tracked and moving through
   the pipeline. The job is to *advance the stage*.
 
 **Customer** = the lead has a **Won** opportunity. Don't pre-flip a lead to Customer because a
@@ -105,11 +106,12 @@ for their board meeting Tue"), not a computed gap. So you set it explicitly — 
 **same single-writer pattern** as the cadence task.
 
 - **The next-step task is CLI-owned and single-writer**, the deal-phase analogue of the cadence
-  task: an open opportunity carries **exactly one open next-step task, tagged `[dogfu:deal]`**.
-  You author its text and due date; the **opportunity verbs are the only writer** — setting a
-  new next step closes the prior one, and `win`/`lose` close it when the deal exits. **Never
-  hand-create or hand-complete a `[dogfu:deal]` task** (same rule as `[dogfu:cadence]`); use
-  `crm opportunity next`.
+  task: each open opportunity carries **exactly one open next-step task, tagged
+  `[dogfu:deal:<opp_id>]`** (the opportunity id is in the tag, so a lead's separate deals keep
+  separate next steps; `[dogfu:deal]` is the shared prefix). You author its text and due date;
+  the **opportunity verbs are the only writer** — setting a new next step closes the prior one,
+  and `win`/`lose` close it when the deal exits. **Never hand-create or hand-complete a deal
+  task** (same rule as `[dogfu:cadence]`); use `crm opportunity next`.
 - **Before the gate** (Engaged, no opportunity yet) there's no opportunity to hang it on, so the
   one next step — *land the qualifying call* — is an ordinary **ad-hoc task** (`crm task
   create`). Opening the opportunity is itself that step's completion.
@@ -120,18 +122,19 @@ for their board meeting Tue"), not a computed gap. So you set it explicitly — 
 
 ## The engage work queue — "what do I move today?"
 
-The daily question is "which deals need me today?" `dogfu crm opportunity due` returns it as
-one list (the deal-phase analogue of `crm touch due`), with each row tagged by why it's there:
+The daily question is "which deals need me today?" `dogfu crm opportunity due` returns the deal
+queue in one list (the deal-phase analogue of `crm touch due`), most-urgent first, each row
+tagged by why it's there:
 
-1. **Due next-steps** — open opps whose `[dogfu:deal]` task is due ≤ today. *Act now.*
-2. **Dropped balls** — open opps with **no open `[dogfu:deal]` task** (plus Engaged leads with no
-   opportunity and no open task). *Surface these loudest — set a next step.*
-3. **Stalled deals** — open opps with no stage change in a while (e.g. > 14 days). *Quietly
-   dying; nudge or re-qualify.*
+1. **Due next-steps** — open opps whose next-step is due ≤ today. *Act now.*
+2. **Dropped balls** — open opps with **no open next-step** (`next_step` is null). *Surface these
+   loudest — set a next step.*
+3. **Stalled deals** — open opps with no update in > 14 days. *Quietly dying; nudge or re-qualify.*
 
-If a build of `opportunity due` returns only set 1, compose 2 and 3 yourself: list open opps
-(`opportunity list --open`), cross-reference each lead's open `[dogfu:deal]` task (`task list -l
-<lead>`), and read `date_updated` for staleness.
+Read each row's `next_step` (null = dropped ball) and `date_updated` (staleness) to see why it's
+in the queue. One case `opportunity due` can't catch — it's opportunity-scoped — is a **pre-gate
+Engaged lead with no opportunity and no open task**; pull those from the Engaged lead list (`lead
+list -s <Engaged id>`) so a conversation that stalls *before* the gate doesn't slip.
 
 ***
 
