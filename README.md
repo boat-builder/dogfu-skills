@@ -4,7 +4,7 @@ A plugin marketplace for both **Claude Cowork** and **Codex**. It currently ship
 
 | Plugin | What it does |
 | :-- | :-- |
-| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Six skills: **lead-research** (**Discover → Qualify → Enrich → CRM** — turn a sparse sales target into a qualified, enriched Close CRM record), **lead-touch** (work an existing lead through the **cold** outreach cadence in Close — pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel), **lead-engage** (the **warm** counterpart — once a lead engages, run discovery, open/advance/close an **opportunity** (Discovery → Trial → Proposal → Won/Lost), set the next step, surface deals due or stalled, and forecast the pipeline), **lead-worklist** (read-only **cross-phase worklist** — the single prioritized list of leads to work now, in one stage or across all stages, each row with the contact and context to act, handed off to the skill that records it), **crm-cleanup** (read-only health audit — find the leads and tasks that fell out of the flow, each with the exact fix command), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
+| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Seven skills: **lead-research** (**Discover → Qualify → Enrich → CRM** — turn a sparse sales target into a qualified, enriched Close CRM record), **lead-touch** (work an existing lead through the **cold** outreach cadence in Close — pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel), **lead-engage** (the **warm** counterpart — once a lead engages, run discovery, open/advance/close an **opportunity** (Discovery → Trial → Proposal → Won/Lost), set the next step, surface deals due or stalled, and forecast the pipeline), **lead-worklist** (read-only **cross-phase worklist** — the single prioritized list of leads to work now, in one stage or across all stages, each row with the contact and context to act, handed off to the skill that records it), **crm-cleanup** (read-only health audit — find the leads and tasks that fell out of the flow, each with the exact fix command), **first-audit** (an outside-in **SEO/AEO** audit of a prospect domain from public data — public-site crawl + keyword/competitor/traffic intelligence + live Google/AI answers — published as a single-page report whose URL is recorded on the lead; also uses the **Bluesnake MCP**), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
 
 The three CRM-operating skills form one lifecycle: **lead-research** produces a qualified lead →
 **lead-touch** runs cold outreach and hands off when the lead replies (→ *Engaged*) →
@@ -13,6 +13,12 @@ across all of it to answer "what should I work on now" (read-only; it hands each
 skill), and **crm-cleanup** audits all of it read-only. The opportunity support `lead-engage` uses
 is shipped in the `dogfu` CLI; it needs a Close opportunity pipeline and the `Engaged` lead status
 set up once by a Close admin.
+
+**first-audit** sits outside that CRM lifecycle — it's a standalone sales deliverable. It needs
+the **Bluesnake MCP** (a local crawler/auditor, not bundled) for the site crawl, and a
+`dogfu report publish` command to push the assembled report to the public bucket — that publish
+command is being added to the CLI. It reuses the existing `dogfu` `seo` / `google` / `chatgpt`
+groups for all data, and writes only the published audit URL back to Close (`crm note`).
 
 ## Layout
 
@@ -47,6 +53,10 @@ dogfu-skills/
         ├── crm-cleanup/           # the crm-cleanup skill (read-only CRM health audit)
         │   ├── SKILL.md
         │   └── README.md
+        ├── first-audit/          # the first-audit skill (outside-in SEO/AEO prospect audit)
+        │   ├── SKILL.md
+        │   ├── README.md
+        │   └── references/        # data-sources, bluesnake, report, design-guide
         └── berlin-theme/          # the berlin-theme skill (brand style guide, no CLI)
             ├── SKILL.md
             └── README.md
@@ -73,8 +83,10 @@ today", "what's our pipeline / forecast", "an inbound lead reached out"), **lead
 you want the read-only cross-phase worklist ("who do I work on today", "what's on my plate", "give
 me the next N leads", "just my reach-outs", "leads across all stages with context"), **crm-cleanup**
 for a read-only health pass ("audit the CRM", "what's broken in Close", "find leads stuck in the
-flow"), and **berlin-theme** when you ask Claude to design a Berlin-branded asset ("make this
-landing page on-brand", "build a sales one-pager", "design a social poster in our brand").
+flow"), **first-audit** when you explicitly ask for an outside-in prospect audit ("run a first
+audit on <domain>", "do an SEO/AEO audit for this prospect", "build and publish the audit report
+for <company>"), and **berlin-theme** when you ask Claude to design a Berlin-branded asset ("make
+this landing page on-brand", "build a sales one-pager", "design a social poster in our brand").
 
 ## Install in Codex
 
@@ -120,10 +132,26 @@ dogfu`) that you install and authenticate through the dogfu MCP: run its
 **Console → CRM Integration**. There's no directory to mount and no `.env`. Without the dogfu
 CLI configured, the skill can reason about a target but can't pull data or write to the CRM.
 
+### Extra requirements for `first-audit`
+
+`first-audit` uses the same dogfu MCP + CLI as the rest, plus two things the other skills
+don't:
+
+- **The Bluesnake MCP** — a local crawler/auditor that produces the site-crawl + on-page
+  (technical/AEO) layer of the audit. It is **not bundled** by this plugin; configure it as a
+  separate MCP server (user or project scope), the same way the original Agent Berlin plugin
+  did. Without it, the keyword/competitor/answer-engine sections still work, but the crawl and
+  on-page findings can't be produced.
+- **A `dogfu report publish` command** to push the assembled single-page report to the public
+  report bucket and return its URL. This publish path is **being added to the `dogfu` CLI**;
+  until it ships, the skill assembles the report locally but can't publish it (it'll say so
+  rather than fabricate a URL). The skill builds the report against the vendored design guide
+  in `first-audit/references/design-guide.md` (no live design endpoint needed).
+
 ## Editing
 
 Edit the markdown under each skill's folder — `dogfu/skills/lead-research/`,
-`dogfu/skills/lead-touch/`, `dogfu/skills/lead-engage/`, `dogfu/skills/lead-worklist/`, `dogfu/skills/crm-cleanup/`, or `dogfu/skills/berlin-theme/` (see each folder's `README.md`) — then reinstall/update the
+`dogfu/skills/lead-touch/`, `dogfu/skills/lead-engage/`, `dogfu/skills/lead-worklist/`, `dogfu/skills/crm-cleanup/`, `dogfu/skills/first-audit/`, or `dogfu/skills/berlin-theme/` (see each folder's `README.md`) — then reinstall/update the
 `dogfu` plugin from the relevant marketplace to pick up the changes. When shipping a
 change, keep the `version` fields in `dogfu/.claude-plugin/plugin.json` and
 `dogfu/.codex-plugin/plugin.json` in sync.
