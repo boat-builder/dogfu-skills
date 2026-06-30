@@ -23,18 +23,12 @@ each with the lead, the problem, and the exact command to fix it by hand. It nev
 It is the audit counterpart to `lead-touch` (which *operates* the flow). The full model lives
 in **lead-touch/SKILL.md**; this skill assumes it and only recaps what the checks need.
 
-> **Why this exists.** BDRs aren't supposed to edit Close directly, but humans make mistakes
-> and some state is computed, not stored — so leads quietly fall off the queue: a reminder
-> closed by hand, a lead still chased after it replied, a Qualified lead with nobody to
-> message. This skill surfaces those. A future `dogfu crm touch reconcile --fix` will repair
-> them automatically; until then, this finds them and tells you the fix.
-
 ***
 
 ## The model, in one breath (see lead-touch for depth)
 
-- A **lead is a company** with a **status** (funnel label: Potential, Qualified, Engaged/Trial,
-  Customer, Bad Fit, Not Interested, Nurture) and **outreach state** in four system-managed
+- A **lead is a company** with a **status** (funnel label: Potential, Qualified, Engaged,
+  Customer, Bad Fit, Not Interested, Canceled, DNC) and **outreach state** in four system-managed
   lead fields: `touch_stage` (last completed touch, `null` = none), `last_touched`,
   `next_touch_due` (empty = **out of the sequence**), `touch_channel` (channels tried).
 - **The cadence task** is the one CLI-owned "next action" reminder. Its task `text` carries the
@@ -80,8 +74,8 @@ dogfu crm whoami -o me.json                            # your user id (for assig
 ```
 
 From `statuses.json`, **classify labels at runtime** (account-specific — never hardcode ids):
-*reach-out* = `Qualified`; *terminal* = {Bad Fit, Not Interested, Customer, Nurture}; *engaged*
-= {Engaged, Trial}; *potential* = {Potential}. Each `Lead` carries `status_label`,
+*reach-out* = `Qualified`; *terminal* = {Bad Fit, Not Interested, Customer, Canceled, DNC};
+*engaged* = {Engaged}; *potential* = {Potential}. Each `Lead` carries `status_label`,
 `touch_stage`, `last_touched`, `next_touch_due`, `touch_channel`, and embedded `contacts[]`.
 
 From `pending_tasks.json`, **split open tasks** into **cadence** (text contains
@@ -117,8 +111,8 @@ needs a judgment call.
 
 | # | Anomaly | Detect | Sev | Fix |
 | :- | :- | :- | :- | :- |
-| B1 | **Exited but funnel not moved** — replied/stopped yet still Qualified/Potential | lead `touch_stage` not null **and** `next_touch_due` empty **and** `status_label` ∈ {Qualified, Potential} | 🟠 | `[fix: human]` set the real status: `dogfu crm lead update <lead_id> -s <Engaged\|Nurture\|Bad Fit id>` |
-| B2 | **Engaged/Customer still in cadence** — won/replied but still scheduled | `status_label` ∈ {Engaged, Trial, Customer} **and** (`next_touch_due` set **or** open cadence task) | 🟠 | `[fix: CLI]` `dogfu crm touch stop <lead_id>` (or `touch reply`) to clear the sequence |
+| B1 | **Exited but funnel not moved** — replied/stopped yet still Qualified/Potential | lead `touch_stage` not null **and** `next_touch_due` empty **and** `status_label` ∈ {Qualified, Potential} | 🟠 | `[fix: human]` set the real status: `dogfu crm lead update <lead_id> -s <Engaged\|Bad Fit\|Not Interested id>` |
+| B2 | **Engaged/Customer still in cadence** — won/replied but still scheduled | `status_label` ∈ {Engaged, Customer} **and** (`next_touch_due` set **or** open cadence task) | 🟠 | `[fix: CLI]` `dogfu crm touch stop <lead_id>` (or `touch reply`) to clear the sequence |
 
 ### C. Outreach-readiness gaps (queue says act, but you can't)
 
@@ -135,7 +129,7 @@ needs a judgment call.
 | # | Anomaly | Detect | Sev | Fix |
 | :- | :- | :- | :- | :- |
 | D1 | **Badly overdue follow-up** | lead `next_touch_due` ≤ today − **14d** | 🟠 | `[fix: human]` act now (it's in `touch due`), or `touch stop` if abandoning |
-| D2 | **Chase fatigue** — many touches, no reply | `touch_stage` ≥ **5** **and** still in cadence (`next_touch_due` set) | 🟡 | `[fix: human]` decide: keep nudging or `dogfu crm touch stop <lead_id> --status <Nurture id>` |
+| D2 | **Chase fatigue** — many touches, no reply | `touch_stage` ≥ **5** **and** still in cadence (`next_touch_due` set) | 🟡 | `[fix: human]` decide: keep nudging or `dogfu crm touch stop <lead_id> --status <Not Interested id>` |
 
 ### E. Ownership
 
