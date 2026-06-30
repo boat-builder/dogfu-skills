@@ -4,7 +4,13 @@ A plugin marketplace for both **Claude Cowork** and **Codex**. It currently ship
 
 | Plugin | What it does |
 | :-- | :-- |
-| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Three skills: **lead-research** (**Discover → Qualify → Enrich → CRM** — turn a sparse sales target into a qualified, enriched Close CRM record), **lead-touch** (work an existing lead through the outreach cadence in Close — pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
+| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Five skills: **lead-research** (**Discover → Qualify → Enrich → CRM** — turn a sparse sales target into a qualified, enriched Close CRM record), **lead-touch** (work an existing lead through the **cold** outreach cadence in Close — pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel), **lead-engage** (the **warm** counterpart — once a lead engages, run discovery, open/advance/close an **opportunity** (Discovery → Trial → Proposal → Won/Lost), set the next step, surface deals due or stalled, and forecast the pipeline), **crm-cleanup** (read-only health audit — find the leads and tasks that fell out of the flow, each with the exact fix command), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
+
+The three CRM-operating skills form one lifecycle: **lead-research** produces a qualified lead →
+**lead-touch** runs cold outreach and hands off when the lead replies (→ *Engaged*) →
+**lead-engage** works the live deal (a Close opportunity) to a close. **crm-cleanup** audits all
+of it read-only. `lead-engage` additionally depends on opportunity support in the `dogfu` CLI +
+a Close pipeline (see its `references/opportunity-cli-spec.md`).
 
 ## Layout
 
@@ -27,7 +33,14 @@ dogfu-skills/
         │   ├── README.md
         │   ├── references/
         │   └── icps/
-        ├── lead-touch/            # the lead-touch skill (CRM & outreach-cadence ops)
+        ├── lead-touch/            # the lead-touch skill (cold CRM & outreach-cadence ops)
+        │   ├── SKILL.md
+        │   └── README.md
+        ├── lead-engage/           # the lead-engage skill (warm phase — live deals / opportunities)
+        │   ├── SKILL.md
+        │   ├── README.md
+        │   └── references/        # opportunity CLI spec + Close setup
+        ├── crm-cleanup/           # the crm-cleanup skill (read-only CRM health audit)
         │   ├── SKILL.md
         │   └── README.md
         └── berlin-theme/          # the berlin-theme skill (brand style guide, no CLI)
@@ -48,11 +61,14 @@ install the **Dogfu** plugin:
 
 Once installed, the skills trigger automatically: **lead-research** when you give Claude a
 sales target ("research this lead", "is this company in our ICP", a bare LinkedIn/company
-link, etc.), **lead-touch** when you want to work an existing lead in the CRM ("who do I
-follow up with today", "I sent the LinkedIn DM to X", "mark this lead replied", "what's our
-funnel look like"), and **berlin-theme** when you ask Claude to design a Berlin-branded asset
-("make this landing page on-brand", "build a sales one-pager", "design a social poster in our
-brand").
+link, etc.), **lead-touch** when you want to work an existing lead through *cold* outreach
+("who do I follow up with today", "I sent the LinkedIn DM to X", "mark this lead replied",
+"what's our funnel look like"), **lead-engage** once a lead has *engaged* ("a lead replied and
+we had an intro call", "open a deal for X", "move this deal to trial", "which deals need action
+today", "what's our pipeline / forecast", "an inbound lead reached out"), **crm-cleanup** for a
+read-only health pass ("audit the CRM", "what's broken in Close", "find leads stuck in the
+flow"), and **berlin-theme** when you ask Claude to design a Berlin-branded asset ("make this
+landing page on-brand", "build a sales one-pager", "design a social poster in our brand").
 
 ## Install in Codex
 
@@ -101,7 +117,7 @@ CLI configured, the skill can reason about a target but can't pull data or write
 ## Editing
 
 Edit the markdown under each skill's folder — `dogfu/skills/lead-research/`,
-`dogfu/skills/lead-touch/`, or `dogfu/skills/berlin-theme/` (see each folder's `README.md`) — then reinstall/update the
+`dogfu/skills/lead-touch/`, `dogfu/skills/lead-engage/`, `dogfu/skills/crm-cleanup/`, or `dogfu/skills/berlin-theme/` (see each folder's `README.md`) — then reinstall/update the
 `dogfu` plugin from the relevant marketplace to pick up the changes. When shipping a
 change, keep the `version` fields in `dogfu/.claude-plugin/plugin.json` and
 `dogfu/.codex-plugin/plugin.json` in sync.

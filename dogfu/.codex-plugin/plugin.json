@@ -1,7 +1,7 @@
 {
   "name": "dogfu",
-  "version": "0.9.0",
-  "description": "Sales toolkit on the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM), lead-touch (work leads through the outreach cadence in Close), and crm-cleanup (read-only CRM health audit), plus berlin-theme — Berlin's brand style guide for on-brand sales collateral.",
+  "version": "0.10.0",
+  "description": "Sales toolkit on the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM), lead-touch (cold outreach cadence in Close), lead-engage (work live deals — opportunities — from first engagement to close), and crm-cleanup (read-only CRM health audit), plus berlin-theme — Berlin's brand style guide for on-brand sales collateral.",
   "author": {
     "name": "Sherin Thomas"
   },
@@ -19,7 +19,7 @@
   "interface": {
     "displayName": "Dogfu",
     "shortDescription": "Research leads and manage outreach in Close",
-    "longDescription": "Research and qualify sales prospects against an ICP, enrich decision-makers, write results to Close CRM, manage follow-up outreach, and audit the CRM for leads that fell out of the flow — all with the dogfu CLI. Includes berlin-theme — Berlin's brand style guide so any sales collateral you design (pages, one-pagers, posters, emails) comes out on-brand.",
+    "longDescription": "Research and qualify sales prospects against an ICP, enrich decision-makers, write results to Close CRM, manage cold follow-up outreach, work live deals (opportunities) from first engagement to close, and audit the CRM for leads that fell out of the flow — all with the dogfu CLI. Includes berlin-theme — Berlin's brand style guide so any sales collateral you design (pages, one-pagers, posters, emails) comes out on-brand.",
     "developerName": "Sherin Thomas",
     "category": "Productivity",
     "capabilities": [
@@ -30,7 +30,8 @@
     "defaultPrompt": [
       "Research and qualify a prospect against our ICP",
       "Show me which leads need a follow-up today",
-      "Record the outreach I just sent for a lead"
+      "Which live deals need action today?",
+      "A lead replied and we had an intro call — open the deal"
     ]
   }
 }

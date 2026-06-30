@@ -1,7 +1,7 @@
 {
   "name": "dogfu",
-  "version": "0.9.0",
-  "description": "Sales toolkit on the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM), lead-touch (work leads through the outreach cadence in Close), and crm-cleanup (read-only CRM health audit), plus berlin-theme — Berlin's brand style guide for on-brand sales collateral.",
+  "version": "0.10.0",
+  "description": "Sales toolkit on the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM), lead-touch (cold outreach cadence in Close), lead-engage (work live deals — opportunities — from first engagement to close), and crm-cleanup (read-only CRM health audit), plus berlin-theme — Berlin's brand style guide for on-brand sales collateral.",
   "author": {
     "name": "Sherin Thomas"
   }

@@ -210,7 +210,7 @@ fetch them so you can hand the BDR the LinkedIn/X handle to message.
 | Sent the **next** touch (reach-out or follow-up) | `dogfu crm touch record <lead_id> [-c <channel>] [--detail "<text>"]` | auto-advances to the lead's next touch; stamps `last_touched`=today, computes `next_touch_due`, **adds `<channel>` to the channels-tried set** (if given), appends a structured touch-history entry. **Closes the prior cadence task and opens the next.** Channel and detail are **optional**. |
 | Sent a touch with a **non-default wait** | add `--wait-days N` | overrides the gap before the next follow-up is due |
 | Recorded a touch but **don't** want the auto note/task | add `--no-note` and/or `--no-task` | suppresses the audit note / next-touch reminder |
-| Lead **replied / positive** | `dogfu crm touch reply <lead_id> [--status <Engaged id>]` | ends the sequence (clears `next_touch_due`); optionally sets status |
+| Lead **replied / positive** | `dogfu crm touch reply <lead_id> --status <Engaged id>` | ends the sequence (clears `next_touch_due`) and sets status **Engaged** — the **handoff out of cold** (see below) |
 | **Giving up / nurture** | `dogfu crm touch stop <lead_id> [--status <Bad Fit or Nurture id>]` | same mechanism as reply; intent + status differ |
 | Change **status only**, no sequence change | `dogfu crm lead update <lead_id> -s <status_id>` | funnel label only |
 
@@ -231,6 +231,11 @@ Notes on the verbs:
   = they answered (→ Engaged); `stop` = we're done / nurturing (→ Bad Fit or Nurture). The
   difference is intent and which `--status` you set. Since nothing auto-ends the sequence,
   **`stop` is how a chase ends.**
+- **A `reply` → Engaged is the handoff out of this skill.** Cold/`lead-touch` is done with the
+  lead; the **`lead-engage`** skill works the live deal from there (discovery → opportunity →
+  trial → proposal → won/lost). Don't keep recording touches on an Engaged lead — it has left
+  the cadence. Set status **Engaged**, not Trial: a trial is a deal *stage* that `lead-engage`
+  tracks as an opportunity, not a cold-outreach outcome.
 
 ### Editing the records (leads, contacts, notes, tasks)
 
