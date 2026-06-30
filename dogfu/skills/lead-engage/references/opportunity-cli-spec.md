@@ -32,12 +32,14 @@ Potential → Qualified → Engaged → Customer        (+ Bad Fit / Not Interes
 ```
 
 `Engaged` = "replied / in active conversation, deal not yet qualified-and-open" — the home for a
-lead between the cold reply and an opportunity. Once it exists, point `lead-touch`'s `touch
-reply` at it (the lead-touch SKILL already names an "Engaged" status — this makes it real).
+lead between the cold reply and an opportunity. Once it exists, `touch reply` defaults the lead
+to it (see §6).
 
-> **`Trial` lead status:** with opportunities in place, "trial" is a *deal stage*, not an
-> account label. Stop using the `Trial` **lead** status (a trial is a Trial-stage *opportunity*;
-> the lead stays `Engaged`). Leave the old status in place or retire it — but the skill won't set it.
+> **Remove the `Trial` lead status.** With opportunities in place, "trial" is a deal *stage*,
+> not an account label — the lead stays **Engaged** while a Trial-stage opportunity runs. Delete
+> the `Trial` **lead** status. It's a clean delete (0 leads were in it as of 2026-06-30); if any
+> land there first, move them to **Engaged** before deleting. (This also keeps it out of the
+> cadence config in §6.)
 
 ### 1b. Create the opportunity pipeline
 
@@ -201,28 +203,46 @@ identity is a **text tag**, exactly like the cadence one:
 
 ## 6. Config / status changes (`config.py` + `cadence.py`)
 
-The live Close lead statuses (Potential, Qualified, **Trial**, Customer, Bad Fit, Not Interested,
-**Canceled**, **DNC**) have drifted from `cadence.py`'s assumptions, and adding `Engaged` widens
-the gap. Fix when shipping this:
+After step 1, the live lead statuses are Potential, Qualified, **Engaged**, Customer, Bad Fit,
+Not Interested, **Canceled**, **DNC** (Trial removed). These have drifted from `cadence.py`'s
+assumptions — fix when shipping:
 
 - `cadence.REACH_OUT_STATUS` = `"Qualified"` — unchanged.
-- `cadence.TERMINAL_STATUSES` currently = `("Customer", "Bad Fit", "Not Interested", "Nurture")`.
-  **`Nurture` is not a live status** (drop it), and **`Engaged`, `Trial`, `Canceled`, `DNC` are
-  missing** — add them. Rationale: a lead in any of these has left the *cold* sequence, so an open
-  `[dogfu:cadence]` task on it is an anomaly `reconcile` should retire. (Adding `Engaged` here is
-  what keeps a handed-off lead from lingering in the cold queue.)
-- The `touch reply` default `--status` should resolve to **`Engaged`** once it exists.
+- `cadence.TERMINAL_STATUSES` is currently `("Customer", "Bad Fit", "Not Interested", "Nurture")`.
+  Set it to **`("Engaged", "Customer", "Bad Fit", "Not Interested", "Canceled", "DNC")`** — drop
+  `Nurture` (not a live status), add `Engaged`/`Canceled`/`DNC` (no `Trial`, since the lead status
+  is gone). Rationale: a lead in any of these has left the *cold* sequence, so an open
+  `[dogfu:cadence]` task on it is an anomaly `reconcile` retires. Adding `Engaged` is what keeps a
+  handed-off lead out of the cold queue.
+
+### `touch reply` defaults the status to Engaged (the "nicety")
+
+So the skill never has to resolve or pass the Engaged id, make `touch reply` move the lead to
+**Engaged** by default:
+- Add `cadence.REPLY_STATUS = "Engaged"` — a **label**, resolved to an id at runtime from the
+  live status list (same pattern as `REACH_OUT_STATUS`; never hardcode the id).
+- Give the exit helper a default: `exit_cadence(lead_id, status_id=None, default_status_label=None)`
+  — when `status_id` is None and `default_status_label` is set, resolve that label → id and apply
+  it; if the label isn't configured in the account, end the cadence **without** a status move and
+  append a line to the returned `TouchState.warnings` (don't error).
+- `touch reply` passes `default_status_label=cadence.REPLY_STATUS`; an explicit `--status <id>`
+  still overrides. **`touch stop` gets no default** — the right terminal status (Bad Fit / Not
+  Interested / Canceled) depends on *why* you're stopping, so it stays `--status`-only.
+
+Result: `dogfu crm touch reply <lead_id>` ends the chase **and** sets Engaged in one call, with no
+id handling in the skill. Once it ships, the `lead-touch` skill drops `--status <Engaged id>` from
+its reply row — the agent just runs `touch reply`.
 
 ***
 
 ## 7. Build checklist
 
-- [ ] **Close:** add `Engaged` lead status; create the `Sales` opportunity pipeline (Discovery →
-      Trial → Proposal → Won/Lost); add the `Deal Type` opportunity custom field.
+- [ ] **Close:** add the `Engaged` lead status; **delete the `Trial` lead status**; create the `Sales` opportunity pipeline (Discovery → Trial → Proposal → Won/Lost); add the `Deal Type` opportunity custom field.
 - [ ] **Backend:** allowlist `/api/v1/admin/crm/opportunity*` and `/api/v1/admin/crm/pipeline*`.
 - [ ] **CLI models/normalize:** `Opportunity`, `Pipeline`, `PipelineStatus` + Close→canonical normalizers; value cents↔major.
 - [ ] **CLI sdk/commands:** the `opportunity` group (§3) + flat SDK methods; runtime pipeline/status id resolution; `--deal-type` validated via opportunity custom-field plumbing.
 - [ ] **CLI tasks:** `DEAL_TASK_TAG` + shared single-writer swap helper; `opportunity next`; close-on-win/lose; `due` + `Opportunity.next_step` keyed off the tag.
-- [ ] **CLI config:** update `cadence.TERMINAL_STATUSES` (drop `Nurture`; add `Engaged`/`Trial`/`Canceled`/`DNC`); default `touch reply` → `Engaged`.
+- [ ] **CLI config:** set `cadence.TERMINAL_STATUSES = ("Engaged","Customer","Bad Fit","Not Interested","Canceled","DNC")` (drop `Nurture`/`Trial`).
+- [ ] **CLI reply default:** add `cadence.REPLY_STATUS = "Engaged"` + the `exit_cadence` default-status logic so `touch reply` sets Engaged with no `--status` (`touch stop` stays manual).
 - [ ] **reconcile:** extend the audit to the `[dogfu:deal]` invariant (≤ one open per open opp).
-- [ ] **Skill:** once shipped, drop the *Prerequisites* caveat in `SKILL.md` and point `lead-touch`'s `touch reply` at the real `Engaged` status id.
+- [ ] **Skills (once shipped):** drop `--status <Engaged id>` from `lead-touch`'s reply row; fix `crm-cleanup`'s status classification (engaged = {Engaged}; terminal: drop `Nurture`, add `Canceled`/`DNC`); drop the lead-engage README's dependency note.
