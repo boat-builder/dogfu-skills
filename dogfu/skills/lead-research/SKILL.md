@@ -208,7 +208,7 @@ Put each piece of data **where it belongs in the Close UI**, not all in one blob
 | What | Where it goes | Command |
 | :-- | :-- | :-- |
 | Status IDs (account-specific — never hardcode) | — | `dogfu crm status list` |
-| Duplicate check (upsert) | — | `dogfu crm lead search --name "<company>"` (or `--query "<domain>"`) **before** creating |
+| Duplicate check (upsert) | — | `dogfu crm lead list --name "<company>"` (or `--query "<domain>"`) **before** creating |
 | Company name + website + **brief** summary + status | native lead fields | `dogfu crm lead create -n "<company>" -u <domain> -d "<1–2 line summary>" -s <status_id>` / `lead update <lead_id> ...` |
 | Curated company facts (the *only* custom fields to set) | dedicated lead flags | the five `--industry / --employees / --revenue / --business-model / --seo-pages` flags below |
 | **A person's LinkedIn / X links** | **native contact `urls` field** (renders on the contact card in Close) | `dogfu crm contact create <lead_id> -n "<name>" -t "<title>" -u <linkedin-url> -u <x-url>` — `-u` is repeatable; also pass `-e <email>` (the Apollo verified work email, for fits — it unlocks the email outreach channel) / `-p <phone>` when found |
