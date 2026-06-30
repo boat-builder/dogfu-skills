@@ -116,10 +116,11 @@ schedules the next one.** The touch is the receipt; the task is the ticket.
 
 **Single-writer rule — this is the important part:**
 
-- **Cadence task** = the one "next follow-up due" reminder. **Only the CLI** creates and
-  closes it, automatically on `touch record`. There is **exactly one open per lead** at a
-  time. **Never** hand-create or hand-complete a cadence task — that's the only way the
-  outreach state stays in sync.
+- **Cadence task** = the one "next-action" reminder for a lead in the sequence — the
+  reach-out, then each follow-up. **Only the CLI** creates and closes it (on `touch record`,
+  and — once reach-out tasks ship — on qualification). There is **exactly one open per lead**
+  at a time, tagged `[dogfu:cadence]`. **Never** hand-create or hand-complete a cadence task —
+  letting the CLI be the single writer is the only way the outreach state stays in sync.
 - **Ad-hoc task** = anything that isn't the next scheduled touch ("send the deck Friday",
   "check back after their raise closes", "intro to their CTO next week"). These are fine for
   you to create on the BDR's request via `task create`; they carry their own due date and
@@ -133,19 +134,25 @@ So: **the reach-out and every follow-up stay *touches* (events). The forward rem
 
 ## The work queue — one list, two kinds of action
 
-The BDR's daily question is "who do I act on today?" Answer it as **one list** that unions
-two sets and labels each entry with its next action:
+The BDR's daily question is "who do I act on today?" **Run `crm touch due`** — it returns the
+whole queue as **one list**, most-overdue first, each row tagged with its next action:
 
-1. **Reach-outs** — Qualified leads with **no touch yet** (`touch_stage` null). "New people
-   to say hello to." Not in `next_touch_due` (they're not in the sequence yet) — pull them by
-   status.
+1. **Reach-outs** — Qualified leads with **no touch yet** (`touch_stage` null). "New people to
+   say hello to."
 2. **Follow-ups** — leads whose `next_touch_due ≤ today`. "People to chase," labelled with
    which follow-up is next and the channels already tried (so the BDR can vary channel).
 
-`crm touch due` returns the unified queue, most-overdue first, each row tagged **Reach-out**
-or **Follow-up N**. (If a build of the CLI only returns follow-ups, compose the queue
-yourself: `crm lead list -s <Qualified id>` filtered to `touch_stage` null = the reach-outs,
-plus `crm touch due` = the follow-ups.)
+**The model: the queue is a lead's open cadence task.** Every lead in the sequence carries
+exactly one open cadence task standing for its next action — and **the reach-out is simply the
+first cadence task**, the follow-ups the ones after it. So "who do I act on today?" is, in
+principle, just **the open cadence tasks due today** — which is why `crm touch due` and the
+pending-task list converge.
+
+> **Today vs soon.** The reach-out's *task object* is created on qualification by a planned CLI
+> change; until it ships, a reach-out has **no** task and is surfaced by `crm touch due` from
+> status (Qualified + `touch_stage` null), while follow-ups are driven by their cadence task.
+> Either way **`crm touch due` is the command to run** — it already unifies both halves, before
+> and after that change. (Once it ships, Close's native task list becomes a complete queue too.)
 
 ***
 
