@@ -9,8 +9,7 @@ dogfu <group> <cmd> [flags]
 ```
 
 JSON to stdout by default. Use `-o FILE` to dump large payloads to a file and read back
-only the fields you need. The hidden `--raw` flag exists but is undocumented — work with
-the canonical models (the default).
+only the fields you need. Output is always the canonical, normalized model.
 
 Calls are independent HTTP requests — there's no single-process lock, so you may run them
 concurrently. Cost discipline still applies: pick the cheapest informative call next.
@@ -74,7 +73,7 @@ default to `2840` / `en` and say so. `google` also accepts `--country` (ISO alph
 ## `crm` (Close)
 - **`whoami`** → current user (id, name, email).
 - **`status list`** → LeadStatus[] (id, label). Resolve IDs here; never hardcode.
-- **Leads** (`crm lead ...`): `create -n <name> [-u url] [-d desc] [-s status_id] [curated flags]` · `list [-l N] [-s status_id] [--sort ..]` · `search [-n name] [-q query] [-s status_id] [-l N]` · `get <lead_id>` · `update <lead_id> [-n] [-u] [-d] [-s] [curated flags]` · `delete <lead_id> [-y]`. → Lead: id, name, url, description, status_id, status_label, **industry, employees, revenue, business_model, seo_pages**, contacts[].
+- **Leads** (`crm lead ...`): `create -n <name> [-u url] [-d desc] [-s status_id] [curated flags]` · `list [-n name] [-q query] [-s status_id] [-l N] [--sort ..]` (no filter = newest-first; --name/--query/--status-id narrow it — this is also how you search) · `get <lead_id>` · `update <lead_id> [-n] [-u] [-d] [-s] [curated flags]` · `delete <lead_id> [-y]`. → Lead: id, name, url, description, status_id, status_label, **industry, employees, revenue, business_model, seo_pages**, contacts[].
   - **Curated custom-field flags** (on `create`/`update`): `--employees <n>`, `--revenue <usd>`, `--business-model <text>`, `--industry <choice>` (validated against Close's allowed list — closest match, e.g. SaaS→Software), `--seo-pages <n>`. Set only the ones you have; everything else → `-d`/note. These five are the *only* custom fields dogfu sets.
 - **Contacts** (`crm contact ...`): `create <lead_id> -n <name> [-t title] [-e email]... [-p phone]... [-u url]...` · `list <lead_id>` · `get <contact_id>` · `update <contact_id> [-n] [-t]` · `delete <contact_id> [-y]`. **`-u`/`-e`/`-p` are native Close fields** (urls/emails/phones) — a person's LinkedIn/X go in `-u` and render on the contact card; repeatable.
 - **Tasks** (`crm task ...`): `create -l <lead_id> -t <text> [-d due] [-a user]` · `list [-l lead_id] [-p]` · `update <task_id> ...` · `complete <task_id>` · `delete <task_id> [-y]`.
@@ -89,7 +88,7 @@ fields outside the curated five.
 
 ### Upsert pattern
 1. `crm status list` → pick the status_id for the verdict (Qualified / Bad Fit / Potential).
-2. `crm lead search -n "<company>"` (or `-q` with the domain) → if a match exists, `lead update`; else `lead create` with a **brief** `-d` description **plus the curated flags you have** (`--employees`, `--business-model`, `--industry`, `--seo-pages`, `--revenue`).
+2. `crm lead list -n "<company>"` (or `-q` with the domain) → if a match exists, `lead update`; else `lead create` with a **brief** `-d` description **plus the curated flags you have** (`--employees`, `--business-model`, `--industry`, `--seo-pages`, `--revenue`).
 3. `crm contact create <lead_id> -n "<name>" -t "<title>" -u <linkedin> -u <x> [-e <email>]` for each person (links in the native `urls` field; `-e` = the Apollo verified email for fits).
 4. `crm note create <lead_id> -t "<structured profile + metrics + verdict + company links + hooks>"`.
 

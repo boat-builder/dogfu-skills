@@ -9,8 +9,8 @@ A plugin marketplace for both **Claude Cowork** and **Codex**. It currently ship
 The three CRM-operating skills form one lifecycle: **lead-research** produces a qualified lead →
 **lead-touch** runs cold outreach and hands off when the lead replies (→ *Engaged*) →
 **lead-engage** works the live deal (a Close opportunity) to a close. **crm-cleanup** audits all
-of it read-only. `lead-engage` additionally depends on opportunity support in the `dogfu` CLI +
-a Close pipeline (the build spec is with the CLI devs).
+of it read-only. The opportunity support `lead-engage` uses is shipped in the `dogfu` CLI; it
+needs a Close opportunity pipeline and the `Engaged` lead status set up once by a Close admin.
 
 ## Layout
 

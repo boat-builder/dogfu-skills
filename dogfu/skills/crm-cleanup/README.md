@@ -8,8 +8,8 @@ still chased after they replied or went Bad Fit, Qualified leads with no contact
 anomaly with the exact fix command; it never writes to Close.
 
 It's the audit counterpart to `lead-touch` (which *operates* the flow) and runs after
-`lead-research` (which *creates* leads). Use `lead-touch` to apply per-lead fixes; a future
-`dogfu crm touch reconcile --fix` will apply the bulk cadence-task repairs.
+`lead-research` (which *creates* leads). Use `lead-touch` to apply per-lead fixes;
+`dogfu crm touch reconcile --apply` applies the bulk cadence-task repairs.
 
 ## Files
 - `SKILL.md` — the operating manual: the one-breath model recap, the gather-once read plan,
@@ -26,21 +26,22 @@ published `dogfu` CLI (`pip install dogfu`) for all reads, authenticated through
 MCP** (`get_setup_instructions` → `dogfu configure --otp <OTP> --title "…"`). CRM (Close) calls
 go through the backend under the Close API key set once in the admin **Console → CRM
 Integration**. This skill uses only **read** endpoints (`status list`, `lead list/get`,
-`task list`, `note list`, `contact list`, `whoami`).
+`task list`, `note list`, `contact list`, `whoami`, and `touch reconcile` without `--apply`,
+which is read-only).
 
 ## Read-only by design
-The skill detects and reports; it does not mutate Close. Cadence-task repairs are deliberately
-left to `dogfu crm touch reconcile --fix` (planned) so the CLI stays the single writer of the
-outreach state — see the **Scope & limits** section of `SKILL.md`. The check catalog mirrors
-the anomaly catalog in `docs/cli-cadence-task-reliability-spec.md`; keep the two in sync.
+The skill detects and reports; it does not mutate Close. The cadence-task / deal-task invariant
+is delegated to `dogfu crm touch reconcile` (run read-only, repaired with `--apply`) so the CLI
+stays the single writer of the outreach state; the skill adds the status / readiness / staleness
+/ ownership checks the CLI doesn't compute — see the **Scope & limits** section of `SKILL.md`.
 
 ## How to edit
 1. Edit `SKILL.md` (or ask Claude to).
 2. To change *what it detects*, edit the check tables. To change *when it fires*, edit the
    `description` in the frontmatter.
-3. When the CLI gains new read fields (e.g. a created date) or `reconcile`, update the
-   "Scope & limits" and fix columns to match — and flip any deferred checks (reach-out tasks,
-   opportunities) on as their CLI support lands.
+3. When the CLI gains new read fields (e.g. a created date), update the "Scope & limits" and
+   fix columns to match. Reach-out tasks and opportunities have shipped and their checks are on;
+   keep the cadence-task section delegating to `reconcile` rather than re-deriving its logic.
 
 Changes take effect wherever the `dogfu` plugin is installed once you reinstall/update the
 plugin from this marketplace (see the repo-root `README.md` for install steps).
