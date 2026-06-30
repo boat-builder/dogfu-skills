@@ -48,7 +48,7 @@ Hold these apart; everything else follows from the split.
   only flips to **Customer** when the deal is won.
 - **Opportunity** = the **deal itself** — the thing you forecast. It lives *on* a lead and
   carries a **pipeline stage**, a **value** (recurring MRR), a **deal type** (Co-Pilot vs
-  Fully-Run), a **confidence**, and an **expected close**. **One open opportunity per active
+  Fully-Run), and a **confidence**. **One open opportunity per active
   deal.**
 
 So an Engaged lead is in one of two states:
@@ -91,8 +91,8 @@ What each stage means and a typical next step:
 | **Won** *(terminal)* | signed → set lead status **Customer** | onboarding (out of scope here) |
 | **Lost** *(terminal)* | dead → set lead status **Not Interested** / **Bad Fit** (or **Canceled** if a customer churned) | — |
 
-**Value, deal type, confidence and close date ride on the opportunity, not the stage** — set
-them when you open the deal and update them as it firms up.
+**Value, deal type, and confidence ride on the opportunity, not the stage** — set them when you
+open the deal and update them as it firms up.
 
 ***
 
@@ -197,7 +197,7 @@ All leaf commands take `-f json|table` (default json) and `-o FILE`.
 
 | What happened | Command | Effect |
 | :-- | :-- | :-- |
-| **Discovery call confirmed a real deal** | `dogfu crm opportunity create <lead_id> --value <mrr> --period monthly --deal-type co-pilot\|fully-run [--confidence N] [--close YYYY-MM-DD] [--next "<action>" --next-due YYYY-MM-DD] --note "<scope>"` | opens the opportunity at **Discovery** and (with `--next`) its first `[dogfu:deal]` task. Lead stays **Engaged**. |
+| **Discovery call confirmed a real deal** | `dogfu crm opportunity create <lead_id> --value <mrr> --period monthly --deal-type co-pilot\|fully-run [--confidence N] [--next "<action>" --next-due YYYY-MM-DD] --note "<scope>"` | opens the opportunity at **Discovery** and (with `--next`) its first `[dogfu:deal]` task. Lead stays **Engaged**. |
 | They **started a trial / POC** | `dogfu crm opportunity advance <opp_id> --stage trial` | moves the deal to **Trial** |
 | **Sent the proposal / terms** | `dogfu crm opportunity advance <opp_id> --stage proposal` | moves the deal to **Proposal** |
 | **Signed / closed-won** | `dogfu crm opportunity win <opp_id> [--value <final>] [--close YYYY-MM-DD]` then `dogfu crm lead update <lead_id> -s <Customer id>` | marks the opp **Won**; set lead status **Customer** |
@@ -206,7 +206,7 @@ All leaf commands take `-f json|table` (default json) and `-o FILE`.
 | **Log what happened** (call, demo, trial start, proposal) | `dogfu crm note create <lead_id> -t "<event + outcome>"` | audit trail |
 | **Set / replace the next step** (open opp) | `dogfu crm opportunity next <opp_id> -t "<action>" -d <YYYY-MM-DD>` | swaps the single open `[dogfu:deal]` task (CLI is the single writer — don't touch it by hand) |
 | **Set the next step pre-gate** (Engaged, no opp) | `dogfu crm task create -l <lead_id> -t "<action, e.g. book intro call>" -d <YYYY-MM-DD>` | an ordinary ad-hoc task until the opportunity exists |
-| Update deal economics as it firms up | `dogfu crm opportunity update <opp_id> [--value] [--period] [--confidence] [--close] [--deal-type] [--note]` | adjust value / confidence / close |
+| Update deal economics as it firms up | `dogfu crm opportunity update <opp_id> [--value] [--period] [--confidence] [--deal-type] [--note]` | adjust value / confidence / deal type |
 
 ### Inbound intake
 
@@ -235,7 +235,7 @@ An inbound lead (someone reached out to us) skips the cold sequence entirely:
   **Not Interested / Bad Fit** only on loss; **Canceled** only on churn. Don't leave a zombie
   Engaged lead after a deal dies — losing the opp **and** setting the terminal status go
   together.
-- **Put data where it belongs:** deal value / deal type / confidence / close → on the
+- **Put data where it belongs:** deal value / deal type / confidence → on the
   **opportunity**; what happened → a **note**; the forward reminder → the **`[dogfu:deal]` task**
   (via `opportunity next`); the person's LinkedIn/X → the contact's `urls`. Don't dump deal
   economics into the lead description.
