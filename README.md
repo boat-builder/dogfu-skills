@@ -10,7 +10,8 @@ The three CRM-operating skills form one lifecycle: **lead-research** produces a 
 **lead-touch** runs cold outreach and hands off when the lead replies (→ *Engaged*) →
 **lead-engage** works the live deal (a Close opportunity) to a close. **crm-cleanup** audits all
 of it read-only. `lead-engage` additionally depends on opportunity support in the `dogfu` CLI +
-a Close pipeline (see its `references/opportunity-cli-spec.md`).
+a Close pipeline (the build spec is with the CLI devs; later deltas in
+`lead-engage/references/opportunity-spec-followup.md`).
 
 ## Layout
 
@@ -39,7 +40,7 @@ dogfu-skills/
         ├── lead-engage/           # the lead-engage skill (warm phase — live deals / opportunities)
         │   ├── SKILL.md
         │   ├── README.md
-        │   └── references/        # opportunity CLI spec + Close setup
+        │   └── references/        # opportunity build follow-up (deltas; full spec is with the CLI devs)
         ├── crm-cleanup/           # the crm-cleanup skill (read-only CRM health audit)
         │   ├── SKILL.md
         │   └── README.md
