@@ -37,8 +37,8 @@ A **lead is a company** (not a person). Each lead carries:
 - **Identity** — `name`, `url` (website), `description` (a short headline).
 - **Status** (`status_id` + `status_label`) — where it sits in the **funnel**. A human
   judgment label, **account-specific** — resolve the live ids with `crm status list`, never
-  hardcode them. Typical labels: *Potential, Qualified, Engaged/Trial, Customer, Bad Fit, Not
-  Interested, Nurture*.
+  hardcode them. Typical labels: *Potential, Qualified, Engaged, Customer, Bad Fit, Not
+  Interested, Canceled, DNC*.
 - **Contacts** — the people you actually reach out to. Each has `urls` (their LinkedIn / X —
   what you DM from), `emails`, `phones`, `title`.
 - **Outreach state** — system-managed fields tracking the outreach sequence (below).
@@ -208,8 +208,8 @@ fetch them so you can hand the BDR the LinkedIn/X handle to message.
 | Sent the **next** touch (reach-out or follow-up) | `dogfu crm touch record <lead_id> [-c <channel>] [--detail "<text>"]` | auto-advances to the lead's next touch; stamps `last_touched`=today, computes `next_touch_due`, **adds `<channel>` to the channels-tried set** (if given), appends a structured touch-history entry. **Closes the prior cadence task and opens the next.** Channel and detail are **optional**. |
 | Sent a touch with a **non-default wait** | add `--wait-days N` | overrides the gap before the next follow-up is due |
 | Recorded a touch but **don't** want the auto note/task | add `--no-note` and/or `--no-task` | suppresses the audit note / next-touch reminder |
-| Lead **replied / positive** | `dogfu crm touch reply <lead_id> --status <Engaged id>` | ends the sequence (clears `next_touch_due`) and sets status **Engaged** — the **handoff out of cold** (see below) |
-| **Giving up / nurture** | `dogfu crm touch stop <lead_id> [--status <Bad Fit or Nurture id>]` | same mechanism as reply; intent + status differ |
+| Lead **replied / positive** | `dogfu crm touch reply <lead_id>` | ends the sequence (clears `next_touch_due`) and moves the lead to **Engaged** automatically — the **handoff out of cold** (see below). Pass `--status <id>` only to override. |
+| **Giving up** | `dogfu crm touch stop <lead_id> [--status <Bad Fit or Not Interested id>]` | same mechanism as reply; intent + status differ |
 | Change **status only**, no sequence change | `dogfu crm lead update <lead_id> -s <status_id>` | funnel label only |
 
 Notes on the verbs:
@@ -223,17 +223,18 @@ Notes on the verbs:
   sent; omit when there's nothing to add.
 - `record` defaults to **logging a note and creating the next-touch reminder task** — that's
   the BDR's automatic reminder and what `touch history` reads back. Leave them on unless asked.
-- `record` does **not** change status (status stays a human label). Use `--status` on
-  `reply`/`stop`, or `lead update -s`, when the interaction also moves the funnel.
+- `record` does **not** change status (status stays a human label). `reply` moves the lead to
+  **Engaged** on its own; pass `--status` on `reply`/`stop` (or `lead update -s`) only to set a
+  *different* status.
 - `reply` vs `stop`: both end the sequence and pull the lead from the follow-up queue. `reply`
-  = they answered (→ Engaged); `stop` = we're done / nurturing (→ Bad Fit or Nurture). The
-  difference is intent and which `--status` you set. Since nothing auto-ends the sequence,
+  = they answered (→ **Engaged**, set automatically); `stop` = we're done (→ Bad Fit or Not
+  Interested via `--status`). The difference is intent. Since nothing auto-ends the sequence,
   **`stop` is how a chase ends.**
 - **A `reply` → Engaged is the handoff out of this skill.** Cold/`lead-touch` is done with the
   lead; the **`lead-engage`** skill works the live deal from there (discovery → opportunity →
   trial → proposal → won/lost). Don't keep recording touches on an Engaged lead — it has left
-  the cadence. Set status **Engaged**, not Trial: a trial is a deal *stage* that `lead-engage`
-  tracks as an opportunity, not a cold-outreach outcome.
+  the cadence. (A trial is a deal *stage* that `lead-engage` tracks as an opportunity, not a
+  cold-outreach outcome — there's no Trial lead status.)
 
 ### Editing the records (leads, contacts, notes, tasks)
 
@@ -266,7 +267,7 @@ big funnel, raise the limit or report "at least N" and say so.
 ## Operating rules
 
 - **Resolve status ids first** with `crm status list`; map labels at runtime (fit/working →
-  Qualified, replied → Engaged, dead → Bad Fit / Not Interested, later → Nurture). Never
+  Qualified, replied → Engaged, dead → Bad Fit / Not Interested). Never
   hardcode an id.
 - **Speak in actions, not stage math.** The queue already tells you each lead's next action
   ("Reach-out" or "Follow-up N") and the channels already tried — relay that. You don't make

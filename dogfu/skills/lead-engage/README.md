@@ -35,19 +35,12 @@ the **dogfu MCP** (`get_setup_instructions` → `dogfu configure --otp <OTP> --t
 (Close) calls go through the backend under the Close API key set once in **Console → CRM
 Integration**.
 
-## Not live until the CLI + Close setup land
-Unlike `lead-touch`, this skill depends on capability that **does not exist yet**:
-1. the **`Engaged`** lead status in Close,
-2. a Close **opportunity pipeline** (Discovery → Trial → Proposal → Won/Lost), and
-3. the **`dogfu crm opportunity …`** commands.
-
-The full build spec — and the follow-up deltas (delete the `Trial` lead status + seeded example
-opportunities; make `touch reply` default the lead status to `Engaged`; the final
-`TERMINAL_STATUSES`) — are with the CLI devs, not in this repo. Until the CLI + Close setup land,
-the skill can read/move lead **statuses** but can't work opportunities. Two downstream skill
-tidy-ups to do once they ship: drop `--status <Engaged id>` from `lead-touch`'s reply row, and fix
-`crm-cleanup`'s status classification (engaged = {Engaged}; terminal — drop `Nurture`, add
-`Canceled`/`DNC`).
+## Status — CLI shipped; pending the Close opportunity pipeline
+The **`dogfu crm opportunity …`** commands have shipped and the **`Engaged`** lead status is live
+(with `Trial` removed). What remains before the skill is fully operational is the Close
+**opportunity pipeline** (Discovery → Trial → Proposal → Won/Lost) and the **`Deal Type`** custom
+field. Until those exist, the skill can read/move lead **statuses** but can't yet work
+opportunities. The full build spec and its follow-up deltas live with the CLI devs, not in this repo.
 
 ## Why a separate skill (not a mode of `lead-touch`)
 The cold and warm phases are different machines. Cold runs on a **cadence** (fixed waits, a
