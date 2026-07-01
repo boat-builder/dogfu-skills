@@ -34,25 +34,16 @@ separately in `bluesnake.md`.
 
 ## crm
 
-Read-only, used **once at the start** (Phase A0) to pull the SEO/AEO profile lead-research
-already wrote to Close, as a **reference prior** — never a substitute for this run's fresh
-data. All go through the caller's Close key (Console → CRM Integration); a `412` "no Close CRM
-API key configured" means Close isn't connected — skip the prior and audit cold.
+Read-only, used at the start (Phase A0) to pull the lead-research profile as a **reference
+prior**. Goes through the caller's Close key (Console → CRM Integration); a `412` means Close
+isn't connected — skip the prior and audit cold. (The end-of-run URL write is in `report.md` Step 6.)
 
-* **`crm lead list -q <domain>`** `[-n name] [-s status_id] [-l N] [--sort ..]` — resolve the
-  prospect's lead by domain (no separate `search` verb — `list` with `-q` is the search).
-  Take the `lead_id`; reuse it for the Step 6 attach so you don't look it up twice.
-* **`crm lead get <lead_id>`** → the lead incl. the **curated company fields** lead-research
-  set: `industry, employees, revenue, business_model, seo_pages`, plus `name, url,
-  description, status_label, contacts[]`.
-* **`crm note list <lead_id>`** `[-l N]` → the lead-research write-up notes — the SEO/AEO
-  metrics, ranked/top keywords, chosen competitors + competitive gap, AI-answer visibility
-  checks, and the fit verdict.
-* **`crm contact list <lead_id>`** *(optional)* → the decision-makers and their links (context
-  only; the report itself is domain-level).
-
-The audit records its own output back via **`crm note create`** at the end — see `report.md`
-Step 6.
+* **`crm lead list -q <domain>`** — resolve the lead by domain (no `search` verb — `list -q` is
+  the search). Take the `lead_id`; reuse it for the Step 6 attach.
+* **`crm lead get <lead_id>`** → curated fields `industry, employees, revenue, business_model,
+  seo_pages` + `name, url, description, status_label, contacts[]`.
+* **`crm note list <lead_id>`** → the write-up notes: SEO/AEO metrics, ranked keywords,
+  competitors + competitive gap, AEO checks, verdict.
 
 ***
 
