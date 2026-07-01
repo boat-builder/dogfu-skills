@@ -93,7 +93,7 @@ in.
 
 Record the published audit so the BDR can send it. Put it on the prospect's lead:
 
-1. **Find the lead** by domain: `dogfu crm lead search -q <domain>` (most prospects already exist from lead-research). If none matches, create a minimal one: `dogfu crm lead create -n "<company>" -u <domain>` (don't set a status here — this skill only attaches the audit).
+1. **Find the lead.** If you resolved it in Phase A0 (the reference-prior step), **reuse that `lead_id`** — don't search again. Otherwise find it by domain: `dogfu crm lead list -q <domain>` (most prospects already exist from lead-research). If none matches, create a minimal one: `dogfu crm lead create -n "<company>" -u <domain>` (don't set a status here — this skill only attaches the audit).
 2. **Attach the URL** as a note: `dogfu crm note create <lead_id> -t "First audit published: <url> — overall grade <X>/100 (AEO <a> · Technical <t> · Visibility <v> · Authority <au>)."` Notes are HTML-escaped on write, so use plain text. (If you'd rather have it on the lead headline, you can instead/also drop it in the lead `description` via `crm lead update <lead_id> -d "…"` — but a note keeps the history and is the default home.)
 
 CRM writes go through the caller's own Close key (Console → CRM Integration). A `412` "no

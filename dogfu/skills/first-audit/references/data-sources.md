@@ -17,16 +17,42 @@ a minute or two; warm calls are a few seconds). Never fetch the same thing twice
 
 The groups this skill uses: **`seo`** (keyword/competitor/traffic/technical), **`google`**
 (Google web + AI Mode), **`chatgpt`** (the ChatGPT answer surface), and **`crm`** (Close —
-to attach the published audit URL at the end). The crawl/on-page layer is the **Bluesnake
-MCP**, documented separately in `bluesnake.md`.
+to **read the lead-research profile as a reference prior at the start** and attach the
+published audit URL at the end). The crawl/on-page layer is the **Bluesnake MCP**, documented
+separately in `bluesnake.md`.
 
 ## Contents
 
+* [crm — read the lead-research prior (Phase A0)](#crm)
 * [seo — keywords, competitors, traffic, tech, CWV](#seo)
 * [google — Google + AI surfaces](#google)
 * [chatgpt — ChatGPT answers with citations](#chatgpt)
 * [Localization policy](#localization)
 * [What `dogfu` does NOT cover](#not-covered)
+
+***
+
+## crm
+
+Read-only, used **once at the start** (Phase A0) to pull the SEO/AEO profile lead-research
+already wrote to Close, as a **reference prior** — never a substitute for this run's fresh
+data. All go through the caller's Close key (Console → CRM Integration); a `412` "no Close CRM
+API key configured" means Close isn't connected — skip the prior and audit cold.
+
+* **`crm lead list -q <domain>`** `[-n name] [-s status_id] [-l N] [--sort ..]` — resolve the
+  prospect's lead by domain (no separate `search` verb — `list` with `-q` is the search).
+  Take the `lead_id`; reuse it for the Step 6 attach so you don't look it up twice.
+* **`crm lead get <lead_id>`** → the lead incl. the **curated company fields** lead-research
+  set: `industry, employees, revenue, business_model, seo_pages`, plus `name, url,
+  description, status_label, contacts[]`.
+* **`crm note list <lead_id>`** `[-l N]` → the lead-research write-up notes — the SEO/AEO
+  metrics, ranked/top keywords, chosen competitors + competitive gap, AI-answer visibility
+  checks, and the fit verdict.
+* **`crm contact list <lead_id>`** *(optional)* → the decision-makers and their links (context
+  only; the report itself is domain-level).
+
+The audit records its own output back via **`crm note create`** at the end — see `report.md`
+Step 6.
 
 ***
 

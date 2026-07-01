@@ -34,11 +34,14 @@ see `references/data-sources.md`.
 
 ## Files
 - `SKILL.md` — the operating manual (runtime only): pre-flight, the six-phase pipeline
-  (footprint → brand brief + crawl → seeds → keyword/competitor → answer-engine → collect →
-  build/publish/record), and the cost/latency guardrails. The YAML frontmatter
-  `name`/`description` controls when the skill triggers (invoked explicitly).
-- `references/data-sources.md` — the `dogfu` `seo` / `google` / `chatgpt` command map (flags,
-  output fields, localization, what dogfu does NOT cover).
+  (read the Close prior → footprint → brand brief + crawl → seeds → keyword/competitor →
+  answer-engine → collect → build/publish/record), and the cost/latency guardrails. Phase A0
+  reads the SEO/AEO profile lead-research already wrote to Close and uses it as a **reference
+  prior** — a warm start that seeds the brand brief, seed keywords, and competitor shortlist,
+  never a substitute for this run's fresh audit data. The YAML frontmatter `name`/`description`
+  controls when the skill triggers (invoked explicitly).
+- `references/data-sources.md` — the `dogfu` `crm` (read-prior) / `seo` / `google` / `chatgpt`
+  command map (flags, output fields, localization, what dogfu does NOT cover).
 - `references/bluesnake.md` — the Bluesnake crawl lifecycle + SQLite query cookbook
   (technical + AEO on-page signals). Copied verbatim from the original — Bluesnake is the same
   MCP in both ecosystems.
@@ -59,8 +62,11 @@ see `references/data-sources.md`.
    report otherwise. Reconcile flags against `dogfu report publish --help` once it ships. Until
    then the skill assembles the report but won't fabricate a URL.
 
-CRM writes (just the audit URL, as a `crm note`) use the Close API key set once in the admin
-**Console → CRM Integration**, like the other dogfu skills.
+CRM access uses the Close API key set once in the admin **Console → CRM Integration**, like
+the other dogfu skills: a **read** at the start (Phase A0 — `crm lead list/get` + `crm note
+list` to pull the lead-research prior) and a **write** at the end (just the audit URL, as a
+`crm note`). Both are best-effort — if Close isn't connected (`412`), the audit still runs and
+publishes; it just skips the prior and the URL-attach.
 
 ## How to edit
 1. Edit `SKILL.md` (or the references) — or ask Claude to.
