@@ -124,19 +124,21 @@ for their board meeting Tue"), not a computed gap. So you set it explicitly — 
 
 ## The engage work queue — "what do I move today?"
 
-The daily question is "which deals need me today?" `dogfu crm opportunity due` returns the deal
-queue in one list (the deal-phase analogue of `crm touch due`), most-urgent first, each row
-tagged by why it's there:
+The daily question is "which deals need me today?" — and it splits by whether there's a task:
 
-1. **Due next-steps** — open opps whose next-step is due ≤ today. *Act now.*
-2. **Dropped balls** — open opps with **no open next-step** (`next_step` is null). *Surface these
-   loudest — set a next step.*
-3. **Stalled deals** — open opps with no update in > 14 days. *Quietly dying; nudge or re-qualify.*
+1. **Due next-steps** — open opps whose next-step task is due ≤ today. These are in the one work
+   queue: **`dogfu crm worklist --kind deal`** (each row carries the deal's `next_action` and
+   `opportunity_stage`). *Act now.*
+2. **Dropped balls** — open opps with **no open next-step task** at all. There's no task, so they
+   aren't in the inbox — **`dogfu crm reconcile`** surfaces them (`opportunity_no_next_step`).
+   *Set a next step (`opportunity next`) so it enters the queue.*
+3. **Stalled deals** — open opps not updated in > 14 days. Also from **`crm reconcile`**
+   (`stalled_opportunity`). *Quietly dying; nudge or re-qualify.*
 
-Read each row's `next_step` (null = dropped ball) and `date_updated` (staleness) to see why it's
-in the queue. One case `opportunity due` can't catch — it's opportunity-scoped — is a **pre-gate
-Engaged lead with no opportunity and no open task**; pull those from the Engaged lead list (`lead
-list -s <Engaged id>`) so a conversation that stalls *before* the gate doesn't slip.
+So: `worklist --kind deal` is the "act today" list; `reconcile` catches the deals that fell out of it
+(no task, or gone stale). One more case for `reconcile`/the Engaged list: a **pre-gate Engaged lead
+with no opportunity and no open task** — pull those from the Engaged lead list (`lead list -s
+<Engaged id>`) so a conversation that stalls *before* the gate doesn't slip.
 
 ***
 
@@ -195,7 +197,8 @@ All leaf commands take `-f json|table` (default json) and `-o FILE`.
 | Full lead incl. contacts | `dogfu crm lead get <lead_id>` |
 | A lead's open/closed opportunities | `dogfu crm opportunity list [-l <lead_id>] [--status open]` |
 | One opportunity in full | `dogfu crm opportunity get <opp_id>` |
-| **The deal queue** (due next-steps, dropped balls, and stalled deals) | `dogfu crm opportunity due [-l N]` |
+| **Deals due today** (next-steps due, in the one work queue) | `dogfu crm worklist --kind deal [-l N]` |
+| **Dropped-ball & stalled deals** (open opp, no next-step task or gone stale) | `dogfu crm reconcile` (rows `opportunity_no_next_step` / `stalled_opportunity`) |
 | A lead's notes / tasks | `dogfu crm note list <lead_id>` · `dogfu crm task list -l <lead_id> [-p]` |
 
 ### The gate & moving a deal

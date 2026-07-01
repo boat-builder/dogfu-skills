@@ -37,8 +37,9 @@ in **lead-touch/SKILL.md**; this skill assumes it and only recaps what the check
 - **In the sequence** = `next_touch_due` is set (a follow-up is scheduled) *or* the lead is a
   reach-out (Qualified + `touch_stage` null). **Out** = replied/stopped (`next_touch_due`
   empty after a touch).
-- **The work queue** (`dogfu crm touch due`) = reach-outs + follow-ups due. The audit checks
-  the integrity of everything *behind* that queue.
+- **The work queue** (`dogfu crm worklist`) = the actual open tasks due today (reach-outs,
+  follow-ups, deal next-steps, ad-hoc). This audit is its **inverse**: it checks everything whose
+  *state* says it needs action but has no task (or a stray/duplicate one) — the drift behind the queue.
 
 > **Note (reach-out tasks).** A reach-out is itself a real cadence task, opened when a lead
 > enters the reach-out status. So a reach-out with **no** open cadence task **is** an anomaly —
@@ -66,7 +67,7 @@ single lead (`lead get` / `note list` / `contact list`) for leads a cheap check 
 flagged — never per-lead up front.
 
 ```bash
-dogfu crm touch reconcile -o reconcile.json            # cadence-task + deal-task anomalies (read-only)
+dogfu crm reconcile -o reconcile.json                  # cadence + deal-task + opp-drift anomalies (read-only)
 dogfu crm status list -o statuses.json                 # {id ↔ label}; classify the funnel
 # all leads, per status, with their cadence fields (raise -l for a big funnel):
 dogfu crm lead list -s <status_id> -l 500 -o leads_<label>.json   # repeat per status
@@ -75,7 +76,8 @@ dogfu crm whoami -o me.json                            # your user id (for assig
 ```
 
 `reconcile.json` (read-only without `--apply`) is the CLI's own audit of the **cadence-task and
-deal-task invariant** — Step 2A just reports its rows. Everything else you compute from the lists.
+deal-task invariants plus opportunity drift** — Step 2A just reports its rows. Everything else you
+compute from the lists.
 
 From `statuses.json`, **classify labels at runtime** (account-specific — never hardcode ids):
 *reach-out* = `Qualified`; *terminal* = {Bad Fit, Not Interested, Customer, Canceled, DNC};
@@ -101,14 +103,14 @@ inconsistent, will mislead) · **🟡 hygiene** (quality/SLA). `[fix: CLI]` = a 
 `reconcile --apply` (don't hand-edit tagged tasks — the single-writer rule); `[fix: human]` =
 needs a judgment call.
 
-### A. Cadence-task & deal-task invariant — `reconcile` owns this
+### A. Task invariants & opportunity drift — `reconcile` owns this
 
 Don't re-derive these by hand: **`reconcile.json` already lists them.** The CLI computes the whole
 invariant — every reach-out / in-cadence lead carries exactly one open cadence task, no exited or
-terminal-status lead carries one, and ≤ one open `[dogfu:deal]` task per open opportunity (none on
-a won/lost or vanished one). Report each row it returns; repair the bulk with **`dogfu crm touch
-reconcile --apply`** (the single writer — never hand-complete a `[dogfu:cadence]` / `[dogfu:deal]`
-task). The keys it can return:
+terminal-status lead carries one, ≤ one open `[dogfu:deal]` task per open opportunity (none on a
+won/lost or vanished one), and open deals aren't dropped or stalled. Report each row it returns;
+repair the bulk with **`dogfu crm reconcile --apply`** (the single writer — never hand-complete a
+`[dogfu:cadence]` / `[dogfu:deal]` task). The keys it can return:
 
 | Key (from `reconcile`) | Means | Sev | Fix |
 | :- | :- | :- | :- |
@@ -117,6 +119,11 @@ task). The keys it can return:
 | `duplicate_cadence_tasks`, `duplicate_deal_tasks` | 2+ open reminders where exactly one is allowed | 🟠 | `[fix: reconcile]` |
 | `cadence_task_due_drift` | the reminder's due date ≠ the lead's `next_touch_due` | 🟡 | `[fix: reconcile]` |
 | `deal_task_orphaned`, `deal_task_on_closed_opportunity` | open deal task on a vanished or won/lost opportunity | 🟠 | `[fix: reconcile]` |
+| `opportunity_no_next_step` | open opportunity with **no** next-step task (a dropped-ball deal, invisible to the queue) | 🔴 | `[fix: human]` set the next step: `crm opportunity next <opp_id> -t "<action>" -d <date>` |
+| `stalled_opportunity` | open opportunity not updated in > 14d | 🟡 | `[fix: human]` nudge / re-qualify, or advance the stage |
+
+> The two `opportunity_*` rows are **advisory** (not auto-fixable — a deal's next step is
+> rep-authored), so `--apply` won't touch them; surface them for a human.
 
 ### B. Status ↔ sequence drift (the lens `reconcile` doesn't have)
 
@@ -139,7 +146,7 @@ task). The keys it can return:
 
 | # | Anomaly | Detect | Sev | Fix |
 | :- | :- | :- | :- | :- |
-| D1 | **Badly overdue follow-up** | lead `next_touch_due` ≤ today − **14d** | 🟠 | `[fix: human]` act now (it's in `touch due`), or `touch stop` if abandoning |
+| D1 | **Badly overdue follow-up** | lead `next_touch_due` ≤ today − **14d** | 🟠 | `[fix: human]` act now (it's in `crm worklist`), or `touch stop` if abandoning |
 | D2 | **Chase fatigue** — many touches, no reply | `touch_stage` ≥ **5** **and** still in cadence (`next_touch_due` set) | 🟡 | `[fix: human]` decide: keep nudging or `dogfu crm touch stop <lead_id> --status <Not Interested id>` |
 
 ### E. Ownership
@@ -153,10 +160,10 @@ task). The keys it can return:
 ## Scope & limits — be honest about these
 
 - **Read-only.** This skill never writes. It reports anomalies and the command to fix each.
-  **Every cadence-task / deal-task repair (Section A)** is applied by `dogfu crm touch reconcile
-  --apply` — don't hand-create or hand-complete a `[dogfu:cadence]` / `[dogfu:deal]` task (the
-  single-writer rule keeps outreach state sane). B2, C3, E1 are safe one-line `dogfu` fixes; the
-  rest need a human judgment call.
+  **Every cadence-task / deal-task repair (Section A)** is applied by `dogfu crm reconcile --apply`
+  — don't hand-create or hand-complete a `[dogfu:cadence]` / `[dogfu:deal]` task (the single-writer
+  rule keeps outreach state sane). B2, C3, E1 are safe one-line `dogfu` fixes; the two
+  `opportunity_*` drift rows and the rest need a human judgment call.
 - **Not yet detectable (data the documented CLI surface doesn't expose):**
   - *Age-based staleness* of reach-outs or Potential leads (created/qualified date) — the
     canonical `Lead` has no created date. Approximate via `dogfu crm lead list -s <id> --sort
@@ -165,10 +172,10 @@ task). The keys it can return:
   - *Task assigned to a deactivated/unknown user* — there's no user-list command (only
     `whoami`), so you can flag empty assignees (E1) but not invalid ones.
   - *Lead owner missing* — not exposed on the model; use task assignee (E1) as the proxy.
-- **Now covered (shipped):** reach-out tasks and the deal-task invariant are both audited by
-  `reconcile` (Section A) — flag them. The richer **opportunity-health** checks (an Engaged lead
-  with no opportunity, a stalled or under-specified deal) belong to `lead-engage` /
-  `crm opportunity due`, not this read-only audit.
+- **Now covered (shipped):** reach-out tasks, the deal-task invariant, and opportunity drift
+  (dropped-ball / stalled deals) are all audited by `reconcile` (Section A) — flag them. The
+  remaining **opportunity-health** judgment (e.g. an Engaged lead with no opportunity at all, an
+  under-specified deal) belongs to `lead-engage`, not this read-only audit.
 
 ***
 

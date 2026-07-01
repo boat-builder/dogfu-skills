@@ -138,24 +138,25 @@ This is the **cold** in-session queue you run while working the cadence here. (F
 worklist — cold **plus** live deals plus pre-gate Engaged leads, "what should I work on across
 everything", read-only — that's the **lead-worklist** skill. This section is the cold half it pulls.)
 
-When the BDR is working the cadence, **run `crm touch due`** — it returns the cold queue as **one
-list**, most-overdue first, each row tagged with its next action:
+When the BDR is working the cadence, **run `dogfu crm worklist`** — the one queue command — and read
+its cold rows, most-overdue first, each labelled with its `next_action`:
 
-1. **Reach-outs** — Qualified leads with **no touch yet** (`touch_stage` null). "New people to
-   say hello to."
-2. **Follow-ups** — leads whose `next_touch_due ≤ today`. "People to chase," labelled with
-   which follow-up is next and the channels already tried (so the BDR can vary channel).
+1. **Reach-outs** (`--kind reach-out`) — Qualified leads with **no touch yet** (`touch_stage` null).
+   "New people to say hello to."
+2. **Follow-ups** (`--kind follow-up`) — leads whose next cadence touch is due, labelled with which
+   follow-up is next and the channels already tried (so the BDR can vary channel).
 
-**The model: the queue is a lead's open cadence task.** Every lead in the sequence carries
-exactly one open cadence task standing for its next action — and **the reach-out is simply the
-first cadence task** (opened when the lead enters the reach-out status), the follow-ups the ones
-after it. So "who do I act on today?" is just **the open cadence tasks due today** — which is why
-`crm touch due` and Close's native pending-task list are two views of the same queue.
+**The model: the queue *is* the task list.** Every lead in the sequence carries exactly one open
+cadence task standing for its next action — and **the reach-out is simply the first cadence task**
+(opened when the lead enters the reach-out status), the follow-ups the ones after it. `crm worklist`
+reads those actual open tasks due today, so it and Close's native pending-task list are literally the
+same list. (Ad-hoc tasks the BDR made outside the cadence show up too, as `ad-hoc` rows — real work,
+never invisible.)
 
-> **Close's task list is a complete queue.** Because the reach-out, too, is a real cadence task,
-> every item in the queue is a real Close task — so a BDR can work straight from Close's own
-> Tasks/Inbox, and `crm touch reconcile` is the backstop that keeps that list trustworthy. Either
-> way, **`crm touch due` is the command to run here.**
+> **The task list is complete and trustworthy.** Every reach-out and follow-up is a real Close task,
+> so a BDR can work straight from Close's own Tasks/Inbox, and **`crm reconcile`** is the backstop
+> that keeps it honest (it flags a Qualified lead whose reach-out task never got created, a stray
+> task after exit, and so on). Either way, **`crm worklist` is the command to run here.**
 
 ***
 
@@ -196,8 +197,8 @@ need `--help`. All leaf commands take `-f json|table` (default json) and `-o FIL
 | Who am I (the Close user) | `dogfu crm whoami` |
 | List or find leads (no filter = newest first; narrow by name / query / status) | `dogfu crm lead list [-n "<name>"] [-q "<query>"] [-s <status_id>] [-l N] [--sort -date_created]` |
 | Full lead incl. contacts + outreach fields | `dogfu crm lead get <lead_id>` |
-| **The work queue** (reach-outs + follow-ups due now) | `dogfu crm touch due [-l N]` |
-| **Outreach-load summary** (reach-outs vs follow-ups due + by-touch distribution) | `dogfu crm touch report` |
+| **The work queue** — the cold rows (reach-outs + follow-ups due now) | `dogfu crm worklist --kind reach-out` · `--kind follow-up` (or plain `worklist` for everything) |
+| **Outreach-load summary** (reach-out vs follow-up cadence tasks due + by-touch distribution) | `dogfu crm touch report` |
 | A lead's **touch history** (each touch: #, date, channel, detail) | `dogfu crm touch history <lead_id> [-l N]` |
 | A lead's notes / tasks / contacts | `dogfu crm note list <lead_id>` · `dogfu crm task list [-l <lead_id>] [-p]` · `dogfu crm contact list <lead_id>` |
 
@@ -259,7 +260,8 @@ Two parts: the **outreach load** has a native command; the **funnel by status** 
 
 1. **Outreach load due today — `crm touch report`.** It returns reach-outs-due vs follow-ups-due
    and the follow-up distribution by next touch number (Follow-up 1 / 2 / 3+), computed for you —
-   don't re-derive it by hand. (`crm touch due` is the actionable list behind those counts.)
+   don't re-derive it by hand. It's task-grounded, so the counts agree with `crm worklist` (the
+   actionable list behind them); a reach-out *owed but not yet tasked* is a `crm reconcile` gap.
 2. **Funnel by status** (no aggregate endpoint — compose it): `crm status list` → the ids, then
    per status `crm lead list -s <id> -l <high> -o file` and count → leads in each funnel status.
 
