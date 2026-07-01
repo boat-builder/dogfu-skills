@@ -5,10 +5,11 @@ description: >-
   Close CRM — read-only, across the whole lifecycle — using the `dogfu` CLI. Use this whenever
   someone wants their **worklist / work queue / daily plan**: "who do I work on today", "what's on
   my plate", "give me the next N leads", "show me everyone due", or a narrower slice — "just my
-  reach-outs", "follow-ups due", "deals that need action", "my ad-hoc tasks" — in **one kind or
-  across all**, each row carrying the contact and the context to act. It runs `dogfu crm worklist`,
-  which reads the real due-task inbox and classifies every row (reach-out / follow-up / deal /
-  ad-hoc), then hands each off to the skill that records the action. It is **read-only — it never
+  reach-outs", "follow-ups due", "discovery calls to land", "deals that need action", "my ad-hoc
+  tasks" — in **one kind or across all**, each row carrying the contact and the context to act. It
+  runs `dogfu crm worklist`, which reads the real due-task inbox and classifies every row (reach-out
+  / follow-up / engage / deal / ad-hoc), then hands each off to the skill that records the action.
+  It is **read-only — it never
   writes to the CRM**: to record a touch you sent use **lead-touch**, to move a deal use
   **lead-engage**, for a health / anomaly audit use **crm-cleanup**, and to research a brand-new
   target use **lead-research**.
@@ -31,8 +32,8 @@ them and only recaps what presenting the list needs.
 
 ## Where the worklist comes from — one command
 
-A lead moves research → cold outreach → engaged → live deal. **`dogfu crm worklist` returns the whole
-cross-phase queue in one call.** It reads the BDR's actual Close inbox — every open task due today or
+A lead moves research → cold outreach → connected → live deal. **`dogfu crm worklist` returns the
+whole cross-phase queue in one call.** It reads the BDR's actual Close inbox — every open task due today or
 earlier — and classifies each row by what kind of work it is, enriched with the context to act. This
 *is* the task list, not a reconstruction from lead state: nothing due is invisible, and Close's own
 Tasks/Inbox is literally the same list. (It replaces the old `touch due` + `opportunity due` +
@@ -44,12 +45,14 @@ Each row carries a **`kind`** and the human **`next_action`**:
 | :-- | :-- | :-- |
 | `reach-out` | Qualified lead, never contacted | "Reach-out" |
 | `follow-up` | next cadence touch due | "Follow-up N" |
+| `engage` | pre-gate **Connected** lead (replied, no deal yet) | "Land the discovery call" |
 | `deal` | an open opportunity's next step | the deal's next step (+ `opportunity_stage`) |
-| `ad-hoc` | a manual task, outside the cadence/deal systems | the task's own text |
+| `ad-hoc` | a manual task, outside the cadence/engage/deal systems | the task's own text |
 
 - **All stages** (default): `dogfu crm worklist` — the whole inbox, most-overdue-first.
-- **One slice**: `dogfu crm worklist --kind reach-out|follow-up|deal|ad-hoc`. (`--kind follow-up`
-  gives every follow-up; to isolate "follow-up 1", filter the rows by `touch_stage` client-side.)
+- **One slice**: `dogfu crm worklist --kind reach-out|follow-up|engage|deal|ad-hoc`. (`--kind
+  follow-up` gives every follow-up; to isolate "follow-up 1", filter the rows by `touch_stage`
+  client-side.)
 - **N rows**: `-l N`. **One person's inbox**: `--mine` (or `--assignee <user_id>`); the default shows
   every assignee's due tasks, so nothing hides behind an assignee filter.
 
@@ -57,13 +60,13 @@ Each row carries a **`kind`** and the human **`next_action`**:
 > work — it surfaces as an `ad-hoc` row. (These used to be invisible to the queue entirely.)
 
 What `worklist` deliberately does **not** show: a lead or deal whose *state* says it needs action but
-that has **no task** — a Qualified lead missing its reach-out task, an open opportunity with no next
-step. Those aren't in the inbox; they're **drift**, surfaced (and repaired) by `dogfu crm reconcile`
-via the **crm-cleanup** skill. So the split is clean: **`worklist` = what's actually due now;
-`reconcile` = what *should* have a task but doesn't.** One case to pull separately: a **pre-gate
-Engaged lead** (replied / inbound, no opportunity and no task yet) — get those from the Engaged lead
-list (`crm lead list -s <Engaged id>`) so a conversation that stalls before any task exists doesn't
-slip.
+that has **no task** — a Qualified lead missing its reach-out task, a Connected lead missing its
+engage task, an open opportunity with no next step. Those aren't in the inbox; they're **drift**,
+surfaced (and repaired) by `dogfu crm reconcile` via the **crm-cleanup** skill. So the split is clean:
+**`worklist` = what's actually due now; `reconcile` = what *should* have a task but doesn't.** With
+the pre-gate now a first-class `engage` task, the whole lifecycle is in the one queue — a replied
+conversation no longer needs to be hunted from a status list; if its engage task is ever missing,
+`reconcile` catches it (`missing_engage_task`) so it doesn't slip.
 
 ***
 
@@ -128,9 +131,9 @@ dogfu crm <command> [flags]
 
 | Goal | Command |
 | :-- | :-- |
-| **The worklist** — the whole due inbox, classified + enriched (this is the main call) | `dogfu crm worklist [--kind reach-out\|follow-up\|deal\|ad-hoc] [--mine] [-l N]` |
-| List statuses + their ids (only if you need to pull the Engaged list below) | `dogfu crm status list` |
-| **Pre-gate Engaged leads** — replied/inbound, no opp yet (not a task, so not in the worklist) | `dogfu crm lead list -s <Engaged id> [-l N]` |
+| **The worklist** — the whole due inbox, classified + enriched (this is the main call) | `dogfu crm worklist [--kind reach-out\|follow-up\|engage\|deal\|ad-hoc] [--mine] [-l N]` |
+| List statuses + their ids (only if you need to pull a status list below) | `dogfu crm status list` |
+| **Connected / Engaged leads** — the warm book, if you want it by status (pre-gate work is already in the worklist as `engage` rows) | `dogfu crm lead list -s <Connected\|Engaged id> [-l N]` |
 | Full lead incl. contacts + outreach fields (worklist rows already embed contacts; use for the rare gap) | `dogfu crm lead get <lead_id>` |
 | Deep context for a lead being actioned | `dogfu crm note list <lead_id>` · `dogfu crm touch history <lead_id>` |
 | Cold-outreach load summary (counts, agrees with the worklist) | `dogfu crm touch report` |
@@ -142,8 +145,9 @@ dogfu crm <command> [flags]
 
 - **Read-only — never write.** This skill assembles and presents; it does **not** record touches,
   move statuses, open or advance deals, or create tasks. End each row with the command/skill that
-  *does*: **lead-touch** (`touch record` / `reply` / `stop`) for cold rows, **lead-engage**
-  (`opportunity …`) for deals. Hand off; don't act.
+  *does*: **lead-touch** (`touch record` / `reply` / `stop`) for cold `reach-out`/`follow-up` rows,
+  **lead-engage** for `engage` rows (land the discovery call → open the opportunity) and `deal` rows
+  (`opportunity …`). Hand off; don't act.
 - **Resolve status ids first** (`crm status list`) before filtering by Engaged or any status. Never
   hardcode an id.
 - **Tier the context** (above): Layer 1 inline for all rows; Layer 2 only for the lead being worked.
@@ -162,7 +166,8 @@ dogfu crm <command> [flags]
 
 - **Worklist:** a numbered / tabular list, most-urgent first (or grouped by stage when they asked for
   a slice). Each row: lead + company, the **contact(s) with LinkedIn/X links**, the **next action**
-  (Reach-out / Follow-up N / deal stage + next step), **channels already tried**, last touched / days
+  (Reach-out / Follow-up N / Land the discovery call / deal stage + next step), **channels already
+  tried**, last touched / days
   overdue, and the **command to act** (which skill + verb records it). Make it copy-paste actionable
   so the BDR can go message immediately.
 - **Drill-in (one lead):** the Layer-2 brief — research / hooks, prior touches and what was said,
