@@ -8,17 +8,18 @@ carrying the contact and the context to act. It is the **cross-phase daily brief
 the two action skills.
 
 ## What it is (and is not)
-- **Read-only.** It composes `dogfu crm` *read* calls into one prioritized list and hands each row
-  off to the skill that records the action. It never writes to the CRM.
-- **Cross-phase.** It unifies the **cold** queue (`touch due` — reach-outs + follow-ups), the
-  **warm** queue (`opportunity due` — live deals), and **pre-gate Engaged** leads (`lead list -s
-  <Engaged>`) into one list. `lead-touch` and `lead-engage` keep their own *in-session* queues for
-  the loop each owns; this skill is the place "what should I work on across everything" lives.
+- **Read-only.** It runs the one queue command `dogfu crm worklist`, presents the result, and hands
+  each row off to the skill that records the action. It never writes to the CRM.
+- **Cross-phase.** `dogfu crm worklist` reads the real due-task inbox and classifies every row
+  (reach-out / follow-up / deal / ad-hoc) in one call — the CLI does the composing, not the skill.
+  Pre-gate Engaged leads (replied/inbound, no task yet) are pulled separately from `lead list -s
+  <Engaged>` since they aren't tasks. `lead-touch` and `lead-engage` own *recording* actions; this
+  skill is the place "what should I work on across everything" lives.
 - **Not an action skill.** To record a touch use **lead-touch**; to move a deal use **lead-engage**;
   for a health/anomaly audit use **crm-cleanup**; to research a new target use **lead-research**.
 
 ## Files
-- `SKILL.md` — the operating manual: the lifecycle and which queue command sources each stage, the
+- `SKILL.md` — the operating manual: the one `crm worklist` queue command, the
   **tiered-context model** (Layer 1 act-on-it context inline for every row; Layer 2 deep context
   pulled on demand only for the lead being actioned — agents are not forced to read it for the whole
   queue), how to run `dogfu` read-only, the read-only command surface, and the operating rules. The
