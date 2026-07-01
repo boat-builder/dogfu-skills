@@ -39,15 +39,17 @@ random.
 
 | Stage (what to do) | Source command | Phase |
 | :-- | :-- | :-- |
-| **Reach-out** — Qualified, not yet contacted | `dogfu crm touch due` (the never-touched rows) | cold |
-| **Follow-up N** — next cadence touch due | `dogfu crm touch due [--stage N]` | cold |
+| **Reach-out** — Qualified, not yet contacted | `dogfu crm touch due --kind reach-out` | cold |
+| **Follow-up N** — next cadence touch due | `dogfu crm touch due --kind follow-up` | cold |
 | **Engaging (pre-gate)** — replied / inbound, no opportunity yet | `dogfu crm lead list -s <Engaged id>` + its open ad-hoc task | warm |
 | **Live deal** — open opportunity due / dropped / stalled | `dogfu crm opportunity due` | warm |
 
 - **All stages** = run the cold queue **and** the warm queue (**and** pre-gate Engaged) and merge
   into one list, most-urgent first.
-- **One stage** = run just the matching source — only reach-outs, `--stage 1` for follow-up 1, only
-  `opportunity due` for deals, etc.
+- **One stage** = run just the matching source — `--kind reach-out` or `--kind follow-up` on
+  `touch due`, only `opportunity due` for deals, etc. (`touch due --kind` narrows to reach-outs
+  vs follow-ups; it does **not** filter to a single follow-up *number* — if the caller wants only
+  "follow-up 1", pull `--kind follow-up` and filter by `touch_stage` client-side.)
 - **N leads** = pass `-l N` to each source and cap the merged list to what they asked for.
 
 > **Reach-outs are real tasks now.** A lead gets its reach-out cadence task the moment it's
@@ -121,7 +123,7 @@ dogfu crm <command> [flags]
 | Goal | Command |
 | :-- | :-- |
 | List statuses + their ids (do this first; ids are account-specific) | `dogfu crm status list` |
-| **Cold queue** — reach-outs + follow-ups due now (filter one stage with `--stage N`) | `dogfu crm touch due [--stage N] [-l N]` |
+| **Cold queue** — reach-outs + follow-ups due now (narrow with `--kind reach-out\|follow-up`) | `dogfu crm touch due [--kind reach-out\|follow-up] [-l N]` |
 | **Warm queue** — deals due / dropped / stalled | `dogfu crm opportunity due [-l N]` |
 | **Pre-gate Engaged leads** — replied/inbound, no opp yet | `dogfu crm lead list -s <Engaged id> [-l N]` |
 | Full lead incl. contacts + outreach fields (fills a row with no embedded contact) | `dogfu crm lead get <lead_id>` |
