@@ -17,16 +17,33 @@ a minute or two; warm calls are a few seconds). Never fetch the same thing twice
 
 The groups this skill uses: **`seo`** (keyword/competitor/traffic/technical), **`google`**
 (Google web + AI Mode), **`chatgpt`** (the ChatGPT answer surface), and **`crm`** (Close —
-to attach the published audit URL at the end). The crawl/on-page layer is the **Bluesnake
-MCP**, documented separately in `bluesnake.md`.
+to **read the lead-research profile as a reference prior at the start** and attach the
+published audit URL at the end). The crawl/on-page layer is the **Bluesnake MCP**, documented
+separately in `bluesnake.md`.
 
 ## Contents
 
+* [crm — read the lead-research prior (Phase A0)](#crm)
 * [seo — keywords, competitors, traffic, tech, CWV](#seo)
 * [google — Google + AI surfaces](#google)
 * [chatgpt — ChatGPT answers with citations](#chatgpt)
 * [Localization policy](#localization)
 * [What `dogfu` does NOT cover](#not-covered)
+
+***
+
+## crm
+
+Read-only, used at the start (Phase A0) to pull the lead-research profile as a **reference
+prior**. Goes through the caller's Close key (Console → CRM Integration); a `412` means Close
+isn't connected — skip the prior and audit cold. (The end-of-run URL write is in `report.md` Step 6.)
+
+* **`crm lead list -q <domain>`** — resolve the lead by domain (no `search` verb — `list -q` is
+  the search). Take the `lead_id`; reuse it for the Step 6 attach.
+* **`crm lead get <lead_id>`** → curated fields `industry, employees, revenue, business_model,
+  seo_pages` + `name, url, description, status_label, contacts[]`.
+* **`crm note list <lead_id>`** → the write-up notes: SEO/AEO metrics, ranked keywords,
+  competitors + competitive gap, AEO checks, verdict.
 
 ***
 

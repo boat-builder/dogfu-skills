@@ -74,29 +74,48 @@ Recommended files (one information set each; consolidate sensibly):
 
 | File | Filled in | Holds |
 | :-- | :-- | :-- |
-| `brand-brief.md` | A1 | brand name, positioning/ICP, industry, model, size, geos, competitors, topics |
+| `brand-brief.md` | A2 | brand name, positioning/ICP, industry, model, size, geos, competitors, topics |
 | `findings/scorecard.md` | rolling | overall grade + sub-scores (Visibility, AEO, Technical, Authority) and the numbers behind each |
 | `findings/answer-engine.md` | D | AEO presence matrix, share-of-voice, most-cited third-party sources |
-| `findings/search-competitive.md` | A0, C | footprint, prospect-vs-competitor traffic, top keywords, opportunity gaps |
+| `findings/search-competitive.md` | A1, C | footprint, prospect-vs-competitor traffic, top keywords, opportunity gaps |
 | `findings/technical.md` | E | status codes, indexability, thin content, Core Web Vitals (mobile + desktop), top issues |
-| `findings/onpage-aeo.md` | A0, E | schema/JSON-LD coverage + errors, missing/dup H1 & meta, JS-render parity, llms.txt |
+| `findings/onpage-aeo.md` | A1, E | schema/JSON-LD coverage + errors, missing/dup H1 & meta, JS-render parity, llms.txt |
 
 Each file should be self-sufficient: the sub-agent should be able to build that report section
 from the file alone, without re-reading any JSON.
 
 ### Phase A — Pre-flight, then start the two slow things
 
-**A0. Estimate the footprint** so you know how long the crawl will take and can set
+**A0. Pull the prospect's existing Close profile — a reference *prior*.** The prospect was
+almost certainly run through `lead-research` first, which wrote a cheap SEO/AEO profile to
+Close. Read it (read-only) and distil it into `<run-dir>/prior.md`:
+
+* `dogfu crm lead list -q <domain>` → the `lead_id` (keep it — Phase F Step 6 reuses it). Pick
+  the match whose `url` is the prospect domain; if none matches, skip A0 (cold domain — fine).
+* `dogfu crm lead get <lead_id>` → curated fields `industry, employees, revenue,
+  business_model, seo_pages` + `description, status_label`.
+* `dogfu crm note list <lead_id>` → the write-up: SEO/AEO metrics, ranked keywords,
+  competitors + competitive gap, AEO checks, verdict.
+
+**Reference, not replacement.** Every number in the report comes from *this* run's fresh pulls
+— never copy a CRM figure in. Use the prior only to **seed** the brand brief (A2), seed
+keywords (Phase B), and competitor shortlist (Phase C), and to **cross-check** fresh findings.
+If Close isn't connected (`412`) or no lead exists, skip A0 and audit cold — it's never a gate.
+
+**A1. Estimate the footprint** so you know how long the crawl will take and can set
 expectations. Run `dogfu google search --query "site:<domain>"` and read `total_results`
 (the "About N results" estimate; nullable). Cross-check by web-fetching `<domain>/sitemap.xml`
 (count `<loc>`; if it returns gzipped/binary, fall back to the `Sitemap:` line in
 `<domain>/robots.txt`). Also web-fetch `<domain>/llms.txt` and record whether it exists — an
-AEO signal for the report. Treat the page count as a range.
+AEO signal for the report. Treat the page count as a range (cross-check vs the prior's
+`seo_pages`, A0).
 
-**A1. Research the brand, then write `brand-brief.md`.** Spawn a **sub-agent** to research
+**A2. Research the brand, then write `brand-brief.md`.** Spawn a **sub-agent** to research
 the prospect from public sources (their site, about/pricing pages, positioning, reviews) and
-return structured facts. This keeps the heavy reading out of your main context. Then write it
-to **`<run-dir>/brand-brief.md`** — a local markdown file, **not** a CRM or platform write.
+return structured facts. This keeps the heavy reading out of your main context. Give it
+`prior.md` as a starting point — it must still verify against live sources, not just echo it.
+Then write the result to **`<run-dir>/brand-brief.md`** — a local markdown file, **not** a CRM
+or platform write.
 Capture, at minimum:
 
 * **name** + **positioning / value prop / ICP** (the richest part — what they do, who they serve, the problem they solve)
@@ -111,7 +130,7 @@ it seeds keyword choices, competitor selection, and answer-engine queries, and i
 the brand context the report copy is written from. (Because nothing validates it server-side
 anymore, there are no fixed enums to satisfy — just capture accurate, useful facts.)
 
-**A2. Start the Bluesnake crawl of the prospect** and let it run in the background. It returns
+**A3. Start the Bluesnake crawl of the prospect** and let it run in the background. It returns
 a `crawl_id` immediately; you'll collect results in Phase E. Create the Bluesnake project
 first so competitors can be attached later. Only one crawl runs at a time, so kick the
 prospect's off first. See `references/bluesnake.md`.
@@ -121,14 +140,15 @@ prospect's off first. See `references/bluesnake.md`.
 From what you now understand about the brand (`brand-brief.md`), choose **up to 5 high-intent
 keywords** — the terms a ready-to-act customer would search. For a commercial brand these are
 commercial/transactional; for a content/non-profit brand they're the highest-intent discovery
-terms. Your judgment, informed by the brand brief. These seeds drive both the keyword analysis
-and the answer-engine tests.
+terms. Your judgment, informed by the brand brief (the prior's ranked keywords in `prior.md`
+are a starting list — validate and extend, don't just adopt). These seeds drive both the
+keyword analysis and the answer-engine tests.
 
 ### Phase C — Keyword & competitor intelligence (`dogfu seo`)
 
 Now start the paid data (see `references/data-sources.md`):
 
-* **Pick ≤3 competitors.** There's no competitor-discovery endpoint, so shortlist from the brand research (weighing **geography, industry, and ICP**), then validate each: do they rank for an overlapping set of the prospect's keywords, are they in a comparable traffic band, and do they show up in the same answer-engine results (Phase D)? Drop ones that pass none.
+* **Pick ≤3 competitors.** There's no competitor-discovery endpoint, so shortlist from the brand research **and the prior's competitors** (`prior.md`), weighing **geography, industry, and ICP**, then validate each: do they rank for an overlapping set of the prospect's keywords, are they in a comparable traffic band, and do they show up in the same answer-engine results (Phase D)? Drop ones that pass none.
 * Pull `seo ranked-keywords` for the prospect **and** each competitor, `seo keyword-ideas` from your seeds (opportunity gaps), `seo domain-overview` + `seo bulk-traffic-estimation` for the head-to-head, and optionally `seo historical-rank-overview` (momentum) and `seo technologies` (stack).
 * Attach the competitors to the Bluesnake project and start their crawls (sequential, after the prospect's).
 

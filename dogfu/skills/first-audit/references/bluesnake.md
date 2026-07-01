@@ -6,7 +6,7 @@ the audit. All tools are MCP tools on the Bluesnake server.
 
 ## Lifecycle
 
-1. **`create_project(main_domain="<domain>")`** → returns a `project_id`. Do this in Phase A2 so competitors can be attached. (A crawl can also run without a project; the project only exists so `project_comparison` can line the sites up.)
+1. **`create_project(main_domain="<domain>")`** → returns a `project_id`. Do this in Phase A3 so competitors can be attached. (A crawl can also run without a project; the project only exists so `project_comparison` can line the sites up.)
 2. **`start_crawl(url="https://<domain>", profile="Default audit")`** → returns a `crawl_id` immediately and runs in the background. Spider mode (default) follows links from `url`. **Only one crawl runs at a time.** Profiles available: `Default audit`, `Parity audit (rendered)`, `Parity audit (text)` — the parity profiles compare raw vs JS-rendered HTML (extra AEO signal); `Default audit` is fine for a first audit.
    * You usually don't need a scope cap for a normal site. If a site turns out to be huge and the crawl is impractical, you can pass `config={"limits.max_urls": N}` (discover keys with `list_config_options`).
 3. **`add_competitor(project_id, domain)`** then `start_crawl(url=competitor_root)` for each competitor — sequential, after the prospect's crawl.
