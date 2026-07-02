@@ -171,12 +171,12 @@ never invisible.)
 dogfu crm <command> [flags]
 ```
 
+- **First, authenticate the CLI.** Before any `dogfu` command, call the dogfu MCP's
+  **`get_setup_instructions`** tool and follow it: install the CLI (if needed), then
+  `dogfu configure --otp <OTP> --title "Lead touch: <who/what>"` with the OTP it returns. This
+  is the first step whenever the skill runs.
 - **Output is JSON by default** — read stdout. Add `-o FILE` to dump a large list to a file
   and read back only what you need. `-f table` is for humans, not you.
-- **Auth** is a `dogfu` session token via the **dogfu MCP**. If a command fails with an auth
-  error (`missing dogfu token`, `invalid or expired token`) or `dogfu` isn't configured, call
-  the MCP's **`get_setup_instructions`** tool and follow it: install the CLI, then
-  `dogfu configure --otp <OTP> --title "Lead touch: <who/what>"`. Re-run and retry.
 - **CRM (Close) calls** use the Close API key set once in the admin **Console → CRM
   Integration**. If it's missing, `crm` commands return a "no Close CRM API key configured" /
   `412` — surface that rather than retrying.

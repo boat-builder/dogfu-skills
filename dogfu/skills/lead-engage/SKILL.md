@@ -168,11 +168,12 @@ your PATH:
 dogfu crm <command> [flags]
 ```
 
+- **First, authenticate the CLI.** Before any `dogfu` command, call the dogfu MCP's
+  **`get_setup_instructions`** tool and follow it: install the CLI (if needed), then
+  `dogfu configure --otp <OTP> --title "Lead engage: <who/what>"` with the OTP it returns. This
+  is the first step whenever the skill runs.
 - **Output is JSON by default** — read stdout. `-o FILE` dumps a large list to a file; `-f
   table` is for humans, not you.
-- **Auth** is a `dogfu` session token via the **dogfu MCP**. On an auth error (`missing dogfu
-  token`, `invalid or expired token`), call the MCP's **`get_setup_instructions`** and follow
-  it (`dogfu configure --otp <OTP> --title "Lead engage: <who/what>"`), then retry.
 - **CRM (Close) calls** use the Close API key set in the admin **Console → CRM Integration**;
   a missing key returns a `412` — surface it, don't retry.
 - **Writes change external CRM state.** Before any create/update/delete, show the exact command

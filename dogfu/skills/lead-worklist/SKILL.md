@@ -112,11 +112,12 @@ CLI (`pip install dogfu`) on your PATH:
 dogfu crm <command> [flags]
 ```
 
+- **First, authenticate the CLI.** Before any `dogfu` command, call the dogfu MCP's
+  **`get_setup_instructions`** tool and follow it: install the CLI (if needed), then
+  `dogfu configure --otp <OTP> --title "Lead worklist"` with the OTP it returns. This is the
+  first step whenever the skill runs.
 - **Output is JSON by default** — read stdout. `-o FILE` dumps a large queue to a file; `-f table`
   is for humans, not you.
-- **Auth** is a `dogfu` session token via the **dogfu MCP**. On an auth error (`missing dogfu
-  token`, `invalid or expired token`), call the MCP's **`get_setup_instructions`** and follow it
-  (`dogfu configure --otp <OTP> --title "Lead worklist"`), then retry.
 - **CRM (Close) calls** use the Close API key set in the admin **Console → CRM Integration**; a
   missing key returns a `412` — surface it, don't retry.
 - Every call here is an independent **read** — the worklist is one call; any extra (the Engaged list,

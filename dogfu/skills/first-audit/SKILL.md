@@ -26,17 +26,11 @@ not include a recommendations / "what to fix" section — that conversation happ
 
 ## What you need before starting
 
-* **The dogfu MCP** and the **Bluesnake MCP** must be available.
-* **The `dogfu` CLI**, authenticated through the dogfu MCP. Setup is usually already done
-  when the dogfu MCP is connected. If `dogfu` isn't installed/configured — or a command
-  fails with an auth error (`missing dogfu token`, `invalid or expired token`) — call the
-  dogfu MCP's **`get_setup_instructions`** tool and follow what it returns: install the
-  `dogfu` package, then run
-  ```bash
-  dogfu configure --otp <OTP> --title "First audit: <prospect-domain>"
-  ```
-  with the one-time OTP from that response (saved to `~/.dogfu/config.json`). After an auth
-  failure, fetch a fresh OTP and re-configure. There is **no project to register and no
+* **The Bluesnake MCP** must be available.
+* **Authenticate the `dogfu` CLI first.** Before any `dogfu` command, call the dogfu MCP's
+  **`get_setup_instructions`** tool and follow it: install the `dogfu` package (if needed),
+  then run `dogfu configure --otp <OTP> --title "First audit: <prospect-domain>"` with the OTP
+  it returns (saved to `~/.dogfu/config.json`). There is **no project to register and no
   `--domain` to bind** — you audit the domain directly.
 * The `dogfu` CLI is a stateless HTTP client. Output is **canonical JSON by default**; add
   `-o FILE` to dump large payloads to a file (you'll do this constantly). Discover flags
