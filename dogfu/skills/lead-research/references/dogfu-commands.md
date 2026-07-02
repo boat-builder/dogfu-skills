@@ -14,6 +14,11 @@ only the fields you need. Output is always the canonical, normalized model.
 Calls are independent HTTP requests — there's no single-process lock, so you may run them
 concurrently. Cost discipline still applies: pick the cheapest informative call next.
 
+**Discovery scrapes are slow + metered — never block a foreground shell on them.**
+`linkedin posts --profile-url`, `linkedin profiles --name`, and `x posts --profile` trigger
+an async scrape (~1–10 min) that bills on trigger even if you time out and get nothing. Run
+detached with `-o FILE` and poll the file; prefer the fast `--url` path when you have the URL.
+
 ## Common output flags (all leaf commands)
 - `-f, --format [json|table]` — default `json`. Use `json`.
 - `-o, --output FILE` — write JSON to a file instead of stdout.
@@ -30,15 +35,16 @@ default to `2840` / `en` and say so. `google` also accepts `--country` (ISO alph
 
 ## `linkedin`
 - **`profiles --url <u>... | --name "<Full Name>"...`** `[--limit-per-input N] [--wait-seconds 0-600]`
-  Fetch by URL or discover by name. → id, name, headline, about, current_company, current_title, location, followers, connections, linkedin_url, experience[] (company, title, location, start_date, end_date, url), education[]. **Often sparse:** private profiles can return `experience: []` and a missing `current_title` — corroborate background from `linkedin posts` and a web search.
+  Fetch by URL or discover by name. **`--name`: async scrape ~1–10 min; `--url` fast.** → id, name, headline, about, current_company, current_title, location, followers, connections, linkedin_url, experience[] (company, title, location, start_date, end_date, url), education[]. **Often sparse:** private profiles can return `experience: []` and a missing `current_title` — corroborate background from `linkedin posts` and a web search.
 - **`companies --url <u>...`** `[--wait-seconds N]`
   → id, name, linkedin_url, website, domain, description, about, industries, company_size, employee_count, organization_type, followers, logo_url, funding (last_round_type/date/raised, rounds), investors[]. *(No full employee list.)*
 - **`jobs --url <u>... | --keyword <k> [--location ..] [--company ..] ...`** → title, company, location, employment_type, seniority, posted_date, applicants, base_salary, summary, url.
 - **`posts --url <u>... | --profile-url <p>...`** `[--limit-per-input N]`
-  Posts by URL or recent posts by author. → id, url, post_type, title, text, date_posted, likes, comments, author_name, author_url, hashtags[], embedded_links[].
+  Posts by URL or recent posts by author. **`--profile-url`: async scrape ~1–10 min; `--url` fast.** → id, url, post_type, title, text, date_posted, likes, comments, author_name, author_url, hashtags[], embedded_links[].
 
 ## `x` (Twitter)
 - **`posts --url <u>... | --profile <p> [--start-date YYYY-MM-DD] [--end-date ..]`** `[--limit-per-input N]`
+  **`--profile`: async scrape ~1–10 min; `--url` fast.**
   → id, url, text, author, date_posted, likes, replies, reposts, quotes, views, is_repost, is_verified, hashtags[], photos[], external_url.
 - **`profiles --url <u>...`** → id, name, url, biography, location, followers, following, posts_count, is_verified, is_business_account, date_joined, external_link, category.
 
