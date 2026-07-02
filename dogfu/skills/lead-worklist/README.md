@@ -11,10 +11,11 @@ the two action skills.
 - **Read-only.** It runs the one queue command `dogfu crm worklist`, presents the result, and hands
   each row off to the skill that records the action. It never writes to the CRM.
 - **Cross-phase.** `dogfu crm worklist` reads the real due-task inbox and classifies every row
-  (reach-out / follow-up / deal / ad-hoc) in one call — the CLI does the composing, not the skill.
-  Pre-gate Engaged leads (replied/inbound, no task yet) are pulled separately from `lead list -s
-  <Engaged>` since they aren't tasks. `lead-touch` and `lead-engage` own *recording* actions; this
-  skill is the place "what should I work on across everything" lives.
+  (reach-out / follow-up / engage / deal / ad-hoc) in one call — the CLI does the composing, not the
+  skill. The pre-gate reply state is now a first-class `engage` task, so a replied ("Connected")
+  lead is in the queue like everything else; if its task ever goes missing, `crm reconcile` catches
+  it. `lead-touch` and `lead-engage` own *recording* actions; this skill is the place "what should I
+  work on across everything" lives.
 - **Not an action skill.** To record a touch use **lead-touch**; to move a deal use **lead-engage**;
   for a health/anomaly audit use **crm-cleanup**; to research a new target use **lead-research**.
 

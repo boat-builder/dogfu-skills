@@ -2,18 +2,19 @@
 
 This is the `lead-engage` skill, shipped inside the **`dogfu`** plugin. It's the **warm-phase**
 counterpart to `lead-touch`: where `lead-touch` runs the *cold* outreach cadence and hands a
-lead off the moment it replies (→ **Engaged**), `lead-engage` works the live deal from there —
-discovery, an **opportunity**, a trial, a proposal, won or lost. It triggers when someone wants
-to act on a lead that has already engaged: run/relay a discovery call, open or advance or close
-an opportunity, log a call/demo/proposal, set or check a deal's next step, pull the deals due or
-stalled, mark a deal won/lost, intake an inbound lead, or report the deal pipeline / forecast.
+lead off the moment it replies (→ **Connected**), `lead-engage` works it from there — landing the
+discovery call, then, once a deal is confirmed, opening an **opportunity** (→ **Engaged**) and
+running it to a trial, a proposal, won or lost. It triggers when someone wants to act on a lead
+that has already engaged: run/relay a discovery call, open or advance or close an opportunity, log
+a call/demo/proposal, set or check a deal's next step, pull the deals due or stalled, mark a deal
+won/lost, intake an inbound lead, or report the deal pipeline / forecast.
 
 It's the third phase of the lifecycle:
 
 ```
 lead-research  →  lead-touch        →  lead-engage
-(Discover &       (cold cadence;        (live deal; Engaged → Won/Customer or lost)
- Qualify)          reply → Engaged)
+(Discover &       (cold cadence;        (Connected → discovery call → opportunity;
+ Qualify)          reply → Connected)    Engaged → Won/Customer or lost)
 ```
 
 ## Files
@@ -32,19 +33,20 @@ the **dogfu MCP** (`get_setup_instructions` → `dogfu configure --otp <OTP> --t
 (Close) calls go through the backend under the Close API key set once in **Console → CRM
 Integration**.
 
-## Status — CLI shipped; pending the Close opportunity pipeline
+## Status — CLI shipped; pending Close-side setup
 The **`dogfu crm opportunity …`** commands have shipped and the **`Engaged`** lead status is live
-(with `Trial` removed). What remains before the skill is fully operational is the Close-side admin
-setup: the **opportunity pipeline** (Discovery → Trial → Proposal → Won/Lost) and the **`Deal
-Type`** custom field, created once in the Close UI. Until those exist, the skill can read/move lead
-**statuses** but can't yet work opportunities.
+(with `Trial` removed). Two Close-side admin steps remain: creating the **`Connected`** lead status
+(the pre-gate reply state that now drives the auto `[dogfu:engage]` task — until it exists, `touch
+reply` ends the cadence but leaves the status unchanged, safely), and the **opportunity pipeline**
+(Discovery → Trial → Proposal → Won/Lost) + **`Deal Type`** custom field. Until those exist, the
+skill can read/move lead **statuses** but can't yet work opportunities.
 
 ## Why a separate skill (not a mode of `lead-touch`)
 The cold and warm phases are different machines. Cold runs on a **cadence** (fixed waits, a
 system-computed next-touch); warm runs on **next steps** (one explicit committed action per
 deal) and on **opportunity stages**. A warm deal on a fixed nurture cadence is wrong, and a cold
 lead with a hand-set "next step" is wrong. Keeping them as siblings keeps each model clean — and
-mirrors the real handoff (`reply → Engaged`) in the funnel.
+mirrors the real handoff (`reply → Connected`) in the funnel.
 
 ## How to edit
 1. Edit `SKILL.md` (or ask Claude to).
