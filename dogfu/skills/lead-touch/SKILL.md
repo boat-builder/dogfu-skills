@@ -48,10 +48,11 @@ A **lead is a company** (not a person). Each lead carries:
 - Attached **notes** (write-ups, audit trail) and **tasks** (follow-up reminders).
 
 **Two layers — don't conflate them.** *Status* is the funnel position (a human label).
-*Outreach state* is the sequence position (machine-tracked). They move independently:
-recording a touch advances the sequence but **does not** change status; changing status
-doesn't touch the sequence. Only `touch reply` / `touch stop` deliberately do both (end the
-sequence **and** optionally set a status).
+*Outreach state* is the sequence position (machine-tracked). Touches never change status, and
+`record` refuses a lead whose status has left the cold flow (Connected / Engaged / Customer /
+a dead status). Status moves don't advance the sequence — though moving a lead **out of the
+cold flow** ends it (clears `next_touch_due`, closes the cadence task). To end a chase, use
+`touch reply` / `touch stop` — they record the *intent*, not just the label.
 
 ***
 
@@ -95,9 +96,9 @@ touch yet** (`touch_stage` is null). The work queue is the union of those two �
 
 **Lifecycle:** `Qualified, untouched → reach-out → follow-up 1 → 2 → … (no cap)`. A **reply**
 or a **stop** at any point ends the sequence (clears `next_touch_due`), which is what keeps a
-lead who answered — or one we've decided to drop — from being messaged again. **The only
-ways a lead leaves the sequence are `reply` and `stop`.** Because there's no auto-exit,
-`stop` is a deliberate, first-class action: it's how the BDR says "I'm done chasing this one."
+lead who answered — or one we've decided to drop — from being messaged again. The sequence
+never ends on its own — no touch cap, no timeout — so `stop` is a deliberate, first-class
+action: it's how the BDR says "I'm done chasing this one."
 
 ***
 
@@ -213,15 +214,18 @@ fetch them so you can hand the BDR the LinkedIn/X handle to message.
 | :-- | :-- | :-- |
 | Sent the **next** touch (reach-out or follow-up) | `dogfu crm touch record <lead_id> [-c <channel>] [--detail "<text>"]` | auto-advances to the lead's next touch; stamps `last_touched`=today, computes `next_touch_due`, **adds `<channel>` to the channels-tried set** (if given), appends a structured touch-history entry. **Closes the prior cadence task and opens the next.** Channel and detail are **optional**. |
 | Sent a touch with a **non-default wait** | add `--wait-days N` | overrides the gap before the next follow-up is due |
-| Recorded a touch but **don't** want the auto note/task | add `--no-note` and/or `--no-task` | suppresses the audit note / next-touch reminder |
-| Lead **replied / positive** | `dogfu crm touch reply <lead_id>` | ends the sequence (clears `next_touch_due`), moves the lead to **Connected** automatically, and opens its **`[dogfu:engage]` task** ("land the discovery call") — the **handoff out of cold** (see below). Pass `--status <id>` only to override. |
-| **Giving up** | `dogfu crm touch stop <lead_id> [--status <Bad Fit or Not Interested id>]` | same mechanism as reply; intent + status differ |
-| Change **status only**, no sequence change | `dogfu crm lead update <lead_id> -s <status_id>` | funnel label only |
+| Recorded a touch but **don't** want the auto note/task | add `--no-note` and/or `--no-task` | suppresses the side effect, at a cost (each warns): `--no-note` → the touch won't show in `touch history`; `--no-task` → the lead is due but invisible to `crm worklist` until reconcile repairs it. To end the sequence use `--final`. |
+| Lead **replied / positive** | `dogfu crm touch reply <lead_id>` | ends the sequence (clears `next_touch_due`), moves the lead to **Connected** automatically, and opens its **`[dogfu:engage]` task** ("land the discovery call") — the **handoff out of cold** (see below). Pass `--status <id>` only to override. **Never downgrades**: a lead already Connected / Engaged / Customer keeps its status (warned, cadence still ends). |
+| **Giving up** | `dogfu crm touch stop <lead_id> [--status <Bad Fit or Not Interested id>]` | same mechanism as reply; intent + status differ. Without `--status` the output **warns if the lead is left in a workable status** (limbo) — set the real terminal status. |
+| Change **status only** | `dogfu crm lead update <lead_id> -s <status_id>` | funnel label — plus the safety net: moving out of the cold flow (Connected / Engaged / Customer / dead) also **ends the sequence** (clears the due date, closes the cadence task) |
 
 Notes on the verbs:
 - `record` **auto-advances** from the lead's current touch — on a never-touched lead it logs
   the **reach-out**; otherwise the **next follow-up**. Don't force a number unless you mean to
   redo a touch, and don't record the same touch twice (check `touch_stage` if unsure).
+- `record` **errors on a lead that has left the cold flow** (Connected / Engaged / Customer /
+  a dead status) — recording there would re-enroll it. If the BDR really means to re-chase,
+  first move it back to a working status (`lead update -s <Qualified id>`), then record.
 - **Channel is freeform and optional.** Pass `-c linkedin|email|x|call|other` (or whatever the
   BDR used) when they tell you; omit it when they don't. It's added to the lead's
   channels-tried set and stamped on that touch's history entry.

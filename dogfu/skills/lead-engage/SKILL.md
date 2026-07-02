@@ -145,11 +145,12 @@ whole phase shows up in the one work queue:
    surfaces them (`missing_engage_task` / `opportunity_no_next_step`) and can auto-repair them.
 4. **Stalled deals** — open opps not updated in > 14 days, also from **`crm reconcile`**
    (`stalled_opportunity`). *Quietly dying; nudge or re-qualify.*
+5. **Zombie Engaged leads** — a lead sitting at **Engaged with no open opportunity** (the deal
+   was won/lost but the status was never moved). Also from **`crm reconcile`**
+   (`engaged_lead_no_open_opportunity`) — advisory; set the real status (Customer / terminal).
 
 So: `crm worklist` (kinds `engage` + `deal`) is the "act today" list across the whole warm phase,
-and `crm reconcile` catches whatever fell out of it (a missing task, or a deal gone stale) — the
-pre-gate conversation that stalls no longer slips, because it's a first-class task, not an absence
-you have to hunt for.
+and `crm reconcile` catches whatever fell out of it (a missing task, a stale deal, a zombie status).
 
 ***
 
@@ -212,7 +213,7 @@ All leaf commands take `-f json|table` (default json) and `-o FILE`.
 | One opportunity in full | `dogfu crm opportunity get <opp_id>` |
 | **Discovery calls to land today** (engage tasks due, in the one work queue) | `dogfu crm worklist --kind engage [-l N]` |
 | **Deals due today** (next-steps due, in the one work queue) | `dogfu crm worklist --kind deal [-l N]` |
-| **Dropped-ball & stalled work** (missing engage task, or open opp with no next-step / gone stale) | `dogfu crm reconcile` (rows `missing_engage_task` / `opportunity_no_next_step` / `stalled_opportunity`) |
+| **Dropped-ball, stalled & zombie work** (missing engage task, open opp with no next-step / gone stale, or an Engaged lead with no open opp) | `dogfu crm reconcile` (rows `missing_engage_task` / `opportunity_no_next_step` / `stalled_opportunity` / `engaged_lead_no_open_opportunity`) |
 | A lead's notes / tasks | `dogfu crm note list <lead_id>` · `dogfu crm task list -l <lead_id> [-p]` |
 
 ### The gate & moving a deal
@@ -257,8 +258,9 @@ An inbound lead (someone reached out to us) skips the cold sequence entirely:
 - **The lead stays Engaged for the whole live deal.** Flip to **Customer** only on win; to
   **Not Interested / Bad Fit** only on loss; **Canceled** only on churn. Don't leave a zombie
   Engaged lead after a deal dies — losing the opp **and** setting the terminal status go
-  together. (A Connected lead that dies before the gate goes straight to a terminal status, which
-  retires its engage task.)
+  together (`crm reconcile` flags a forgotten second step as `engaged_lead_no_open_opportunity`,
+  but don't rely on the backstop). (A Connected lead that dies before the gate goes straight to
+  a terminal status, which retires its engage task.)
 - **Put data where it belongs:** deal value / deal type / confidence → on the
   **opportunity**; what happened → a **note**; the forward reminder → the **`[dogfu:deal]` task**
   (via `opportunity next`); the person's LinkedIn/X → the contact's `urls`. Don't dump deal

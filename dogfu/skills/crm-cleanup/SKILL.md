@@ -35,11 +35,12 @@ in **lead-touch/SKILL.md**; this skill assumes it and only recaps what the check
   tag **`[dogfu:cadence]`** — that substring is how you tell it from an ad-hoc task. The rule
   is **exactly one open cadence task per lead while it's in the sequence**.
 - **In the sequence** = `next_touch_due` is set (a follow-up is scheduled) *or* the lead is a
-  reach-out (Qualified + `touch_stage` null). **Out** = replied/stopped (`next_touch_due`
-  empty after a touch).
+  reach-out (Qualified + `touch_stage` null). **Out** = replied/stopped, or moved to a status
+  outside the cold flow (`next_touch_due` empty).
 - **The work queue** (`dogfu crm worklist`) = the actual open tasks due today (reach-outs,
-  follow-ups, deal next-steps, ad-hoc). This audit is its **inverse**: it checks everything whose
-  *state* says it needs action but has no task (or a stray/duplicate one) — the drift behind the queue.
+  follow-ups, engage discovery-calls, deal next-steps, ad-hoc). This audit is its **inverse**: it
+  checks everything whose *state* says it needs action but has no task (or a stray/duplicate one)
+  — the drift behind the queue.
 
 > **Note (reach-out tasks).** A reach-out is itself a real cadence task, opened when a lead
 > enters the reach-out status. So a reach-out with **no** open cadence task **is** an anomaly —
@@ -106,19 +107,19 @@ needs a judgment call.
 
 ### A. Task invariants & opportunity drift — `reconcile` owns this
 
-Don't re-derive these by hand: **`reconcile.json` already lists them.** The CLI computes the whole
-invariant — every reach-out / in-cadence lead carries exactly one open cadence task, no exited or
-terminal-status lead carries one; every pre-gate **Connected** lead carries exactly one open engage
-task and no other lead does; ≤ one open `[dogfu:deal]` task per open opportunity (none on a
-won/lost or vanished one); and open deals aren't dropped or stalled. Report each row it returns;
-repair the bulk with **`dogfu crm reconcile --apply`** (the single writer — never hand-complete a
-`[dogfu:cadence]` / `[dogfu:engage]` / `[dogfu:deal]` task). The keys it can return:
+Don't re-derive these by hand: **`reconcile.json` already lists them** — the CLI computes the
+task invariants and the drift checks across the whole book (the table below is the complete key
+set). Report each row it returns; repair the bulk with **`dogfu crm reconcile --apply`** (the
+single writer — never hand-complete a `[dogfu:cadence]` / `[dogfu:engage]` / `[dogfu:deal]`
+task). The keys it can return:
 
 | Key (from `reconcile`) | Means | Sev | Fix |
 | :- | :- | :- | :- |
 | `missing_reach_out_task`, `missing_cadence_task` | in the sequence but no open cadence task — due yet invisible in the task list | 🔴 | `[fix: reconcile]` |
 | `missing_engage_task` | a **Connected** lead (replied, no deal) with no engage task — the discovery call is owed but invisible in the queue | 🔴 | `[fix: reconcile]` |
-| `cadence_task_after_exit`, `cadence_task_on_terminal_status` | reminder still open after the lead replied/stopped or went terminal | 🟠 | `[fix: reconcile]` (a terminal lead may also need its **status** set — see B) |
+| `cadence_task_after_exit`, `cadence_task_on_terminal_status` | reminder still open after the lead replied/stopped or went terminal | 🟠 | `[fix: reconcile]` (an *exited* lead may also need its funnel **status** moved — see B1) |
+| `terminal_status_in_cadence` | a lead whose status left the cold flow (Connected / Engaged / Customer / dead) but that is **still scheduled** (`next_touch_due` set) — being cold-chased from a queue it exited | 🔴 | `[fix: reconcile]` (`--apply` exits the cadence: clears the due date, closes the task) |
+| `engaged_lead_no_open_opportunity` | a **zombie**: lead status is **Engaged** but no opportunity is open — the deal was won/lost and the status never moved, or no deal was opened | 🟠 | `[fix: human]` set the real status (`Customer` on a win; `Not Interested` / `Bad Fit` on a loss), or open the real deal |
 | `engage_task_after_gate` | an engage task on a lead that's left the pre-gate state (a deal opened, or it went terminal) | 🟠 | `[fix: reconcile]` |
 | `duplicate_cadence_tasks`, `duplicate_engage_tasks`, `duplicate_deal_tasks` | 2+ open reminders where exactly one is allowed | 🟠 | `[fix: reconcile]` |
 | `cadence_task_due_drift` | the reminder's due date ≠ the lead's `next_touch_due` | 🟡 | `[fix: reconcile]` |
@@ -127,16 +128,23 @@ repair the bulk with **`dogfu crm reconcile --apply`** (the single writer — ne
 | `opportunity_no_next_step` | open opportunity with **no** next-step task (a dropped-ball deal, invisible to the queue) | 🔴 | `[fix: human]` set the next step: `crm opportunity next <opp_id> -t "<action>" -d <date>` |
 | `stalled_opportunity` | open opportunity not updated in > 14d | 🟡 | `[fix: human]` nudge / re-qualify, or advance the stage |
 
-> The `opportunity_*` and `connected_lead_with_open_opportunity` rows are **advisory** (not
-> auto-fixable — a deal's next step is rep-authored, and a status move is a human call), so
-> `--apply` won't touch them; surface them for a human.
+> The `opportunity_*`, `connected_lead_with_open_opportunity`, and
+> `engaged_lead_no_open_opportunity` rows are **advisory** (not auto-fixable — a deal's next
+> step is rep-authored, and a status move is a human call), so `--apply` won't touch them;
+> surface them for a human.
+
+> **Coverage warnings.** `reconcile` output includes a `warnings[]` array naming any sweep
+> that hit its scan `--limit` (default 200). If it's non-empty, re-run with a higher `-l`
+> and say in the report that the first pass was capped.
 
 ### B. Status ↔ sequence drift (the lens `reconcile` doesn't have)
 
 | # | Anomaly | Detect | Sev | Fix |
 | :- | :- | :- | :- | :- |
 | B1 | **Exited but funnel not moved** — replied/stopped yet still Qualified/Potential | lead `touch_stage` not null **and** `next_touch_due` empty **and** `status_label` ∈ {Qualified, Potential} | 🟠 | `[fix: human]` set the real status: `dogfu crm lead update <lead_id> -s <Connected\|Bad Fit\|Not Interested id>` (replied → **Connected**) |
-| B2 | **Warm lead still in cadence** — replied/won but still scheduled | `status_label` ∈ {Connected, Engaged, Customer} **and** `next_touch_due` set (a still-set due date reads as "in cadence", so `reconcile` won't flag the task — this status lens catches it) | 🟠 | `[fix: CLI]` `dogfu crm touch stop <lead_id>` (or `touch reply`) to clear the sequence |
+
+> The inverse drift — a warm/terminal lead still *scheduled* — is `reconcile`'s
+> `terminal_status_in_cadence` row (Section A); don't re-derive it by hand.
 
 ### C. Outreach-readiness gaps (queue says act, but you can't)
 
@@ -168,8 +176,8 @@ repair the bulk with **`dogfu crm reconcile --apply`** (the single writer — ne
 - **Read-only.** This skill never writes. It reports anomalies and the command to fix each.
   **Every cadence-task / deal-task repair (Section A)** is applied by `dogfu crm reconcile --apply`
   — don't hand-create or hand-complete a `[dogfu:cadence]` / `[dogfu:deal]` task (the single-writer
-  rule keeps outreach state sane). B2, C3, E1 are safe one-line `dogfu` fixes; the two
-  `opportunity_*` drift rows and the rest need a human judgment call.
+  rule keeps outreach state sane). C3 and E1 are safe one-line `dogfu` fixes; the
+  `opportunity_*` / status-drift rows and the rest need a human judgment call.
 - **Not yet detectable (data the documented CLI surface doesn't expose):**
   - *Age-based staleness* of reach-outs or Potential leads (created/qualified date) — the
     canonical `Lead` has no created date. Approximate via `dogfu crm lead list -s <id> --sort
@@ -178,11 +186,8 @@ repair the bulk with **`dogfu crm reconcile --apply`** (the single writer — ne
   - *Task assigned to a deactivated/unknown user* — there's no user-list command (only
     `whoami`), so you can flag empty assignees (E1) but not invalid ones.
   - *Lead owner missing* — not exposed on the model; use task assignee (E1) as the proxy.
-- **Now covered (shipped):** reach-out tasks, the **engage-task invariant** (a Connected lead's
-  pre-gate discovery-call task, incl. a missing one or one left on a post-gate lead), the deal-task
-  invariant, and opportunity drift (dropped-ball / stalled deals) are all audited by `reconcile`
-  (Section A) — flag them. The remaining **deal-health** judgment (e.g. an under-specified deal, a
-  stale value/confidence) belongs to `lead-engage`, not this read-only audit.
+- **Deal-health judgment is out of scope:** an under-specified deal or a stale value/confidence
+  is `lead-engage`'s call, not this read-only audit's. Everything task-shaped is Section A.
 
 ***
 
@@ -208,6 +213,6 @@ list was capped by `--limit`, say so and give the real floor ("≥ N"). Close wi
 - **Gather broad, drill narrow.** Pull list endpoints once to files; only `lead get` /
   `note list` / `contact list` the leads a cheap check already flagged.
 - **Respect the single-writer rule.** Route every cadence/deal-task repair to
-  `reconcile --apply`. Only suggest hand-fixes that are safe (B2, C3, E1) or clearly a human decision.
+  `reconcile --apply`. Only suggest hand-fixes that are safe (C3, E1) or clearly a human decision.
 - **Never write.** If the user wants the fixes applied, hand off to `lead-touch` (per-lead) or
   run `reconcile --apply` (bulk cadence/deal tasks) — say which.

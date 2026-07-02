@@ -36,8 +36,7 @@ A lead moves research → cold outreach → connected → live deal. **`dogfu cr
 whole cross-phase queue in one call.** It reads the BDR's actual Close inbox — every open task due today or
 earlier — and classifies each row by what kind of work it is, enriched with the context to act. This
 *is* the task list, not a reconstruction from lead state: nothing due is invisible, and Close's own
-Tasks/Inbox is literally the same list. (It replaces the old `touch due` + `opportunity due` +
-manual-merge dance — you no longer compose or dedupe queues by hand.)
+Tasks/Inbox is literally the same list.
 
 Each row carries a **`kind`** and the human **`next_action`**:
 
@@ -57,16 +56,13 @@ Each row carries a **`kind`** and the human **`next_action`**:
   every assignee's due tasks, so nothing hides behind an assignee filter.
 
 > **Ad-hoc tasks count.** A manual "Reach out to <name>" task with no dogfu tag is still real, due
-> work — it surfaces as an `ad-hoc` row. (These used to be invisible to the queue entirely.)
+> work — it surfaces as an `ad-hoc` row.
 
 What `worklist` deliberately does **not** show: a lead or deal whose *state* says it needs action but
 that has **no task** — a Qualified lead missing its reach-out task, a Connected lead missing its
 engage task, an open opportunity with no next step. Those aren't in the inbox; they're **drift**,
 surfaced (and repaired) by `dogfu crm reconcile` via the **crm-cleanup** skill. So the split is clean:
-**`worklist` = what's actually due now; `reconcile` = what *should* have a task but doesn't.** With
-the pre-gate now a first-class `engage` task, the whole lifecycle is in the one queue — a replied
-conversation no longer needs to be hunted from a status list; if its engage task is ever missing,
-`reconcile` catches it (`missing_engage_task`) so it doesn't slip.
+**`worklist` = what's actually due now; `reconcile` = what *should* have a task but doesn't.**
 
 ***
 
