@@ -261,6 +261,15 @@ In addition to the CRM write, return:
 5. **Key gaps & angles** — the divergences found, framed as outreach openings.
 6. **Evidence appendix** — the exact `dogfu` commands run and key fields pulled, so the run is reproducible. Keep all traffic/keyword numbers labeled as estimates.
 
+## Optional — brand narrative coherence (only on explicit request)
+
+**Not part of the default pipeline.** *Only if the user explicitly asks* to check the brand's
+narrative / category coherence, spawn a **sub-agent** to execute
+`references/brand-narrative-coherence.md` in **`mode: light`**, handing it the domain, the brand
+brief, the geo decision, the competitor shortlist, and the decision-maker's LinkedIn/X URL. It
+returns a compact coherence verdict (score + the sharpest divergence) — fold that into the CRM
+note. You don't read the playbook yourself. Without a clear ask, skip this.
+
 ## Operating rules
 
 - **Treat a sparse prompt as normal.** Derive segment, geography, audience, and competitors yourself before qualifying; don't stop to ask for things you can research (the ICP comes from `icps/` — only ask if none is bundled and none was supplied).

@@ -169,6 +169,16 @@ This is what makes the audit current: is the brand showing up where AI answers a
 
 The live synthetic queries remain the report's **primary** AEO evidence (the actual answer a prospect sees today); the mentions index rides along only when it genuinely strengthens the picture.
 
+### Optional — Brand narrative coherence (only on explicit request)
+
+**Do not run by default.** *Only if the user explicitly asks* for a brand narrative /
+category-coherence check, spawn a **sub-agent** to execute
+`references/brand-narrative-coherence.md`, handing it `brand-brief.md`, the geo decision, the
+competitor shortlist, and Phase D's AI-answer citations, with **`mode: full`** and output
+`findings/narrative-coherence.md`. The sub-agent does all the work and writes that file; fold it
+in as an extra report section in Phase F. You don't read the playbook yourself. Without a clear
+ask, skip this entirely.
+
 ### Phase E — Collect the crawl(s) + technical signals
 
 The prospect crawl is likely done; competitor crawls may still be running. **Wait for them to
