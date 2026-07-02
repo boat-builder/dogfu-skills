@@ -174,9 +174,9 @@ The live synthetic queries remain the report's **primary** AEO evidence (the act
 **Do not run by default.** *Only if the user explicitly asks* for a brand narrative /
 category-coherence check, spawn a **sub-agent** to execute
 `references/brand-narrative-coherence.md`, handing it `brand-brief.md`, the geo decision, the
-competitor shortlist, and Phase D's AI-answer citations, with **`mode: full`** and output
-`findings/narrative-coherence.md`. The sub-agent does all the work and writes that file; fold it
-in as an extra report section in Phase F. You don't read the playbook yourself. Without a clear
+competitor shortlist, Phase D's AI-answer citations, and output `findings/narrative-coherence.md`.
+The sub-agent does all the work and writes that file; fold it in as an extra report section in
+Phase F. You don't read the playbook yourself. Without a clear
 ask, skip this entirely.
 
 ### Phase E — Collect the crawl(s) + technical signals
