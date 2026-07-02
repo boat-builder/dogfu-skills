@@ -38,7 +38,7 @@ you hand off the playbook and inputs, and present what comes back.
      reads and executes this;
    - the inputs the playbook lists (domain; plus any brand brief / geo / competitors / AI-answer
      citations / founder LinkedIn/X you already have — so it doesn't re-fetch);
-   - **`mode: full`** and an **output path** in the run dir (e.g. `<run-dir>/narrative-coherence.md`).
+   - an **output path** in the run dir (e.g. `<run-dir>/narrative-coherence.md`).
 
    The sub-agent does all discovery, reading, and the coherence judgment, and writes the file.
 3. **Deliver.** Read the sub-agent's output and present it: the coherence score, the

@@ -265,10 +265,13 @@ In addition to the CRM write, return:
 
 **Not part of the default pipeline.** *Only if the user explicitly asks* to check the brand's
 narrative / category coherence, spawn a **sub-agent** to execute
-`references/brand-narrative-coherence.md` in **`mode: light`**, handing it the domain, the brand
-brief, the geo decision, the competitor shortlist, and the decision-maker's LinkedIn/X URL. It
-returns a compact coherence verdict (score + the sharpest divergence) — fold that into the CRM
-note. You don't read the playbook yourself. Without a clear ask, skip this.
+`references/brand-narrative-coherence.md`, handing it the domain, the brand brief, the geo
+decision, the competitor shortlist, the decision-maker's LinkedIn/X URL, and an **output path**
+in the run dir. It writes the findings there and returns a headline. Then **persist the
+substantive findings to the CRM note** — the coherence score, the category-placement matrix
+(what each source calls the brand), the key divergences, and the substantiation gaps — so
+downstream outreach and positioning work can use them; don't reduce it to a single line. You
+don't read the playbook yourself. Without a clear ask, skip this.
 
 ## Operating rules
 
