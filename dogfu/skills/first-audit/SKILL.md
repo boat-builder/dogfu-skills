@@ -70,8 +70,9 @@ Recommended files (one information set each; consolidate sensibly):
 | :-- | :-- | :-- |
 | `brand-brief.md` | A2 | brand name, positioning/ICP, industry, model, size, geos, competitors, topics |
 | `findings/scorecard.md` | rolling | overall grade + sub-scores (Visibility, AEO, Technical, Authority) and the numbers behind each |
-| `findings/answer-engine.md` | D | AEO presence matrix, share-of-voice, most-cited third-party sources |
+| `findings/answer-engine.md` | D | AEO presence matrix, share-of-voice, most-cited third-party sources — **plus** the LLM-Mentions index-wide numbers *only if* Phase D's real-vs-synthetic check kept them |
 | `findings/search-competitive.md` | A1, C | footprint, prospect-vs-competitor traffic, top keywords, opportunity gaps |
+| `findings/authority.md` | C | backlink authority — referring domains, backlink rank, spam score, prospect vs competitors (feeds the Authority sub-score) |
 | `findings/technical.md` | E | status codes, indexability, thin content, Core Web Vitals (mobile + desktop), top issues |
 | `findings/onpage-aeo.md` | A1, E | schema/JSON-LD coverage + errors, missing/dup H1 & meta, JS-render parity, llms.txt |
 
@@ -144,6 +145,7 @@ Now start the paid data (see `references/data-sources.md`):
 
 * **Pick ≤3 competitors.** There's no competitor-discovery endpoint, so shortlist from the brand research **and the prior's competitors** (`prior.md`), weighing **geography, industry, and ICP**, then validate each: do they rank for an overlapping set of the prospect's keywords, are they in a comparable traffic band, and do they show up in the same answer-engine results (Phase D)? Drop ones that pass none.
 * Pull `seo ranked-keywords` for the prospect **and** each competitor, `seo keyword-ideas` from your seeds (opportunity gaps), `seo domain-overview` + `seo bulk-traffic-estimation` for the head-to-head, and optionally `seo historical-rank-overview` (momentum) and `seo technologies` (stack).
+* **Authority (cheap — always run):** `seo backlinks-summary` for the prospect **and each competitor** (~$0.02 each) plus `seo referring-domains` for the prospect → real numbers for the **Authority** scorecard dimension (referring domains, backlink rank, spam score) instead of the ambiguous `technologies.domain_rank`. Write them to `findings/authority.md`.
 * Attach the competitors to the Bluesnake project and start their crawls (sequential, after the prospect's).
 
 Write every raw response to a file (`dogfu … -o <run-dir>/<name>.json`) and work from the
@@ -157,6 +159,15 @@ This is what makes the audit current: is the brand showing up where AI answers a
 * Run your **seed keywords** through `dogfu google search` (read organic `results` + the inline `features.ai_overview`, `features.answer_box`, `features.related_questions`).
 * Build **conversational variants — 2 per seed, up to 10** (how a person phrases a question to an assistant), and ask each in two places: **ChatGPT** via `dogfu chatgpt search --model gpt-5.4-mini` and **Google AI Mode** via `dogfu google ai-mode`.
 * For every answer capture three things: did the **brand** appear? did a **competitor** appear? and which **domains were cited**. Aggregate the cited domains to find the **top third-party sources** (Reddit, YouTube, review sites…) — where the prospect would need to earn citations.
+
+**Then cross-check against the LLM-Mentions index — and decide, per brand, whether it earns a place in the report.** The mentions API (`seo mentions-summary` / `mentions-top-domains` / `mentions-top-pages`, see `data-sources.md`) gives a deterministic view aggregated across *many* keywords — but it's keyword-indexed (ChatGPT US + Google AI Overview only), thin for niche/non-US brands, and costs ~5–10× a live call. So its raw output is a lead, not a verdict:
+
+* Pull `seo mentions-summary --domain` for the **prospect and each competitor**, and `seo mentions-top-domains` / `mentions-top-pages` on your seeds. Dump each to `-o` files.
+* **Run a dedicated real-vs-synthetic evaluation** — hand a **sub-agent** *both* this phase's live synthetic-query results **and** the mentions pulls (keeping the comparison out of your main context), and ask one question: *does the index data agree with, and add signal beyond, what the live queries already show for THIS brand?* It returns a verdict:
+  * **Useful** — the brand or its category is genuinely indexed, the numbers are non-trivial and broadly consistent with the live reads → fold the index-wide **share-of-voice** (prospect vs competitors) and its **top-cited domains** into `findings/answer-engine.md`, clearly labeled as *index-wide* data (distinct from the live-query matrix).
+  * **Too thin / misleading** — near-zero only because the brand isn't tracked, or it contradicts the live reads with no defensible reason → **omit it from the report.** Record one line in `findings/answer-engine.md` that it was checked and dropped, and why. A hollow "0 AI mentions" that just means "not indexed" would misrepresent the prospect — never ship it.
+
+The live synthetic queries remain the report's **primary** AEO evidence (the actual answer a prospect sees today); the mentions index rides along only when it genuinely strengthens the picture.
 
 ### Phase E — Collect the crawl(s) + technical signals
 
@@ -181,6 +192,7 @@ stays out of your context:
 * **`dogfu` calls can take minutes** (especially the first after an idle period). Budget a generous timeout and don't assume a hang means failure. (Warm calls are usually a few seconds.)
 * **Never fetch the same thing twice.** Write raw outputs to JSON files immediately with `dogfu -o`, then read/aggregate from disk — protects both your context and the API budget.
 * **Quotas & cost:** `seo lighthouse` blocks ~10–90s; the `seo` data calls are metered — cap `--limit`, use `--filters`/`--order-by`. Don't pull data the report won't use.
+* **Backlinks are cheap; Mentions are not.** The `seo backlinks-*` calls run ~$0.02 — pull them freely for the Authority score. The `seo mentions-*` calls run ~$0.10–0.25 **and** are keyword-indexed (ChatGPT US + Google AI Overview only), so they're gated on the Phase D real-vs-synthetic check: keep them in the report only when they add real signal for that brand, otherwise drop them (and note the drop). Never let a thin index return produce a misleading "0 mentions" claim.
 * **One Bluesnake crawl at a time** — prospect + up to 3 competitors run sequentially, so start early and work on phases B–D while they run.
 * **Localization:** match the brand's geography (or go global if multi-region) consistently across every geo-aware call (`seo` `--location-code`/`--language-code`, `google` `--country`/`--language`/`--location`, `chatgpt` `--user-country`) — see `references/data-sources.md`.
 * **Keep context lean:** use sub-agents for brand research and any other heavy reading (return only distilled facts), and offload the final report-HTML assembly to the report-builder sub-agent (Phase F) — you gather and decide into the `findings/` markdowns, it renders.

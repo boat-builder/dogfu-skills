@@ -50,12 +50,13 @@ wrote (named in parentheses) — render that file's numbers; don't go looking fo
 Pull the brand's name, positioning, and competitor set from **`brand-brief.md`** so the copy
 is specific.
 
-1. **Hero scorecard** *(`findings/scorecard.md`)* — overall grade + sub-scores (Visibility, AEO, Technical, Authority) as a dial + stat tiles. A short two-tone `<h1>` and an italic-serif subtitle naming the prospect.
-2. **Answer-engine visibility (AEO)** *(`findings/answer-engine.md`)* — a presence matrix (rows = the queries; columns = Google / AI Overview / AI Mode / ChatGPT; cells = brand vs competitor present), a share-of-voice number, and a most-cited-sources bar chart.
+1. **Hero scorecard** *(`findings/scorecard.md`)* — overall grade + sub-scores (Visibility, AEO, Technical, Authority) as a dial + stat tiles. A short two-tone `<h1>` and an italic-serif subtitle naming the prospect. (The **Authority** tile is now backed by real backlink numbers — see section 4 — not the ambiguous `domain_rank`.)
+2. **Answer-engine visibility (AEO)** *(`findings/answer-engine.md`)* — a presence matrix (rows = the queries; columns = Google / AI Overview / AI Mode / ChatGPT; cells = brand vs competitor present), a share-of-voice number, and a most-cited-sources bar chart. **If** the findings file carries the LLM-Mentions block (Phase D's real-vs-synthetic check kept it), add an **index-wide** share-of-voice tile (prospect vs competitors) and fold its top-cited domains into the sources chart — labeled as index data, distinct from the live-query matrix. If the file records that mentions were dropped, build this section from the live queries alone and show nothing about the index.
 3. **Search & competitive** *(`findings/search-competitive.md`)* — prospect-vs-competitor traffic bars, a top-keywords table and an opportunity-gap table.
-4. **Technical health** *(`findings/technical.md`)* — status-code donut + issue-severity bars, indexability / thin-content cards, and Core Web Vitals gauges (mobile + desktop).
-5. **AEO on-page readiness** *(`findings/onpage-aeo.md`)* — schema/JSON-LD type coverage + validation errors, missing H1/meta, JS-render parity, and llms.txt presence.
-6. **Call to action (close)** — a short prompt inviting the prospect to book a call, as an **accent-pill button** linking to **<https://cal.link/berlin>** (e.g. "See how to close these gaps — book a call"). This is the only promotional element on the page.
+4. **Authority & backlinks** *(`findings/authority.md`)* — a compact, high-level authority read: referring-domain count and backlink rank for the prospect vs each competitor (a bar chart), plus a spam-score note. This substantiates the Authority sub-score; keep it brief. Omit the section if the data wasn't pulled.
+5. **Technical health** *(`findings/technical.md`)* — status-code donut + issue-severity bars, indexability / thin-content cards, and Core Web Vitals gauges (mobile + desktop).
+6. **AEO on-page readiness** *(`findings/onpage-aeo.md`)* — schema/JSON-LD type coverage + validation errors, missing H1/meta, JS-render parity, and llms.txt presence.
+7. **Call to action (close)** — a short prompt inviting the prospect to book a call, as an **accent-pill button** linking to **<https://cal.link/berlin>** (e.g. "See how to close these gaps — book a call"). This is the only promotional element on the page.
 
 If a findings file is missing or a section's data wasn't gathered, omit that section cleanly
 rather than inventing numbers — and note the omission back to the main agent.
