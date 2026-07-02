@@ -49,7 +49,7 @@ Read the reference files as you reach the phases that need them:
 * `references/data-sources.md` — every `dogfu` command you'll call (`seo`, `google`, `chatgpt`), with flags, output fields, the localization policy, and cost/latency caveats.
 * `references/bluesnake.md` — the crawl lifecycle and the SQLite query cookbook (technical + AEO signals).
 * `references/report.md` — how to assemble the single-page report, publish it with `dogfu report publish`, and attach the URL to Close (incl. the book-a-call CTA).
-* `references/design-guide.md` — the authoritative, vendored design spec the report is built against (colors, type, components, charts).
+* `references/design-guide.md` — the authoritative design spec the report is built against: the visual atoms (colors, type, components, charts) **and** the cold-lead composition at the end (hook-first reading order, two-tempo hierarchy, and the three attention components — verdict hero, shock-stat strip, dark spotlight — that make the page skim in ~10s and lead with the AEO / machine-readability findings, the edge *felt* not badged).
 
 ### Collect findings as you go — you write the markdown, a sub-agent writes the HTML
 
@@ -59,10 +59,10 @@ own short **markdown file** under `<run-dir>/findings/` — the *report-ready* n
 and one-line verdicts, not raw JSON. Keep the raw `dogfu -o` dumps too (provenance), but the
 findings markdowns are what the report is built from.
 
-At the very end (Phase F) you hand this `findings/` set — plus `references/design-guide.md`
-and the page layout in `references/report.md` (Step 3) — to a **report-builder sub-agent**
-that renders the single HTML page. This keeps the heavy design-guide + HTML-assembly work out
-of your context, and means the page is built from facts you've already settled.
+At the very end (Phase F) you hand this `findings/` set — plus `references/design-guide.md` (the
+design spec: visual atoms + the cold-lead composition) — to a **report-builder sub-agent** that
+renders the single HTML page. This keeps the heavy design + HTML-assembly work out of your
+context, and means the page is built from facts you've already settled.
 
 Recommended files (one information set each; consolidate sensibly):
 
@@ -193,7 +193,7 @@ finish unless the user says not to.** Then (see `references/bluesnake.md`):
 Follow `references/report.md`. The build itself is delegated, so the design-guide + HTML work
 stays out of your context:
 
-1. **Spawn a report-builder sub-agent.** Hand it: the `<run-dir>/findings/` markdowns + `brand-brief.md` (the content), `references/design-guide.md` (how it looks), and the page layout in `references/report.md` Step 3 (what sections go where — our existing layout recommendation). Its job: assemble **one self-contained HTML file** at `<run-dir>/report.html` — hero scorecard + the findings sections, ECharts for data-series charts, inline SVG for single-value dials, ending with the book-a-call CTA → <https://cal.link/berlin> (required — publish rejects a report without it). **Findings only, no recommendations section.** It builds from the markdown you already wrote — it should not need to re-run any `dogfu` call. Have it return the path to the HTML and flag anything a findings file left ambiguous.
+1. **Spawn a report-builder sub-agent.** Hand it: the `<run-dir>/findings/` markdowns + `brand-brief.md` (the content) and `references/design-guide.md` (the design spec — visual atoms + the cold-lead composition/skim layout at the end). Its job: assemble **one self-contained HTML file** at `<run-dir>/report.html` — the skim (verdict hero → shock-stat strip → dark spotlight) then the evidence sections, ECharts for data-series charts, inline SVG for single-value dials, ending with the book-a-call CTA → <https://cal.link/berlin> (required — publish rejects a report without it). **Lead with the findings a prospect's own tools can't surface (AEO, machine-readability); findings only, no recommendations section.** It builds from the markdown you already wrote — it should not need to re-run any `dogfu` call. Have it run the design guide's skim test, return the path to the HTML, and flag anything a findings file left ambiguous.
 2. **Publish** (you, the main agent): **`dogfu report publish --domain <prospect-domain> --html <run-dir>/report.html`** → returns the public URL. Capture it.
 3. **Record** (you, the main agent): **attach that URL to the prospect's Close lead** (`dogfu crm note create`).
 
