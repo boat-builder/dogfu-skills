@@ -15,7 +15,8 @@ JSON to stdout by default. Discover exact flags with `dogfu <group> <cmd> --help
 the file. Budget a generous timeout per call (the first call after an idle period can take
 a minute or two; warm calls are a few seconds). Never fetch the same thing twice.
 
-The groups this skill uses: **`seo`** (keyword/competitor/traffic/technical), **`google`**
+The groups this skill uses: **`seo`** (keyword/competitor/traffic/technical, **backlinks, and the
+LLM-Mentions AEO index**), **`google`**
 (Google web + AI Mode), **`chatgpt`** (the ChatGPT answer surface), and **`crm`** (Close —
 to **read the lead-research profile as a reference prior at the start** and attach the
 published audit URL at the end). The crawl/on-page layer is the **Bluesnake MCP**, documented
@@ -24,7 +25,7 @@ separately in `bluesnake.md`.
 ## Contents
 
 * [crm — read the lead-research prior (Phase A0)](#crm)
-* [seo — keywords, competitors, traffic, tech, CWV](#seo)
+* [seo — keywords, competitors, traffic, tech, CWV, backlinks, LLM mentions](#seo)
 * [google — Google + AI surfaces](#google)
 * [chatgpt — ChatGPT answers with citations](#chatgpt)
 * [Localization policy](#localization)
@@ -61,6 +62,35 @@ Market is set with `--location-code` (numeric) and `--language-code` (two-letter
 * **`seo historical-rank-overview --target <domain>`** `[--location-code] [--language-code] [--date-from YYYY-MM-DD] [--date-to ..]` — monthly time series (momentum): `RankHistoryPoint[]` with `year, month, organic{count, etv, pos_1, pos_2_3, pos_4_10, pos_11_plus, ...}, paid`.
 * **`seo technologies --target <domain>`** — CMS / analytics / framework stack + contact signals: `domain_rank` (**a large DataForSEO-style integer, NOT a 0–100 score — use only as a coarse, relative signal** between target and competitors), `last_visited, country_iso_code, emails[], phone_numbers[], social_graph_urls[], technologies{category:{subcategory:[...]}}`.
 * **`seo lighthouse --url <url>`** `[--strategy mobile|desktop] [--locale en-US]` — Lighthouse / PageSpeed audit (this is the Core Web Vitals source): `performance_score, accessibility_score, seo_score, best_practices_score` (0–1, ×100 to show), `core_web_vitals{lcp_ms, fcp_ms, cls, tbt_ms, ...}`, real-user `field_data` (CrUX — **the signal Google actually ranks on; absent/None for low-traffic sites**, fall back to lab `core_web_vitals`), `opportunities[]`, `diagnostics[]`. Run **mobile and desktop separately** (two calls) on the key URL(s) — usually the homepage and a top landing page. Each call blocks ~10–90s.
+
+### Backlinks — off-domain authority (cheap)
+
+Feeds the **Authority** scorecard dimension with real numbers instead of the ambiguous
+`technologies.domain_rank`. All take `--target <domain>`, are **global** (no `--location-code`),
+and are **cheap** — ~$0.02/call ($0.02/request + $0.00003/row, ≤1,000 rows). Confirm exact
+flags/fields with `--help` (these commands are new).
+
+* **`seo backlinks-summary --target <domain>`** — the aggregate authority profile in one row: total `backlinks`, `referring_domains`, `backlink_rank` (a DataForSEO-style integer — **relative only**: compare target vs competitors, never read as an absolute grade), `spam_score`, and the link-mix distributions (dofollow/nofollow, anchor, referring-TLD). Run for the **prospect and each competitor** — this is the head-to-head authority bar. ~$0.02 each.
+* **`seo referring-domains --target <domain>`** `[--limit] [--order-by] [--filters]` — one row per linking domain: the domain, `backlinks` from it, `rank`, `spam_score`. Pull for the **prospect only**, capped (`--limit 100`, order by rank desc) → the "who links to them" list + a spam-share read.
+* **`seo backlinks --target <domain>`** (individual backlinks: source page, anchor, dofollow, rank) and **`seo backlink-competitors --target <domain>`** (domains sharing the target's link profile, by overlap) — **usually skip both** for a first audit; `backlinks-summary` + `referring-domains` give the report all it needs. Only reach for these if a specific claim needs row-level detail.
+
+### LLM Mentions — the AEO index (evaluate before you trust it)
+
+A **pre-indexed** database of AI answers: where a brand/keyword *already* shows up in
+**ChatGPT (US-only, GPT-5)** and **Google AI Overview (all locations)**. It is the
+*deterministic, aggregate-across-many-keywords* complement to the live synthetic queries
+(`google ai-mode` / `chatgpt search`) — **not a replacement**. It is **keyword-indexed**, so a
+niche or non-US brand can return near-zero simply because its terms aren't tracked, and you
+**cannot tell "invisible in AI" from "not in the index."** **Cost ~$0.10–0.25/call**
+($0.10/request + $0.001/row) — roughly 5–10× a SERP/AI-mode call. Because of the cost and the
+coverage gaps it is **gated on the Phase D real-vs-synthetic check** — pull it, then keep it in
+the report only if it genuinely adds signal for that brand. Each command takes repeatable
+`--keyword` and/or `--domain` plus optional `--platform google|chat_gpt`. Confirm exact
+flags/fields with `--help` (new commands).
+
+* **`seo mentions-summary --domain <domain>`** — the brand's aggregate AI-visibility profile: total mentions + breakdowns by platform, cited source, brand, location, language. Run for the **prospect and each competitor** → index-wide share-of-voice.
+* **`seo mentions-top-domains --keyword "<seed>"...`** / **`seo mentions-top-pages --keyword "<seed>"...`** — the domains / pages most cited in AI answers for your seed keywords (who's surfaced instead of the prospect) → broadens the "most-cited third-party sources" read beyond your ~10 live queries.
+* **`seo mentions-search --keyword "<seed>"...`** — the raw records behind the aggregates: the question, the answer, the cited (and non-cited) sources, AI search volume. Use sparingly — to spot-check a surprising aggregate.
 
 ***
 
