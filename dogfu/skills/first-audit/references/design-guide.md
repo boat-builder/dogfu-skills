@@ -1,9 +1,9 @@
-> **Static port.** In the original (agentberlin) flow this guide was fetched live with
-> `agentberlin report design`. The dogfu publish path has no live design endpoint, so the
-> authoritative guide is **vendored here** and you build the report against it directly —
-> follow it exactly. The only thing that can drift is the vendor chart scripts' version
-> (see *Data-driven charts*); everything else is stable. (Source of truth upstream:
-> `backend/internal/reports/design_guide.md`.)
+> **This is the design spec — follow it exactly.** It began as a vendored copy of the backend's
+> `internal/reports/design_guide.md`, but it is now **owned by this skill and evolves on its
+> own** — there is no upstream to keep in sync with. It covers both the visual atoms (colors,
+> type, components, charts) and, at the end, the **composition** of the first-audit cold-lead
+> report (reading order + the report-specific attention components). The only external thing
+> that can change is the vendor chart scripts' version (see *Data-driven charts*).
 
 ---
 
@@ -381,6 +381,102 @@ Single breakpoint at 820px. Below it:
     /* list cards with an action column: action stacks below the body */
     /* 2-col grid of info cards: 1 column */
 
+## Composition — the first-audit cold-lead report
+
+Everything above is the visual vocabulary; this section is how the **first-audit report** — a
+diagnosis sent to a cold prospect to earn a call — arranges it. It adds **no new token**: it's
+scale and arrangement of the components above, plus three report-specific ones defined here.
+
+### Two tempos — design the skim first
+
+* **Skim (top ~1.5 screens) — loud, airy.** Verdict → the three findings that matter → one dark
+  spotlight. Huge type, one idea per band, 64–96px between bands. A prospect who reads *only
+  this* must leave with the grade, the three worst findings, and the sense we saw something
+  their tools missed. **This books the call.**
+* **Evidence (below) — dense, calm.** The sections that substantiate the skim, at the ordinary
+  density above (36px above an `<h3>`, 12px between cards). Analytical and third-person — it
+  earns the trust the skim borrowed. Don't carry the skim's giant air down here or the page
+  never ends.
+
+If the top of the page doesn't land on its own, no amount of evidence below fixes it.
+
+### Lead with what they haven't seen — felt, not stated
+
+Order the differentiated findings **first** and give them the loudest treatment:
+**answer-engine visibility / AEO** (`answer-engine.md`), **machine-readability** — schema gaps,
+JS-render parity, `llms.txt` (`onpage-aeo.md`), and **narrative coherence** if that optional
+check ran (`narrative-coherence.md`). But **make the edge _felt_, not stated**: no "beyond
+standard tools" badge, and never name a rival product (Screaming Frog, SEMrush) on the page —
+it reads defensive, and half the time the prospect doesn't know what those tools cover. The
+differentiation lands on its own through **placement** (first), **prominence** (the spotlight +
+shock stats), and the **novelty** of the finding itself ("0 of 8 AI answers name you"). The
+familiar-tool sections (search, authority, technical) come **after**, framed by what the number
+means for the buyer, not by which tool found it.
+
+### Band order (top → bottom)
+
+Build top to bottom. Each band renders one `findings/` file — omit a band cleanly if its file
+is missing (never invent numbers). Each evidence section opens with a one-line, plain-language
+*why this matters* under its `<h3>`. **No recommendations / "what to fix" section — diagnosis
+only.**
+
+| # | Band | Tempo | Source | Holds |
+| :- | :-- | :-- | :-- | :-- |
+| 0 | Header | — | brand-brief | Berlin mark + "prepared for <prospect>" + date chip |
+| 1 | **Verdict hero** | skim | scorecard | Grade **dial** + a big two-tone **diagnosis sentence** (not "Audit report") + the 4 sub-score tiles (Visibility · AEO · Technical · Authority) |
+| 2 | **The three things** | skim | scorecard + sections | Airy 3-up **shock-stat** strip — the three worst findings as giant numbers; lead with the AEO / schema ones |
+| 3 | **The spotlight** | skim | usually answer-engine | **One dark card** — the single most surprising finding (normally AEO invisibility). The visual peak. |
+| 4 | Answer-engine visibility | evidence | answer-engine | Presence matrix (queries × Google/AI Overview/AI Mode/ChatGPT), share-of-voice, most-cited sources. Add the index-wide LLM-Mentions tile **only if** the file kept it. |
+| 5 | Machine-readability | evidence | onpage-aeo | *Why AI can't cite you*: schema/JSON-LD coverage + errors, missing/dup H1 & meta, JS-render parity, `llms.txt` |
+| 6 | Search & competitive | evidence | search-competitive | Traffic bars (prospect vs competitors), top-keywords + opportunity-gap tables |
+| 7 | Authority & backlinks | evidence | authority | Referring domains + backlink rank vs competitors, spam-score note. Omit if not pulled. |
+| 8 | Technical health | evidence | technical | Status-code donut + issue bars, indexability / thin-content, Core Web Vitals gauges (mobile + desktop) |
+| — | Narrative coherence | evidence | narrative-coherence | Only if that optional check ran (a strong spotlight candidate when present) |
+| 9 | **Book a call** | — | — | Accent-pill CTA → <https://cal.link/berlin>. The only promotional element; publish rejects a page without it. |
+
+### Three report-specific components (tokens only)
+
+The shock/spotlight numbers extend the serif ramp (Instrument Serif, weight 400) **above** the
+72px hero score — same family/weight, just larger, only in the skim bands. Below 820px drop each
+a step and keep each number on its own line. The verdict headline is the existing `<h1>` (serif
+46px) used as a one-`<em>` diagnosis sentence.
+
+**Shock-stat tile** (band 2) — mono kicker → giant serif number → one sans line. Three across,
+big gaps, lots of air. True numbers do the shouting (`0 of 8`, `94%`, `#3`):
+
+    .skim-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin: 72px 0; }
+    .shock .k { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); }
+    .shock .n { font-family: var(--serif); font-size: 64px; font-weight: 400; letter-spacing: -0.025em; line-height: 0.95; color: var(--ink); margin: 10px 0 8px; }
+    .shock .n em { font-style: italic; color: var(--accent-2); }   /* optional two-tone on part of the value */
+    .shock .d { font-family: var(--sans); font-size: 14px; color: var(--ink-2); max-width: 30ch; }
+    /* prefer open canvas + air over cards; below 820px the strip is 1 column */
+
+**Dark spotlight** (band 3) — exactly one inverted card (like the single hero card), the visual
+peak, for the single most surprising finding. Darkness is a token (`--ink #141414`), text is
+`--bg`; the accent on dark is a one-word `--accent-soft` italic — **don't** recolor the big
+number purple (low contrast), keep it paper/white. Reserve it for a genuine surprise ("a
+competitor is cited in 6 of 8 AI answers; you're cited in none"); if nothing rises to it, drop
+the band rather than dress up a mild number.
+
+    .spotlight { background: #141414; color: var(--bg); border-radius: 18px; padding: 44px 48px; box-shadow: 0 1px 2px rgba(20,20,40,0.03); margin: 40px 0; }
+    .spotlight .k { font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-4); }
+    .spotlight .n { font-family: var(--serif); font-size: 88px; font-weight: 400; letter-spacing: -0.03em; line-height: 0.95; color: #fff; margin: 14px 0 10px; }
+    .spotlight .line { font-family: var(--serif); font-size: 26px; color: var(--bg); max-width: 40ch; }
+    .spotlight .line em { font-style: italic; color: var(--accent-soft); }
+
+**Verdict hero** (band 1) — the existing hero card, but the `<h1>` is a plain-language diagnosis
+("AI assistants can't see *what you sell*"), not a section label, with the grade dial beside it
+and the 4 sub-score stat tiles below.
+
+### Skim test (before publish)
+
+1. First screen alone gives the **grade** + a **one-sentence diagnosis** + ≥1 finding a normal tool wouldn't show.
+2. The three things read as **numbers**, not sentences.
+3. Exactly **one** dark card, holding the best finding — not a mild one dressed up.
+4. Edge is **felt, not labeled** — no badge, no rival product named anywhere.
+5. Two tempos visible; **zero hype words** (every loud thing is a true number); body stays analytical.
+6. Ends on the **one** book-a-call CTA — nothing else promotional.
+
 ## Discipline
 
 - Do not invent colors, font families, radii, gradients, shadows, animations, or spacing values outside this document.
@@ -389,3 +485,5 @@ Single breakpoint at 820px. Below it:
 - No marketing language, and no CTAs to buy or upgrade anything. **(One deliberate exception for this skill: the single book-a-call CTA at the very end of the audit — see `report.md`. Nothing else on the page is promotional.)**
 - When copy is baked into the template (footer line, empty states), use plain language and refer to Berlin in third person.
 - When you mix type within one element, follow the rule: serif for titles/large numbers, sans for body/buttons, mono for labels/chips/timestamps — never swap them.
+- Report copy stays analytical and third-person; only headlines and the big shock/spotlight numbers carry the drama — a **true number** does the shouting, never a hype word ("shocking", "massive", "!").
+- Every loud number must be true and fresh from this run. A giant number on a soft or copied figure destroys the credibility the design buys — if a finding isn't strong, use a quieter component rather than inflate it.

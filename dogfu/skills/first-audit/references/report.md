@@ -6,12 +6,11 @@ Close CRM lead. Build it to Berlin's house design system.
 
 **Who builds what.** The main agent gathers every finding into markdown files under
 `<run-dir>/findings/` as the audit runs (see `SKILL.md`). Phase F then spawns a
-**report-builder sub-agent** that turns those markdowns into the HTML using two inputs from
-this file: the **design guide** (Step 1 — how it looks) and the **page layout** (Step 3 —
-what goes where; this is our existing layout recommendation). The sub-agent builds from the
-markdown only — it doesn't re-run any data call. The **main agent** then publishes (Step 5)
-and records the URL (Step 6). Steps 1–4 are written for whoever assembles the page (the
-sub-agent); Steps 5–6 are the main agent's.
+**report-builder sub-agent** that turns those markdowns into the HTML against one design
+reference: **`references/design-guide.md`** — the visual atoms (Step 1) plus the page
+composition at the end of that file (Step 3). It builds from the markdown only — it doesn't
+re-run any data call. The **main agent** then publishes (Step 5) and records the URL (Step 6).
+Steps 1–4 are for whoever assembles the page (the sub-agent); Steps 5–6 are the main agent's.
 
 ## Step 1 — the design guide is `references/design-guide.md` (don't reinvent it)
 
@@ -19,6 +18,10 @@ Read **`references/design-guide.md`** and follow it *verbatim*. It is the author
 spec for every color, font, size, component, and chart style. (In the original agentberlin
 flow this was fetched live with `agentberlin report design`; the dogfu publish path has no
 live design endpoint, so the guide is vendored into this skill instead — same content.)
+
+The guide covers both the **visual atoms** and, in its final *Composition* section, the
+**cold-lead layout** — reading order, the two-tempo hierarchy, and the three attention
+components that make the page skim in ~10 seconds (all in the same tokens).
 
 Orientation, so you know what to expect (confirm every value against the guide):
 
@@ -42,28 +45,18 @@ Orientation, so you know what to expect (confirm every value against the guide):
   ```
   Give each chart container an explicit height (e.g. 300px) or ECharts renders nothing. Use a `gauge` for a data-driven score; keep the inline-SVG dial only for the static hero score. Helpers: `BERLIN.accentGradient`, `BERLIN.fadeGradient`, `BERLIN.tokens`.
 
-## Step 3 — the page layout (what goes where) — the layout recommendation
+## Step 3 — the page layout
 
-This section **is** the layout recommendation: the section order and what each one contains.
-Follow it top to bottom. Each section is built from one findings file the main agent already
-wrote (named in parentheses) — render that file's numbers; don't go looking for raw JSON.
-Pull the brand's name, positioning, and competitor set from **`brand-brief.md`** so the copy
-is specific.
-
-1. **Hero scorecard** *(`findings/scorecard.md`)* — overall grade + sub-scores (Visibility, AEO, Technical, Authority) as a dial + stat tiles. A short two-tone `<h1>` and an italic-serif subtitle naming the prospect. (The **Authority** tile is now backed by real backlink numbers — see section 4 — not the ambiguous `domain_rank`.)
-2. **Answer-engine visibility (AEO)** *(`findings/answer-engine.md`)* — a presence matrix (rows = the queries; columns = Google / AI Overview / AI Mode / ChatGPT; cells = brand vs competitor present), a share-of-voice number, and a most-cited-sources bar chart. **If** the findings file carries the LLM-Mentions block (Phase D's real-vs-synthetic check kept it), add an **index-wide** share-of-voice tile (prospect vs competitors) and fold its top-cited domains into the sources chart — labeled as index data, distinct from the live-query matrix. If the file records that mentions were dropped, build this section from the live queries alone and show nothing about the index.
-3. **Search & competitive** *(`findings/search-competitive.md`)* — prospect-vs-competitor traffic bars, a top-keywords table and an opportunity-gap table.
-4. **Authority & backlinks** *(`findings/authority.md`)* — a compact, high-level authority read: referring-domain count and backlink rank for the prospect vs each competitor (a bar chart), plus a spam-score note. This substantiates the Authority sub-score; keep it brief. Omit the section if the data wasn't pulled.
-5. **Technical health** *(`findings/technical.md`)* — status-code donut + issue-severity bars, indexability / thin-content cards, and Core Web Vitals gauges (mobile + desktop).
-6. **AEO on-page readiness** *(`findings/onpage-aeo.md`)* — schema/JSON-LD type coverage + validation errors, missing H1/meta, JS-render parity, and llms.txt presence.
-7. **Call to action (close)** — a short prompt inviting the prospect to book a call, as an **accent-pill button** linking to **<https://cal.link/berlin>** (e.g. "See how to close these gaps — book a call"). This is the only promotional element on the page.
-
-If a findings file is missing or a section's data wasn't gathered, omit that section cleanly
-rather than inventing numbers — and note the omission back to the main agent.
-
-**No recommendations / "what to fix" section.** This report is the diagnosis only — the
-findings should make the gaps obvious, and the fix conversation happens on the call. Don't
-add severity-tinted "do this next" cards.
+**The layout — band order, hierarchy, whitespace tempo, and the attention components — lives in
+the *Composition* section of `references/design-guide.md`. Build top to bottom from it.** In
+short: a loud, airy **skim**
+(verdict hero → three shock-stats → one dark spotlight) that lands in ~10 seconds and leads
+with the findings a prospect's own tools can't surface (AEO, machine-readability), then the
+calmer **evidence** sections (search, authority, technical). Each band renders one `findings/`
+file — render its numbers, don't go looking for raw JSON, and omit a band cleanly (noting it
+back to the main agent) if its file is missing rather than inventing numbers. Pull the brand's
+name, positioning, and competitors from **`brand-brief.md`** so the copy is specific.
+**Diagnosis only — no recommendations / "what to fix" section.**
 
 ## Step 4 — the output is a single HTML file
 

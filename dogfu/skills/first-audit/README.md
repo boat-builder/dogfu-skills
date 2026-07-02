@@ -23,9 +23,11 @@ platform-coupled steps:
   seeds keyword/competitor/AEO choices and the report copy).
 - **Report publishing.** The original published into Berlin's internal report platform, with
   the design fetched live. dogfu publishes a single self-contained HTML file to a **public
-  bucket with its own UI** via a new `dogfu report publish` command, and the design guide is
-  **vendored** into `references/design-guide.md` (verbatim copy of the backend's
-  `internal/reports/design_guide.md`) instead of fetched live.
+  bucket with its own UI** via a new `dogfu report publish` command, and the design guide lives
+  in `references/design-guide.md` instead of being fetched live. It **began** as a vendored copy
+  of the backend's `internal/reports/design_guide.md`, but is now **owned by this skill and
+  evolves on its own** — no upstream sync — and has since grown a cold-lead *Composition*
+  section the backend guide never had.
 - **No project guardrails.** No "configure --domain", no "abort if the project doesn't exist."
   You audit the domain directly.
 
@@ -47,11 +49,14 @@ see `references/data-sources.md`.
   MCP in both ecosystems.
 - `references/report.md` — how the report is assembled and shipped: the main agent collects
   findings into `<run-dir>/findings/*.md` as it goes, a **report-builder sub-agent** renders
-  one `index.html` from those markdowns + the design guide + the Step 3 page layout, then the
-  main agent `dogfu report publish`es it and attaches the URL to Close. Step 3 is the existing
-  layout recommendation (no separate layout artifact exists).
-- `references/design-guide.md` — the authoritative, vendored design spec (colors, type,
-  components, ECharts theme) the report is built against.
+  one `index.html` from those markdowns + the design guide (atoms + its *Composition* section),
+  then the main agent `dogfu report publish`es it and attaches the URL to Close.
+- `references/design-guide.md` — the authoritative design spec the report is built against:
+  the visual atoms (colors, type, components, ECharts theme) **and**, in its final *Composition*
+  section, the cold-lead layout — hook-first reading order, the two-tempo (skim → evidence)
+  hierarchy, and three attention components (verdict hero, shock-stat strip, dark spotlight)
+  that make the report skim in ~10s and lead with the AEO / machine-readability findings — the
+  edge *felt*, not badged. The composition adds no new tokens.
 
 ## Dependencies (beyond the dogfu CLI)
 1. **Bluesnake MCP** — local crawler/auditor, **not bundled** (configure as a separate MCP,
@@ -71,10 +76,10 @@ publishes; it just skips the prior and the URL-attach.
 ## How to edit
 1. Edit `SKILL.md` (or the references) — or ask Claude to.
 2. To change *when it fires*, edit the `description` frontmatter. To change *what it pulls*,
-   edit `references/data-sources.md`. To change *how the report looks*, edit
-   `references/design-guide.md` — but keep it in sync with the upstream
-   `backend/internal/reports/design_guide.md` if that's still the source of truth for the
-   bucket UI.
+   edit `references/data-sources.md`. To change how the report **looks or is laid out** — the
+   visual atoms (colors, type, components, charts) or the cold-lead *Composition* (reading
+   order, hierarchy, the skim/attention components) — edit `references/design-guide.md`. It's
+   this skill's own file now (no upstream to keep in sync with), so it can evolve freely.
 3. When `dogfu report publish` ships, reconcile `references/report.md` Step 5 with its real
    flags/output.
 
