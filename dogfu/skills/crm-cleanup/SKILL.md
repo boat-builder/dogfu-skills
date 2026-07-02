@@ -107,15 +107,11 @@ needs a judgment call.
 
 ### A. Task invariants & opportunity drift — `reconcile` owns this
 
-Don't re-derive these by hand: **`reconcile.json` already lists them.** The CLI computes the whole
-invariant — every reach-out / in-cadence lead carries exactly one open cadence task, no exited or
-terminal-status lead carries one, and **no terminal-status lead is still scheduled** (status
-outranks a stale due date); every pre-gate **Connected** lead carries exactly one open engage
-task and no other lead does; ≤ one open `[dogfu:deal]` task per open opportunity (none on a
-won/lost or vanished one); open deals aren't dropped or stalled; and no **Engaged** lead sits
-with no open opportunity (a zombie). Report each row it returns; repair the bulk with
-**`dogfu crm reconcile --apply`** (the single writer — never hand-complete a
-`[dogfu:cadence]` / `[dogfu:engage]` / `[dogfu:deal]` task). The keys it can return:
+Don't re-derive these by hand: **`reconcile.json` already lists them** — the CLI computes the
+task invariants and the drift checks across the whole book (the table below is the complete key
+set). Report each row it returns; repair the bulk with **`dogfu crm reconcile --apply`** (the
+single writer — never hand-complete a `[dogfu:cadence]` / `[dogfu:engage]` / `[dogfu:deal]`
+task). The keys it can return:
 
 | Key (from `reconcile`) | Means | Sev | Fix |
 | :- | :- | :- | :- |
@@ -147,9 +143,8 @@ with no open opportunity (a zombie). Report each row it returns; repair the bulk
 | :- | :- | :- | :- | :- |
 | B1 | **Exited but funnel not moved** — replied/stopped yet still Qualified/Potential | lead `touch_stage` not null **and** `next_touch_due` empty **and** `status_label` ∈ {Qualified, Potential} | 🟠 | `[fix: human]` set the real status: `dogfu crm lead update <lead_id> -s <Connected\|Bad Fit\|Not Interested id>` (replied → **Connected**) |
 
-> The inverse drift — a warm/terminal lead **still scheduled** — used to live here (old B2);
-> it is now `reconcile`'s `terminal_status_in_cadence` row (Section A), auto-fixed by
-> `--apply`. Don't re-derive it by hand.
+> The inverse drift — a warm/terminal lead still *scheduled* — is `reconcile`'s
+> `terminal_status_in_cadence` row (Section A); don't re-derive it by hand.
 
 ### C. Outreach-readiness gaps (queue says act, but you can't)
 
@@ -191,13 +186,8 @@ with no open opportunity (a zombie). Report each row it returns; repair the bulk
   - *Task assigned to a deactivated/unknown user* — there's no user-list command (only
     `whoami`), so you can flag empty assignees (E1) but not invalid ones.
   - *Lead owner missing* — not exposed on the model; use task assignee (E1) as the proxy.
-- **Now covered (shipped):** reach-out tasks, the **engage-task invariant** (a Connected lead's
-  pre-gate discovery-call task, incl. a missing one or one left on a post-gate lead), the deal-task
-  invariant, opportunity drift (dropped-ball / stalled deals), **terminal-status leads still
-  scheduled** (`terminal_status_in_cadence` — the old hand-derived B2), and **zombie Engaged
-  leads** (`engaged_lead_no_open_opportunity`) are all audited by `reconcile` (Section A) — flag
-  them. The remaining **deal-health** judgment (e.g. an under-specified deal, a stale
-  value/confidence) belongs to `lead-engage`, not this read-only audit.
+- **Deal-health judgment is out of scope:** an under-specified deal or a stale value/confidence
+  is `lead-engage`'s call, not this read-only audit's. Everything task-shaped is Section A.
 
 ***
 

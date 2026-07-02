@@ -121,8 +121,8 @@ Capture, at minimum:
 
 This brief **gates the rest** — write it before phases B–D. It makes every later step smart:
 it seeds keyword choices, competitor selection, and answer-engine queries, and it supplies
-the brand context the report copy is written from. (Because nothing validates it server-side
-anymore, there are no fixed enums to satisfy — just capture accurate, useful facts.)
+the brand context the report copy is written from. (Nothing validates it server-side — no
+fixed enums to satisfy; just capture accurate, useful facts.)
 
 **A3. Start the Bluesnake crawl of the prospect** and let it run in the background. It returns
 a `crawl_id` immediately; you'll collect results in Phase E. Create the Bluesnake project

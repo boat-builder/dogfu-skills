@@ -150,9 +150,7 @@ whole phase shows up in the one work queue:
    (`engaged_lead_no_open_opportunity`) — advisory; set the real status (Customer / terminal).
 
 So: `crm worklist` (kinds `engage` + `deal`) is the "act today" list across the whole warm phase,
-and `crm reconcile` catches whatever fell out of it (a missing task, or a deal gone stale) — the
-pre-gate conversation that stalls no longer slips, because it's a first-class task, not an absence
-you have to hunt for.
+and `crm reconcile` catches whatever fell out of it (a missing task, a stale deal, a zombie status).
 
 ***
 
