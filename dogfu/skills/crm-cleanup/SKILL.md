@@ -50,13 +50,13 @@ in **lead-touch/SKILL.md**; this skill assumes it and only recaps what the check
 
 ## Running `dogfu`
 
-Same dependency and auth as the other skills. `dogfu` is a published CLI (`pip install dogfu`)
-authenticated through the **dogfu MCP**; output is **JSON by default** (read stdout; `-o FILE`
-for big lists). If a `crm` call returns an auth error (`missing dogfu token`, `invalid or
-expired token`), call the MCP's **`get_setup_instructions`** and follow it
-(`dogfu configure --otp <OTP> --title "CRM cleanup"`). A `412` "no Close CRM API key
-configured" means the Close key isn't set in the admin **Console → CRM Integration** — surface
-that rather than retrying. Read calls are independent HTTP requests — **run them concurrently**.
+`dogfu` is a published CLI (`pip install dogfu`). **First, authenticate the CLI:** before any
+command, call the dogfu MCP's **`get_setup_instructions`** tool and follow it — install the CLI
+(if needed), then `dogfu configure --otp <OTP> --title "CRM cleanup"` with the OTP it returns.
+Output is **JSON by default** (read stdout; `-o FILE` for big lists). A `412` "no Close CRM API
+key configured" means the Close key isn't set in the admin **Console → CRM Integration** —
+surface that rather than retrying. Read calls are independent HTTP requests — **run them
+concurrently**.
 
 ***
 

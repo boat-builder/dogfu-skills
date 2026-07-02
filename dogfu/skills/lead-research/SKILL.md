@@ -22,9 +22,9 @@ them with the raw material for a personalized DM, then persist **everything you 
 the CRM (whether or not they fit).
 
 This skill is the **orchestration layer**. The data and CRM actions come from the
-`dogfu` CLI, authenticated through the dogfu MCP (data calls via your session token; CRM via
-the Close key you connect in the Console — see "Running `dogfu`" below). Your job is to run
-the right `dogfu` commands in the right order, read the JSON they return, and reason over it.
+`dogfu` CLI (CRM writes go via the Close key you connect in the Console — see "Running
+`dogfu`" below). Your job is to run the right `dogfu` commands in the right order, read the
+JSON they return, and reason over it.
 
 ## The four stages
 
@@ -101,26 +101,22 @@ strong behavioral fit.
 
 ## Running `dogfu`
 
-`dogfu` is a published CLI (`pip install dogfu`, or `uv tool install dogfu`), authenticated
-through the **dogfu MCP**. It is **not** bundled with this skill — there is no directory to
-mount and no `.env`. The CLI talks to the Agent Berlin backend over an authenticated session
-token.
+`dogfu` is a published CLI (`pip install dogfu`, or `uv tool install dogfu`). It is **not**
+bundled with this skill — there is no directory to mount and no `.env`. It talks to the Agent
+Berlin backend as a stateless HTTP client.
 
-**Setup (usually already done when the dogfu MCP is connected).** If `dogfu` isn't installed
-or configured yet — or a command fails with an auth error (`missing dogfu token`, `invalid or
-expired token`) — call the dogfu MCP's **`get_setup_instructions`** tool and follow what it
-returns: install the `dogfu` package, then run
+**First step — authenticate the CLI.** Before running any `dogfu` command, call the dogfu MCP's
+**`get_setup_instructions`** tool and follow what it returns: install the `dogfu` package (if
+needed), then run
 
 ```bash
 dogfu configure --otp <OTP> --title "Lead research: <target or batch>"
 ```
 
-with the one-time OTP from that response. The token is saved to `~/.dogfu/config.json`. After
-an auth failure, call `get_setup_instructions` again for a fresh OTP, re-run `dogfu
-configure`, and retry the command.
+with the one-time OTP from that response (saved to `~/.dogfu/config.json`). This is always the
+first step when this skill runs.
 
-**Invoke it from anywhere** (it's on your PATH after install — no `uv run`, no mounted
-directory):
+**Invoke it from anywhere** (it's on your PATH — no `uv run`, no mounted directory):
 
 ```bash
 dogfu <group> <command> [flags]
