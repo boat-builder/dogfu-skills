@@ -190,6 +190,8 @@ surface that, like the CRM key).
 | Deep-read decision-maker on LinkedIn | `dogfu linkedin profiles --url <profile>` (background, experience) + `dogfu linkedin posts --profile-url <profile>` (recent posts) |
 | Deep-read decision-maker on X | `dogfu x profiles --url <profile>` + `dogfu x posts --profile <profile>` |
 
+> **Discovery social reads (`--profile-url`/`--profile`/`--name`) are async scrapes (~1–10 min) that bill on trigger — run detached with `-o FILE` and poll; prefer `--url`. See `references/dogfu-commands.md`.**
+
 ### CRM write (Stage D) — Close
 
 CRM writes go through the backend proxy under the caller's **own** Close key (set in the
