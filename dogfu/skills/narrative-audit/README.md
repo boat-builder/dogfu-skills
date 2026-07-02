@@ -32,9 +32,6 @@ cp dogfu/skills/narrative-audit/references/brand-narrative-coherence.md \
    dogfu/skills/lead-research/references/brand-narrative-coherence.md
 ```
 
-The design rationale (the "why", axes tradeoffs, cost model, open questions) lives outside the
-skills in `docs/brand-narrative-coherence-spec.md`, kept out of the runtime files on purpose.
-
 ## The `dogfu` CLI dependency
 Same as the other dogfu skills: this is the orchestration layer and shells out to the published
 `dogfu` CLI (`pip install dogfu`), authenticated through the **dogfu MCP**
