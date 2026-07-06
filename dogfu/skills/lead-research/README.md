@@ -5,11 +5,11 @@ automatically when you hand Claude a sales target (a company, domain, person, or
 LinkedIn/X URL) and ask to research, size up, enrich, or CRM it.
 
 The flow is staged around a human decision: a cheap **Scout** pass gathers the signals,
-a succinct **checkpoint brief** puts the pursue/park/drop call in the user's hands, and
-only a *pursue* unlocks the expensive **deep dive** (competitive gap, AEO checks,
-decision-maker reads, verified emails). Every researched lead lands in Close with
-structured company attributes, whatever the decision — the skill never sets Qualified
-or Bad Fit on its own.
+a succinct **checkpoint brief** puts the **pursue-or-drop** call in the user's hands, and
+only a *pursue* unlocks the expensive **deep dive** (competitive gap, AEO checks, top
+pages, decision-maker reads, verified emails). The skill never sets a status or writes to
+the CRM on its own: a lead lands in Close — Qualified on a pursue, Bad Fit on a drop, with
+structured company attributes attached — only once the user has made that call.
 
 ## Files
 - `SKILL.md` — the operating manual: the staged flow, the decision aids, how to invoke

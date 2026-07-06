@@ -67,7 +67,7 @@ default to `2840` / `en` and say so. `google` also accepts `--country` (ISO alph
   → keyword, search_volume, cpc, competition, competition_level, difficulty.
 - **`historical-rank-overview --target <domain> [--location-code] [--language-code] [--date-from YYYY-MM-DD] [--date-to ..]`** ← **Scout: momentum.**
   → RankHistoryPoint[]: year, month, organic{count, etv, pos_1, pos_2_3, pos_4_10, pos_11_plus, is_*}, paid.
-- **`relevant-pages --target <domain> [--location-code] [--language-code] [--limit] [--order-by "metrics.organic.etv,desc"]`**
+- **`relevant-pages --target <domain> [--location-code] [--language-code] [--limit] [--order-by "metrics.organic.etv,desc"]`** ← **deep dive: top pages by traffic (DM-hook color).**
   → page_address, organic{count, etv, pos_*}, paid.
 - **`technologies --target <domain>`** ← **deep dive: stack + domain-strength hint (`domain_rank`).**
   → target, domain_rank (**large integer, NOT 0–100; ambiguous scale — use only relatively**), last_visited, country_iso_code, emails[], phone_numbers[], social_graph_urls[], technologies{category:{subcategory:[tech,...]}}.
@@ -94,7 +94,7 @@ lead description (brief, 1–2 lines) or the note. dogfu exposes **no other** cu
 setters by design.
 
 ### Upsert pattern
-1. `crm status list` → resolve the status_id for the **user's checkpoint decision** (pursue → Qualified, park → Potential, drop → Bad Fit) — never hardcode ids, never pick a status the user didn't decide.
+1. `crm status list` → resolve the status_id for the **user's checkpoint decision** (pursue → Qualified, drop → Bad Fit — the only two outcomes) — never hardcode ids, never write a status the user didn't choose, and if there's no decision (non-interactive run) don't create the lead at all.
 2. `crm lead list -n "<company>"` (or `-q` with the domain) → if a match exists, `lead update`; else `lead create` with a **brief** `-d` description **plus every curated flag you have a value for**.
 3. `crm contact create <lead_id> -n "<name>" -t "<title>" -u <linkedin> -u <x> [-e <email>]` for each person (links in the native `urls` field; `-e` = the verified email once resolved in the deep dive).
 4. `crm note create <lead_id> -t "<profile + metrics with sources + the brief's read + the user's decision and reason + hooks>"`.

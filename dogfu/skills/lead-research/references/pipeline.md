@@ -17,7 +17,7 @@ DM angles"; otherwise run the full flow).
 
 ## Scout
 
-**Goal:** enough signal for the user to decide pursue / park / drop — at minimum spend.
+**Goal:** enough signal for the user to decide pursue or drop — at minimum spend.
 Gather facts and compose the brief; the judging is the user's.
 
 ### S1 — Resolve the company
@@ -101,7 +101,7 @@ The format is fixed in SKILL.md. Filling it well:
 - **SEO motion line:** pages · keywords · traffic value · momentum arrow. If motion is
   effectively zero, that's a flag, not a silent drop.
 - **Flags:** competitor conflict (or ambiguity), far-out-of-band size, no SEO motion,
-  unknown ARR, anything implausible in the data.
+  no in-house team, unknown ARR, anything implausible in the data.
 - **Read (≤3 sentences):** strongest signal, weakest signal, what the deep dive would
   settle. A recommendation is welcome ("worth the deep dive" / "recommend drop:
   agency with no in-house motion") — as a recommendation.
@@ -114,11 +114,14 @@ The format is fixed in SKILL.md. Filling it well:
 
 **Goal:** the outreach-grade profile — what to say, to whom, with what evidence.
 
-### D1 — Ranking quality
+### D1 — Ranking quality & top pages
 `ranked-keywords` (top ~100 by volume): position distribution (top-3 / top-10 / 11+),
 branded vs non-branded share, intent mix. High non-branded + top-10 commercial terms =
 mature, revenue-relevant SEO. Mostly branded = weak organic acquisition. Heavy
-informational top-of-funnel = content-led motion.
+informational top-of-funnel = content-led motion. Pair with `relevant-pages` (top pages
+by organic traffic — `page_address` + `etv`) to see *which* URLs actually pull the
+traffic: a specific high-value page ("your `/guide/x` ranks #3 and drives ~N visits") is
+concrete DM-hook color and shows where their SEO is really working.
 
 ### D2 — Technical health & stack
 `lighthouse` (scores are 0–1; ×100 to display) + `technologies` (CMS, analytics, SEO

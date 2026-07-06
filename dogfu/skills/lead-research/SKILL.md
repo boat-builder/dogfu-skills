@@ -9,10 +9,12 @@ description: >-
   CRM", "find the decision-maker and DM hooks", "prospect this domain", or just a bare
   LinkedIn/X/company link dropped in with intent to evaluate it. Also use it for batch
   prospecting. The skill gathers cheap signals first, presents a succinct decision
-  brief, and the USER decides whether to spend on the deep dive and what status the lead
-  gets — the skill never marks a lead Qualified or Bad Fit on its own. Every researched
-  lead lands in the CRM with structured company attributes. This is the canonical way to
-  do sales lead research at Berlin — prefer it over ad-hoc web searches.
+  brief, and the USER decides — pursue or drop — whether to spend on the deep dive and
+  whether the lead is Qualified or Bad Fit. The skill never marks a lead on its own and
+  never writes to the CRM without that human call; there is no auto-qualify, even when
+  the data is clear-cut. Leads the user acts on land in Close with structured company
+  attributes. This is the canonical way to do sales lead research at Berlin — prefer it
+  over ad-hoc web searches.
 ---
 
 # Lead Research (powered by `dogfu`)
@@ -34,14 +36,15 @@ in **`references/pipeline.md`** — read it before running the Scout.
    pages and socials, find the decision-maker(s), then pull the **cheap** SEO and
    firmographic signals. Capture every company attribute you find.
 2. **Checkpoint** *(always)* — present the decision brief (format below) and ask the
-   user: **pursue / park / drop**. This is the only place spend escalates and the only
-   place a status is chosen. Never skip it, never answer it yourself.
-3. **Deep dive** *(pursue only)* — ranking quality, technical health, competitive gap,
-   AEO visibility, decision-maker deep-reads, verified emails, DM hooks.
-4. **CRM write** *(always, at whatever stage the run ends)* — upsert the lead with a
-   brief description and **every curated attribute flag you can fill**, add every person
-   found as a contact with their links, write the research note. The user's checkpoint
-   decision sets the status.
+   user: **pursue or drop**. This is the only place spend escalates, the only place a
+   status is chosen, and the gate on the CRM write — nothing is created until the user
+   answers. Never skip it, never answer it yourself.
+3. **Deep dive** *(pursue only)* — ranking quality, top pages, technical health,
+   competitive gap, AEO visibility, decision-maker deep-reads, verified emails, DM hooks.
+4. **CRM write** *(only after the pursue/drop answer)* — upsert the lead with a brief
+   description and **every curated attribute flag you can fill**, add every person found
+   as a contact with their links, write the research note. The answer sets the status:
+   pursue → Qualified, drop → Bad Fit.
 
 Cost logic: Scout calls are cheap (one `site:` search, one domain overview, one history
 pull, one LinkedIn company read, ~1 Apollo credit). Deep-dive calls are the expensive
@@ -75,22 +78,35 @@ record it (status Bad Fit; description and note say "COMPETITOR — do not conta
 it is never re-prospected. **Don't over-exclude:** a SaaS doing its own SEO is exactly
 who we want; when genuinely unsure, say so in the brief and let the user call it.
 
-## Decision aids — what the brief measures against
+## Decision aids — the four load-bearing signals
 
-These are the signals we currently know matter. They calibrate your **recommendation**;
-they never auto-set a status or skip the checkpoint.
+Four signals do the heavy lifting. **Assess and surface every one on every lead**, each
+clearly flagged when it's missing, weak, or borderline — they are what the user's call
+turns on. But they calibrate your **recommendation only**: none of them auto-sets a
+status, skips the checkpoint, or drops a lead on its own. Even a clear miss goes to the
+user as a flag, not an auto-drop.
 
-- **ARR band ~$1M–$50M.** Slightly outside (~$900k, ~$60M) is fine — flag it. Far
-  outside (multiples: $200k, $150M) is a strong drop signal. Revenue numbers are coarse
-  modeled estimates — say the source and confidence, and **unknown ARR is not a fail**;
-  present the proxies (headcount, funding) instead.
-- **Real SEO motion is mandatory.** An existing content/SEO footprint with real
-  outcomes (keywords, organic traffic) — adopting Berlin must be a budget reallocation,
-  not a cold start. Effectively-zero organic presence is a strong drop signal.
-- **In-house marketing capacity is preferred.** A marketing/SEO team (even 1–3 people)
-  or a hands-on operator-founder who can run a platform.
-- **Known-good shape:** founder-led SaaS doing its own SEO. Worth saying in the brief
-  when it matches; not a gate.
+1. **Not a competitor.** The strongest signal and the one hard gate on *spend* (see the
+   competitive-conflict gate above): a company that builds/sells/markets SEO/AEO
+   capability to others is a competitor. On a conflict, recommend **drop** and stop the
+   paid calls — but still route it through the checkpoint before recording Bad Fit.
+2. **Revenue in the ~$1M–$50M band.** We sell a ~$2k/mo product; below ~$1M it rarely
+   pencils out, and far above the band is enterprise/procurement — the wrong motion for
+   now. Slightly outside (~$900k, ~$60M) is fine — flag it. Far outside (multiples:
+   $200k, $150M) is a strong drop signal. Revenue is a coarse modeled estimate — say the
+   source and confidence; **unknown ARR is not a fail**, present the proxies (headcount,
+   funding) instead.
+3. **Real SEO motion.** An existing content/SEO footprint with real outcomes (keywords,
+   organic traffic) — adopting Berlin must be a budget *reallocation*, not a cold start.
+   Effectively-zero organic presence is a strong drop signal.
+4. **In-house marketing capacity (strongly preferred).** A marketing/SEO team (even 1–3
+   people) or a hands-on operator-founder who can run a platform. Its absence is the one
+   soft-but-heavy signal — flag it clearly; don't silently drop on it.
+
+**Everything else is soft, exploratory color** — vertical, buyer literacy, momentum, AEO
+visibility, footprint size, founder-led shape. Useful in the read and worth a mention,
+but never a gate: we're deliberately ranging across ICPs, so don't down-rank a lead for a
+soft-signal miss. Surface it and let the user weigh it.
 
 ## Running `dogfu`
 
@@ -140,6 +156,7 @@ LinkedIn and X URLs — they persist to the CRM whatever the user decides.
 | Capability | How |
 | :-- | :-- |
 | Ranking quality (positions, branded share, intent) | `dogfu seo ranked-keywords --target <domain> --order-by "keyword_data.keyword_info.search_volume,desc" --limit 100` |
+| Top pages by traffic (which URLs pull the traffic → DM-hook color) | `dogfu seo relevant-pages --target <domain>` |
 | Technical health / stack | `dogfu seo lighthouse --url <url>` · `dogfu seo technologies --target <domain>` |
 | Competitor benchmarking | discover per pipeline.md, then `dogfu seo bulk-traffic-estimation --target a.com --target b.com ...` |
 | AEO / AI-answer visibility | `dogfu google ai-mode --query "..."` + `dogfu chatgpt search --query "..."` — is `<domain>` in `citations`? |
@@ -156,41 +173,50 @@ wall of text**. One lead:
 **<Company>** (<domain>) — <one line: what they do, for whom, where>
 
 | Signal | Value |
-| ARR (est.) | ~$4M (Apollo, coarse) — in band |
-| Team | 38 total · 2 marketing |
-| Funding | Seed, $3.5M (2024) |
+| Revenue (est.) | ~$4M (Apollo, coarse) — in band |
 | SEO motion | 1.8k pages · 3.1k keywords · ~$12k/mo traffic value · rising |
+| In-house team | 38 total · 2 marketing |
+| Competitor? | no — uses SEO for its own growth |
+| Funding | Seed, $3.5M (2024) |
 | Model / market | SaaS · US · founder-led |
 | Flags | none |
 
 **Read:** <≤3 sentences: strongest signal, weakest signal, what the deep dive would settle.>
-**Pursue** (deep dive: competitive gap, AEO check, contacts + hooks — the paid calls), **park**, or **drop**?
+**Pursue** (deep dive: competitive gap, AEO check, top pages, contacts + hooks — the paid calls) or **drop**?
 ```
 
+The first four rows are the load-bearing signals (revenue, SEO motion, in-house team,
+competitor) — always present, so the user sees the whole decision at a glance.
+
 Batch prospecting: run the Scout for all targets first, then present **one table** (one
-row per lead: company · ARR · team/mktg · funding · SEO motion · momentum · flags ·
-one-word read) and ask **once** which to pursue, park, or drop. Never ask per lead.
+row per lead: company · revenue · SEO motion · in-house team · competitor? · funding ·
+momentum · flags · one-word read) and ask **once** which to pursue or drop. Never ask
+per lead.
 
 Rules: every number is an estimate — label anything coarse or missing rather than
 implying precision. Flags column carries competitor conflicts, out-of-band size, no SEO
-motion, unknown ARR. A recommendation is welcome; the decision is not yours. If the
-session can't ask (non-interactive run), record everything as **Potential** with the
-brief in the note and a Close task "Review for qualification" so the ask surfaces in
-the worklist.
+motion, no in-house team, unknown ARR. A recommendation is welcome; the decision is not
+yours. **If the session can't ask (a non-interactive run), write nothing to the CRM** —
+return the brief (and the scout data) so a human can make the pursue/drop call; a lead is
+never created without that decision.
 
-## CRM write — always, fields in their proper place
+## CRM write — only after the checkpoint decision, fields in their proper place
 
-Runs for every lead at whatever stage the run ended. Upsert on the resolved domain
-(search before create). If Close isn't connected, `dogfu crm` returns a `412` — surface
-it, don't retry.
+Runs **once the user has answered pursue or drop** — never before, and never on a
+non-interactive run with no answer. Upsert on the resolved domain (search before
+create). If Close isn't connected, `dogfu crm` returns a `412` — surface it, don't retry.
 
-**Status — set from the user's checkpoint decision, never from your own judgment:**
+**Status — set from the user's checkpoint decision, never from your own judgment.** There
+are only two outcomes; the skill never creates a lead in any other status:
 
 | Decision | Status | Note |
 | :-- | :-- | :-- |
 | pursue | **Qualified** | enters the outreach flow (the reach-out task opens on this status) |
-| park / undecided / non-interactive | **Potential** | researched, decision deferred |
 | drop | **Bad Fit** | record the user's reason; competitors additionally get "COMPETITOR — do not contact" in the description |
+
+No pursue/drop answer → **no lead is written.** There is no "Potential" / parked bucket
+for this skill: if you can't get a decision (non-interactive run), return the brief and
+stop.
 
 **Where each piece of data goes** (statuses: `crm status list` — never hardcode ids):
 
@@ -208,12 +234,13 @@ against Close's live options — on a rejection the error lists the allowed valu
 the closest or omit and note it. `dogfu crm field get "<name>"` shows a field's options;
 `crm field add-choice`/`remove-choice` edit them, but only on the user's explicit ask.
 
-Running this skill is the go-ahead for these CRM writes — show what you're writing in
-the run summary, don't pause per write. The **checkpoint** is the only pause.
+The **checkpoint answer is** the go-ahead for these writes — once the user says pursue
+or drop, write the lead, contacts, and note in one pass and show what you wrote in the
+run summary; don't pause again per field. The checkpoint is the only pause.
 
 ## Output format (end of run)
 
-After a **drop/park**: the one-line outcome + the CRM record written. After a
+After a **drop**: the one-line outcome + the CRM record written. After a
 **pursue** (deep dive done):
 
 1. **Snapshot** — target, domain, segment, decision, in 2–3 sentences.
@@ -241,10 +268,13 @@ clear ask, skip it.
 - **Cheap before expensive, always**: competitor gate (free) → SEO motion (`site:`,
   `domain-overview`) → the rest of the Scout → checkpoint → deep dive. Stop the paid
   calls the moment the gate says competitor.
-- **Never decide for the user.** No status without a checkpoint decision; no deep dive
-  without a pursue.
-- **Never waste research.** Everything found gets written to the CRM — contacts, links,
-  attributes, findings — whatever the decision was.
+- **Never decide for the user.** No CRM write without a pursue/drop answer; no status the
+  user didn't choose; no deep dive without a pursue. This holds even when the data is
+  clear-cut — recommend, don't decide.
+- **Never waste research.** Once the user decides, everything found gets written to the
+  CRM — contacts, links, attributes, findings — for a drop as much as a pursue. (The one
+  case nothing is written: a non-interactive run with no decision — there, return the
+  brief so a human can still act on it.)
 - **Put data in its proper place.** Brief description; attributes in their flags;
   person links on the contact; depth in the note.
 - **Scratch files go in one `mktemp -d` run dir** — never a fixed or target-derived
