@@ -1,7 +1,7 @@
 {
   "name": "dogfu",
-  "version": "0.20.0",
-  "description": "Sales toolkit on the dogfu CLI: lead-research (Discover → Qualify → Enrich → CRM), lead-touch (cold outreach cadence in Close), lead-engage (work live deals — opportunities — from first engagement to close), lead-worklist (read-only cross-phase worklist — the prioritized leads to work now, across all stages, with context), crm-cleanup (read-only CRM health audit), first-audit (publish a first-touch SEO/AEO prospect audit and record it on the lead), and narrative-audit (a standalone brand category & narrative-coherence check on a domain), plus berlin-theme — Berlin's brand style guide for on-brand sales collateral.",
+  "version": "0.21.0",
+  "description": "Sales toolkit on the dogfu CLI: lead-research (Scout → checkpoint → Deep dive → CRM — the user makes the pursue/park/drop call off a succinct brief; every lead lands in Close with structured company attributes), lead-touch (cold outreach cadence in Close), lead-engage (work live deals — opportunities — from first engagement to close), lead-worklist (read-only cross-phase worklist — the prioritized leads to work now, across all stages, with context), crm-cleanup (read-only CRM health audit), first-audit (publish a first-touch SEO/AEO prospect audit and record it on the lead), and narrative-audit (a standalone brand category & narrative-coherence check on a domain), plus berlin-theme — Berlin's brand style guide for on-brand sales collateral.",
   "author": {
     "name": "Sherin Thomas"
   }

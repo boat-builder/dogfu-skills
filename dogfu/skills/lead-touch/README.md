@@ -10,7 +10,7 @@ and qualifies a lead; lead-touch works it through outreach.
 ## Files
 - `SKILL.md` — the operating manual: how our leads are organized in Close (the funnel-status vs outreach-state model, the system-managed touch fields, the touch-vs-task distinction, the "due" rule and the unified work queue), how to run `dogfu`, the full `dogfu crm` command surface, and the operating rules. The YAML frontmatter `name` / `description` controls when the skill triggers.
 
-There are no `references/` or `icps/` here — unlike `lead-research`, this skill is a single
+There are no `references/` here — unlike `lead-research`, this skill is a single
 self-contained file. The command surface is inline so the agent rarely needs `dogfu --help`.
 
 ## The `dogfu` CLI dependency

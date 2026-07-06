@@ -13,7 +13,7 @@ type, motion, and copy voice.
 - `SKILL.md` — the brand brief: palette, typography, layout, components, motion, copy
   voice/tone, a quick-reference checklist, and drop-in CSS variables. The YAML frontmatter
   `name` / `description` controls when the skill triggers. This is the entire skill — a single
-  self-contained file, no `references/` or `icps/`.
+  self-contained file, no `references/`.
 
 ## Self-contained
 `SKILL.md` is the complete, self-contained brand brief — it carries every token, rule, and

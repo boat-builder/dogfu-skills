@@ -26,7 +26,7 @@ the two action skills.
   queue), how to run `dogfu` read-only, the read-only command surface, and the operating rules. The
   YAML frontmatter `name` / `description` controls when the skill triggers.
 
-There are no `references/` or `icps/` here — like `lead-touch`, this skill is a single self-contained
+There are no `references/` here — like `lead-touch`, this skill is a single self-contained
 file.
 
 ## The `dogfu` CLI dependency

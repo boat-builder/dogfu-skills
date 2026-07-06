@@ -4,9 +4,9 @@ A plugin marketplace for both **Claude Cowork** and **Codex**. It currently ship
 
 | Plugin | What it does |
 | :-- | :-- |
-| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Seven skills: **lead-research** (**Discover → Qualify → Enrich → CRM** — turn a sparse sales target into a qualified, enriched Close CRM record), **lead-touch** (work an existing lead through the **cold** outreach cadence in Close — pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel), **lead-engage** (the **warm** counterpart — once a lead engages, run discovery, open/advance/close an **opportunity** (Discovery → Trial → Proposal → Won/Lost), set the next step, surface deals due or stalled, and forecast the pipeline), **lead-worklist** (read-only **cross-phase worklist** — the single prioritized list of leads to work now, in one stage or across all stages, each row with the contact and context to act, handed off to the skill that records it), **crm-cleanup** (read-only health audit — find the leads and tasks that fell out of the flow, each with the exact fix command), **first-audit** (an outside-in **SEO/AEO** audit of a prospect domain from public data — public-site crawl + keyword/competitor/traffic intelligence + live Google/AI answers — published as a single-page report whose URL is recorded on the lead; also uses the **Bluesnake MCP**), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
+| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Seven skills: **lead-research** (**Scout → checkpoint → Deep dive → CRM** — research a sales target cheaply, brief the user for the pursue/park/drop call, then enrich pursued leads; every lead lands in Close with structured company attributes), **lead-touch** (work an existing lead through the **cold** outreach cadence in Close — pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel), **lead-engage** (the **warm** counterpart — once a lead engages, run discovery, open/advance/close an **opportunity** (Discovery → Trial → Proposal → Won/Lost), set the next step, surface deals due or stalled, and forecast the pipeline), **lead-worklist** (read-only **cross-phase worklist** — the single prioritized list of leads to work now, in one stage or across all stages, each row with the contact and context to act, handed off to the skill that records it), **crm-cleanup** (read-only health audit — find the leads and tasks that fell out of the flow, each with the exact fix command), **first-audit** (an outside-in **SEO/AEO** audit of a prospect domain from public data — public-site crawl + keyword/competitor/traffic intelligence + live Google/AI answers — published as a single-page report whose URL is recorded on the lead; also uses the **Bluesnake MCP**), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
 
-The three CRM-operating skills form one lifecycle: **lead-research** produces a qualified lead →
+The three CRM-operating skills form one lifecycle: **lead-research** researches a lead and records the user's decision →
 **lead-touch** runs cold outreach and hands off when the lead replies (→ *Engaged*) →
 **lead-engage** works the live deal (a Close opportunity) to a close. **lead-worklist** reads
 across all of it to answer "what should I work on now" (read-only; it hands each row to the action
@@ -36,11 +36,10 @@ dogfu-skills/
     │   └── plugin.json            # Codex plugin manifest
     ├── .mcp.json                  # shared dogfu MCP server configuration
     └── skills/
-        ├── lead-research/         # the lead-research skill (discover → qualify → enrich → CRM)
+        ├── lead-research/         # the lead-research skill (scout → checkpoint → deep dive → CRM)
         │   ├── SKILL.md
         │   ├── README.md
-        │   ├── references/
-        │   └── icps/
+        │   └── references/
         ├── lead-touch/            # the lead-touch skill (cold CRM & outreach-cadence ops)
         │   ├── SKILL.md
         │   └── README.md
@@ -74,7 +73,7 @@ install the **Dogfu** plugin:
 - **From git** — point it at this repo's URL once it's pushed somewhere reachable.
 
 Once installed, the skills trigger automatically: **lead-research** when you give Claude a
-sales target ("research this lead", "is this company in our ICP", a bare LinkedIn/company
+sales target ("research this lead", "is this company a fit", a bare LinkedIn/company
 link, etc.), **lead-touch** when you want to work an existing lead through *cold* outreach
 ("who do I follow up with today", "I sent the LinkedIn DM to X", "mark this lead replied",
 "what's our funnel look like"), **lead-engage** once a lead has *engaged* ("a lead replied and

@@ -1,250 +1,202 @@
 # Pipeline detail — interpretation manual
 
-This is the *how to interpret* companion to SKILL.md. SKILL.md tells you which `dogfu`
-command to run; this file tells you what the result means and how to judge fit. Read it
-before running Stage B.
+The *how to interpret* companion to SKILL.md. SKILL.md says which `dogfu` command
+fulfils each step; this file says what the result means, how to compose the checkpoint
+brief, and which datum fills which CRM field. Read it before running the Scout.
 
-## 0. Inputs — assume almost nothing is given; derive the rest
+## Inputs — assume almost nothing is given; derive the rest
 
-The input is usually little more than a **target** — a company name, domain, person, or
-LinkedIn/X URL, possibly buried in messy text. Do not expect any other field. Two things
-*might* come from the prompt; everything else you derive:
-
-- **Target** — extract it, then resolve to a single canonical company + root domain. If given a person, resolve to the company they currently work at. This is step one of Stage A.
-- **ICP definition** — the qualification yardstick. The skill **ships its ICPs in `icps/`**; use the default unless the caller supplied their own or named a specific one (see "The ICP" in `SKILL.md`). Judge against it. Only if `icps/` is empty and none was supplied, ask for one before qualifying; never invent or assume one.
-
-You must **derive** (do not wait to be told): business model / segment; geography /
-language / audience; competitors; and the goal (honor a hinted goal like "just qualify"
-or "draft DM angles"; otherwise run the full pipeline).
+The input is usually just a **target** — a company name, domain, person, or LinkedIn/X
+URL, possibly buried in messy text. Extract it, then resolve to a single canonical
+company + root domain (a person resolves to the company they currently work at). You
+must **derive** everything else: business model / segment; geography / language /
+audience; competitors; and the goal (honor a hinted goal like "just scout it" or "draft
+DM angles"; otherwise run the full flow).
 
 ***
 
-## Stage A — Discover
+## Scout
 
-**Goal:** turn a sparse target into a structured map of the company and the people who
-own the SEO/AEO decision. Gather facts; don't yet judge.
+**Goal:** enough signal for the user to decide pursue / park / drop — at minimum spend.
+Gather facts and compose the brief; the judging is the user's.
 
-- **A1 — Resolve the company** to a canonical company + root domain. Every later phase keys off the domain.
-- **A2 — Read the company's own pages** (homepage, About, product, pricing, blog) with your web-fetch tool. This is where you derive what the prompt didn't give you: what they do and their **problem statement** (reused to find competitors in B6); **business model / segment** (sets every SEO threshold downstream); **target audience & geography/language**; apparent stage/size and positioning. About + pricing are the richest. Record what you concluded and the evidence.
-- **A3 — Map the social footprint:** company LinkedIn (description, headcount, employees) and company X/Twitter (does one exist, is it active — absence is a signal). If not found immediately, search before concluding it doesn't exist.
-- **A4 — Identify the decision-maker:** who owns marketing / SEO / AEO — typically a founder, a marketing/growth lead, or both. Capture both when both plausibly own it.
-- **A5 — Find the decision-maker's personal profiles:** both LinkedIn and X. Use LinkedIn detail + Google/AI search to find the X handle (LinkedIn won't give it directly). Record the URLs — they're the outreach handles you persist in Stage D, fit or not. Deep reading happens in Stage C.
+### S1 — Resolve the company
+Canonical company + root domain. Every later call keys off the domain.
 
-**Stage A output:** resolved company + domain; what they do / who they serve; company
-LinkedIn + X; relevant people; decision-maker(s) with LinkedIn + X URLs; any profile you
-searched for but could not find (note the gap).
+### S2 — Read the company's own pages
+Homepage, About, product, pricing, blog — with your web-fetch tool. Derive: what they
+do and their **problem statement** (reused for competitor discovery); **business model
+/ segment** (sets every SEO threshold downstream); **target audience and
+geography/language** (sets the SEO market codes); apparent stage and positioning;
+**founder-led or professionally-managed** (who would sign). About + pricing are the
+richest pages.
+
+### S3 — Competitor check (the gate — run before any paid call)
+From S2, one question: do they provide SEO/AEO capability **to others**, or merely use
+it themselves? Conflict → stop the paid calls, brief the user with a drop
+recommendation, record after confirmation. The full breadth of "competitor" (adjacent
+AI-content/agent platforms included) is defined in SKILL.md. When genuinely unsure,
+put the ambiguity in the brief instead of deciding.
+
+### S4 — Map the social footprint
+Company LinkedIn (`linkedin companies`: description, headcount, funding) and company
+X. Search before concluding a profile doesn't exist; absence is itself a signal.
+These URLs fill `--company-linkedin` / `--company-x`.
+
+### S5 — Identify the decision-maker(s)
+Who owns marketing / SEO / AEO — typically a founder, a marketing/growth lead, or
+both; capture both when both plausibly own it. Find each person's LinkedIn **and** X
+URLs (X handles come from Google/AI search, not LinkedIn). Deep reading waits for the
+deep dive; a quick scan of their public posts for SEO/AEO literacy is a cheap, strong
+signal worth one line in the brief.
+
+### S6 — Footprint & scale
+`site:<domain>` count; fetch `/sitemap.xml` and `/llms.txt`. Page volume proxies
+content investment, calibrated by segment (docs-heavy dev tools and ecommerce run
+large; boutique B2B SaaS runs lean). A bare `site:` count is a rough estimate often
+dominated by subdomains and can understate ~10× — corroborate with S7's keyword count
+and a narrower `site:www.<domain>/blog`, and treat it as a range. `llms.txt` present =
+AEO-aware (worth a flag in the brief).
+
+### S7 — Organic outcomes
+`domain-overview`: ranking-keyword count (`organic.count`), estimated traffic value
+(`etv`), organic vs paid split. The single best "are they really doing SEO" signal —
+outcomes, not vanity counts. Big footprint (S6) + low outcomes = volume without
+results (thin/programmatic content); flag the divergence.
+
+### S8 — Momentum
+`historical-rank-overview`: trajectory of keywords and traffic. **Rising** = active
+investment (the strongest "live deal" signal); **flat** = maintenance; **declining** =
+recovery/replatform need. Trend often matters more than absolute level.
+
+### S9 — Firmographics
+`apollo org enrich --domain <d> --with-people` (~1 credit): estimated
+`annual_revenue`, `employee_count`, `marketing_headcount`, `total_funding`,
+`latest_funding_round`, `founded_year`, plus a free `people[]` list to corroborate S5.
+Revenue is a modeled estimate — coarse for small private SaaS — so the brief must say
+the source and confidence, and cross-check against headcount and funding (a "$40M ARR"
+read on a 6-person seed company is the model hallucinating). If Apollo isn't connected
+(`412`), fall back to proxies: LinkedIn headcount + funding, pricing page, published
+customer counts — and mark ARR "unknown (proxies only)".
+
+### Synthesis — the two derived reads
+
+**SEO investment tier** (fills `--seo-investment-tier`; synthesize, don't average):
+*Heavy & effective* (strong S7 + rising S8) · *Heavy but inefficient* (large S6, weak
+S7) · *Lean & effective* (modest footprint, high traffic-per-page) · *Light / nascent*
+(little footprint, low outcomes) · *Dormant* (past peak, now declining/stale).
+
+**Divergences** — the most diagnostic part; they are the "read" line of the brief: big
+footprint + low traffic → thin/programmatic; strong history + current decline →
+recovery opportunity; good outcomes + tiny team → efficient operator (great fit
+signal); large team + weak outcomes → coaching/tooling opportunity.
+
+### Composing the brief
+
+The format is fixed in SKILL.md. Filling it well:
+
+- **ARR line:** value + source + confidence + band position ("~$4M (Apollo, coarse) —
+  in band" / "unknown — proxies: 12 heads, seed-funded, likely <$5M"). Near the band
+  edge, say so neutrally; the soft-edge policy is the user's to apply.
+- **SEO motion line:** pages · keywords · traffic value · momentum arrow. If motion is
+  effectively zero, that's a flag, not a silent drop.
+- **Flags:** competitor conflict (or ambiguity), far-out-of-band size, no SEO motion,
+  unknown ARR, anything implausible in the data.
+- **Read (≤3 sentences):** strongest signal, weakest signal, what the deep dive would
+  settle. A recommendation is welcome ("worth the deep dive" / "recommend drop:
+  agency with no in-house motion") — as a recommendation.
+- **Batch:** one row per lead, same columns, one consolidated ask. Sort so the
+  clearest pursues are on top.
 
 ***
 
-## Stage B — Qualify (ICP fit + SEO/AEO profile)
+## Deep dive (only after the user says pursue)
 
-Run the phases in order; **stop early and mark "not in ICP"** the moment cheap signals
-clearly disqualify (e.g. effectively zero organic footprint when the ICP requires "already
-doing real SEO"). Calibrate every threshold to the **segment** and to the target's
-**competitors**, never to absolute numbers. The runtime ICP is the yardstick — map each
-phase's evidence back to its specific criteria.
+**Goal:** the outreach-grade profile — what to say, to whom, with what evidence.
 
-### B0 — Competitive-conflict gate (run first; the cheapest disqualifier)
-Before any paid SEO call, judge what Stage A (A2) told you about the business against one
-question: **do they provide SEO/AEO capability to others, or merely use it themselves?**
-- *Use it for their own growth* → ICP candidate; continue.
-- *Build / sell / market it to others* → **competitor; exclude.**
-
-This is deliberately broad — include adjacent cases: other AI SEO/AEO tools or agencies; AI
-content / "marketing agent" tools positioned for ranking or answer-engine visibility; and
-**general AI automation / agent-builder platforms that offer or market SEO/AEO agents or
-content-automation use cases**, even when SEO/AEO isn't their headline. If the platform
-produces SEO/AEO outcomes for its users, it overlaps with Berlin. Look for product / pricing
-/ marketing language like "AI SEO", "AEO/GEO", "LLM visibility", "content automation for
-ranking", "autonomous SEO", or SEO/AEO agents.
-
-If it's a conflict: stop here (don't spend on B1+), verdict = **excluded (competitor)**, and
-go straight to Stage D to record it. **Don't over-exclude:** a SaaS doing its own SEO is the
-ICP, not a competitor — only exclude when they serve SEO/AEO capability to others; when truly
-unsure, flag for a human rather than auto-excluding a strong fit.
-
-### B1 — Footprint & scale
-`site:<domain>` count; fetch `/sitemap.xml` and `/llms.txt`. Page volume is a proxy for
-content investment, calibrated by segment (docs-heavy dev tools and ecommerce run large;
-boutique B2B SaaS runs lean). A bare `site:rootdomain` count is often dominated by
-subdomains and can understate the real footprint ~10× — corroborate with the keyword count
-from B2 and a narrower `site:www.<domain>/blog` query; treat as a range. `llms.txt` present
-= AEO-aware (a strong positive for an AI-using ICP).
-
-### B2 — Organic outcomes
-`domain-overview`: est. monthly organic traffic and traffic value (`etv`), total ranking
-keywords (`count`), organic vs paid split. The single best "are they really doing SEO"
-signal — outcomes, not vanity counts. Big footprint (B1) but low traffic/keywords = volume
-without results (thin/programmatic content or a neglected site) — flag the divergence.
-
-### B3 — Momentum / trend
-`historical-rank-overview`: trajectory of traffic and keyword count. Rising = active
-investment (strongest "live deal" signal); flat = maintenance; declining = recovery/
-replatform need. Trend often matters more than absolute level.
-
-### B4 — Ranking quality
+### D1 — Ranking quality
 `ranked-keywords` (top ~100 by volume): position distribution (top-3 / top-10 / 11+),
-branded vs non-branded share, intent mix. High non-branded + many top-10 commercial terms
-= mature, revenue-relevant SEO. Mostly branded = weak organic acquisition. Lots of
-informational top-of-funnel content = content-led motion (common in an AI-using SaaS ICP).
+branded vs non-branded share, intent mix. High non-branded + top-10 commercial terms =
+mature, revenue-relevant SEO. Mostly branded = weak organic acquisition. Heavy
+informational top-of-funnel = content-led motion.
 
-### B5 — Technical health & stack
-`lighthouse` (Core Web Vitals, performance/accessibility/SEO scores; scores are 0–1, ×100
-to display) + `technologies` (CMS, analytics, SEO/AEO tooling). Strong CWV + a real SEO
-stack (headless CMS, schema tooling, an SEO platform) = a literate, resourced operator.
-Poor CWV = a concrete pain point to lead with. AEO-oriented tech (schema, structured data,
-llms.txt tooling) = forward-looking. **AI-tooling signals** directly test an ICP's "AI
-usage" criterion — note any. (`technologies` also returns `domain_rank`, a large integer
-of ambiguous scale — use it only as a coarse *relative* hint, never as a grade.)
+### D2 — Technical health & stack
+`lighthouse` (scores are 0–1; ×100 to display) + `technologies` (CMS, analytics, SEO
+tooling). Strong CWV + a real SEO stack = a literate, resourced operator. Poor CWV = a
+concrete pain point to lead with. AI/AEO-oriented tooling (schema, llms.txt tooling) =
+forward-looking. `technologies` also returns `domain_rank` — a large integer of
+ambiguous scale; use only as a coarse *relative* hint, never a grade.
 
-### B6 — Competitive gap (competitors you *discover*)
-Start from the problem statement (A2). Find competitors two ways and merge: (1) search
-buyer-intent keywords/prompts a buyer with that problem, in that geography, serving that
-audience would type — see who consistently ranks/appears; (2) corroborate with an AI
-answer engine (`google ai-mode` and `chatgpt search`) for "top alternatives and
-competitors to <company> for <segment/audience>" and take named competitors from the
-cited sources. Keep only same segment + audience + geography; drop keyword-only matches.
-Do **not** use any SEO provider's "competitors" endpoint. Then benchmark: run B1/B2 on
-each — `seo bulk-traffic-estimation` is efficient for many domains at once. Express the
-target's traffic / keyword count as a **ratio** to the segment leader and median ("30% of
-the leader's traffic"). Ratios beat absolute numbers and the gap is the size of the
-opportunity you'd pitch.
+### D3 — Competitive gap
+From the S2 problem statement, find competitors two ways and merge: (1) search the
+buyer-intent keywords a buyer with that problem, in that geography, would type — who
+consistently ranks; (2) corroborate with AI engines (`google ai-mode`, `chatgpt
+search`) asking for top alternatives to <company> for <segment/audience>. Keep only
+same segment + audience + geography. Do **not** use an SEO provider's "competitors"
+endpoint. Benchmark with `bulk-traffic-estimation` and express the target as a
+**ratio** to the segment leader and median ("30% of the leader's traffic") — ratios
+are robust to estimation error, and the gap is the size of the pitch.
 
-### B7 — AEO / LLM visibility
-Query AI answer engines (`google ai-mode`, `chatgpt search`) on 2–3 high-intent queries
-the target should win in its category; check whether `<domain>` appears in the citations.
-Cited + has `llms.txt` (B1) = AEO-aware, ahead of the curve. Absent despite decent classic
-SEO = a clear, timely gap to lead with.
+### D4 — AEO / LLM visibility
+2–3 high-intent queries the target should win, on `google ai-mode` + `chatgpt search`;
+is `<domain>` in the citations? Cited + `llms.txt` (S6) = ahead of the curve. Absent
+despite decent classic SEO = a clear, timely gap to lead with. Fills
+`--aeo-visibility` (Cited / Partial / Absent).
 
-### B8 — Buyer literacy (light pass)
-A quick scan of the decision-maker(s): do their public profiles/posts suggest they
-personally understand SEO/AEO? (Full reading is Stage C.) A founder/marketing lead who
-posts about SEO/AEO/content = a literate buyer, a strong fit signal. No evidence = neutral,
-don't penalize.
+### D5 — Decision-maker deep-read → DM hooks
+Both LinkedIn and X, profile + recent posts (async scrapes — detached with `-o FILE`).
+Pull: background (what they've built, prior roles), current interests (recent posts —
+the freshest personalizable signal), topics & voice. Then compose the hooks:
+*personal* (a recent post, a milestone, a voiced take), *company* (the D1–D4 gaps
+framed as openings, not critiques), and the *relevance bridge* (why Berlin maps to
+their situation, in their language). Note what's missing — unfound profiles, thin
+hooks — so the DM step knows solid from inferred.
 
-### Synthesizing the SEO/AEO profile
-
-Combine phases; never score on one metric. Look for agreement and divergence.
-
-| Dimension | Evidence | Reading |
-| :-- | :-- | :-- |
-| Content footprint | B1 | scale of content investment |
-| Organic outcomes | B2 | is the SEO working |
-| Momentum | B3 | investing now vs coasting |
-| Ranking quality | B4 | earned, defensible, revenue-relevant |
-| Technical & stack | B5 | operator maturity |
-| Competitive standing | B6 | gap vs leaders |
-| AEO visibility | B7 | future-readiness |
-| Buyer literacy | B8 / Stage A | can they operate a platform |
-
-**Investment tier (synthesize, don't average):** *Heavy & effective* (strong B2 + rising
-B3); *Heavy but inefficient* (large B1, weak B2 — a coaching/tooling opportunity); *Lean &
-effective* (modest footprint, high traffic-per-page); *Light / nascent* (little footprint,
-low traffic); *Dormant* (past traffic now declining, stale).
-
-**Divergence checks — the most diagnostic part; call them out:** big footprint + low
-traffic → thin/programmatic; high traffic + mostly branded → weak organic acquisition;
-good classic SEO + absent from AI answers → AEO gap; strong historical peak + current
-decline → recovery opportunity.
-
-### ICP fit verdict
-Map the profile back to the runtime ICP. State **strong / partial / weak (= not in ICP)**
-with the specific signals that drove it. A **competitive conflict (B0) overrides everything**:
-mark **excluded (competitor)** even when the behavioral fit is perfect — we don't reach out to
-competitors. Strong/partial → Stage C. Weak → skip Stage C, go
-to Stage D (still record the result and the reason).
-
-**Revenue / size criteria, if the ICP has one.** For the Stage B verdict you have **no
-direct MRR/revenue signal** — only headcount and funding (via `linkedin companies`) and
-whatever customer counts the company publishes; infer size loosely from those proxies
-(don't pull Apollo to qualify — qualify on cheap signals first). Unless the caller's ICP
-says size is a hard cutoff, treat it as a **soft guide** — a behaviorally strong lead that
-looks larger (or smaller) than the band is still a fit; **flag the size caveat prominently**
-rather than down-ranking it, and let the human decide. Don't silently disqualify a
-behaviorally perfect lead for size. **For fits, Stage C's Apollo `org enrich` returns an
-estimated `annual_revenue` + `marketing_headcount`** that firm up (or correct) this read and
-fill the `--revenue` field — still a modeled estimate (coarse for small private SaaS), so
-keep flagging it as an estimate.
-
-**Vertical / segment criteria, if the ICP has one.** Treat the vertical the same way —
-as a **soft cluster signal**, not a hard gate, unless the ICP explicitly says the vertical
-is a cutoff. Some ICPs deliberately keep the vertical *open* to allow experimentation with
-close-adjacent profiles (the bundled default says so outright). So when a target has the
-right **buyer shape and SEO/AEO behavior** but sits in a *different* (adjacent) vertical,
-score it **partial and surface it** — don't drop it to "weak" on vertical alone. Flag the
-segment caveat and let the human decide whether to chase that profile.
+### D6 — Verified emails
+`apollo people email` for the **1–2 people who will actually be contacted** (credits
+per person). `--linkedin-url` matches best. The email goes on the contact (`-e`).
 
 ***
 
-## Stage C — Enrich (fit only)
+## CRM write — the attribute → source map
 
-Run only if strong/partial — this is the expensive, **credit-bearing** stage.
+Statuses and placement rules are in SKILL.md. Fill **every flag you have a value
+for; never pass a blank**. Values for choices fields must match Close's options (the
+error echoes the allowed list; pick the closest or omit and note it).
 
-**First, firmographics + contacts (Apollo).** These cost Apollo credits, which is exactly
-why they wait until the verdict is a fit:
-- `dogfu apollo org enrich --domain <d> --with-people [--title "Head of Marketing" ...]` —
-  returns the **estimated revenue, employee count, marketing-team headcount, funding, and
-  tech stack** that the SEO data can't measure (firm up the ICP size/revenue read here), plus
-  the **decision-makers** (`people[]`: name, title, seniority, `linkedin_url` — no email). The
-  people search is free but needs a master key. Corroborate those people against your Stage A
-  discovery — they're the same humans, so reconcile rather than double-count.
-- `dogfu apollo people email --linkedin-url <url>` (or `--name --domain`) — the **verified
-  work email** for the **1–2 decision-makers you'll actually contact**. Consumes credits per
-  person, so don't resolve everyone. This is what unlocks the email outreach channel.
+| Flag | Source |
+| :-- | :-- |
+| `--industry` | S2 vertical, mapped to Close's choices |
+| `--business-model` | S2 (SaaS / Marketplace / …) |
+| `--primary-market` | S2 geography |
+| `--year-founded` | S9 `founded_year` (or LinkedIn / site) |
+| `--employees` | S4 LinkedIn `employee_count` or S9 `employee_count` |
+| `--marketing-team-size` | S9 `marketing_headcount` |
+| `--revenue` | S9 `annual_revenue` (estimate — the note says so) |
+| `--funding-stage` | S9 `latest_funding_round` / S4 LinkedIn `funding.last_round_type`, mapped to Close's choices |
+| `--total-funding` | S9 `total_funding` / S4 LinkedIn funding raised |
+| `--seo-pages` | S6 `site:` estimate |
+| `--organic-keywords` | S7 `organic.count` |
+| `--seo-investment-tier` | Scout synthesis |
+| `--seo-momentum` | S8 (Rising / Flat / Declining) |
+| `--aeo-visibility` | D4 (leave unset if the deep dive didn't run) |
+| `--company-linkedin` / `--company-x` | S4 |
 
-**Then deep-read each decision-maker on both LinkedIn and X:**
-- **Background / history** — what they've built, prior companies/roles — reveals what they care about and how to speak to them.
-- **Recent posts** — their latest posts reveal current interests and what's top of mind — the freshest, most personalizable signal.
-- **Topics & voice** — what they post about and how they talk.
-
-Then **pull the message hooks**: *personal hooks* (a recent post, a shared interest, a
-milestone, a take they've voiced); *company hooks* (the specific SEO/AEO gaps from Stage B,
-framed as the opening, not a critique); *relevance bridge* (why Berlin specifically maps to
-their situation, in their language). **Note what's missing** — unfound profiles, thin
-hooks, unknowns — so the DM step knows what's solid vs inferred.
-
-**Stage C output:** the firmographics (revenue / headcount / marketing-team size / funding)
-and the contactable verified email(s); and per decision-maker — background summary,
-recent-interest summary, and a short list of ready-to-use DM hooks (personal + company),
-each tied to its evidence.
+The **note** carries the depth: what they do / who they serve, market used, metrics
+with sources (labeled as estimates), the brief's read, the **user's decision and
+reason**, date; and — pursued leads — the competitive ratios, DM hooks with evidence,
+and known gaps. Contacts (every person found, any decision) carry name, title, LinkedIn
++ X in the native `urls` field, verified email when resolved.
 
 ***
 
-## Stage D — CRM write (always — and save everything)
+## Calibration (do this, don't skip it)
 
-Persist every run — qualified or not — so work isn't lost, a "no" isn't re-prospected, and
-**the outreach material you paid to gather is kept**. The research costs real money and
-effort; none of it should be discarded just because a lead didn't fit. Upsert on the
-resolved domain (search before create). Map this record onto Close:
-
-Put each piece of data **where it belongs in the Close UI** — don't dump everything in one place:
-
-- **Lead** (company): name, url (domain), a **brief** description (1–2 lines: segment + verdict + the single lead-with angle — keep the lead view scannable), and status (from verdict: Qualified / Bad Fit / Potential).
-- **Curated lead fields** (set the ones you have, via the named flags — these are the *only* custom fields to fill): `--employees` (headcount), `--business-model` (e.g. SaaS), `--industry` (closest Close choice, e.g. Software), `--seo-pages` (B1 footprint), `--revenue` (USD — from Apollo `annual_revenue` for fits, a modeled estimate; else skip). Skip any you don't have; don't pass blanks.
-- **Contacts** (one per person you found — *always, fit or not*): name, title, role-in-decision, and **every profile URL (LinkedIn, X) in the native contact `urls` field** via repeated `-u` flags (plus `-e` email — the Apollo verified work email for fits — / `-p` phone if found). The native field renders on the contact card, so Sherin can message them straight from Close — don't leave these links only in prose.
-- **Note** (the depth — "Notes & summaries"): segment / business model, market used, what they do / who they serve, the **company LinkedIn + X links** (these have no native lead field), **ICP-fit verdict**, **investment tier**, key metrics (page footprint, organic traffic est., traffic value est., # keywords, `llms.txt` y/n, AI-answer visibility y/n), competitive gap as ratios, reason for the verdict, date evaluated; and — for fits — background + recent-interest summaries, DM hooks (personal + company) with evidence, and known gaps.
-
-**Custom fields:** Close supports lead/contact custom fields via its API, but `dogfu`
-can't set them yet — so use the native fields above and the note. If dedicated custom
-fields are wanted (e.g. a "Company LinkedIn" field on the lead), that needs a small `dogfu`
-extension; flag it rather than calling the Close API directly.
-
-**Disqualified leads:** still write the lead, verdict, and reason; set status **Bad Fit** so
-they're excluded from outreach but retained and not re-researched next pass — **and still
-save all contacts, their profile links (native field), and everything else you found.**
-
-**Competitors (B0 conflict):** record them too — set status **Bad Fit** (there's no dedicated
-"Competitor" status) and make the description and note say plainly **"COMPETITOR — do not
-contact"**, with what they build/sell that conflicts. This keeps them out of outreach and off
-the re-prospecting list. (Because B0 stops the run early, you'll have little SEO data to save —
-that's fine; persist what you have.)
-
-***
-
-## Dynamic calibration (do this, don't skip it)
-
-- **Segment sets the baseline.** Page-count, traffic, and keyword norms differ 10–100× across segments. Anchor to the derived business model, not a universal threshold.
-- **Competitors set the yardstick.** Express the target's numbers as ratios to discovered competitors (B6). Relative standing is robust to estimation error; absolute numbers are not.
-- **Geography sets the market.** Query SEO data for the prompt's market via `--location-code`/`--language-code`. A global SaaS may warrant more than one market.
-- **Let outcomes overrule vanity.** When footprint (B1) and outcomes (B2) disagree, weight outcomes. Page count is a supporting proxy, not the verdict.
-- **The ICP is supplied at runtime.** Re-read it each run and judge against it.
+- **Segment sets the baseline.** Page/traffic/keyword norms differ 10–100× across
+  segments; anchor to the derived business model, never a universal threshold.
+- **Competitors set the yardstick.** Ratios to discovered competitors beat absolute
+  numbers everywhere they're available.
+- **Geography sets the market.** Query SEO data with the derived market's
+  `--location-code`/`--language-code`; a global SaaS may warrant two markets.
+- **Outcomes overrule vanity.** When footprint (S6) and outcomes (S7) disagree, weight
+  outcomes.
