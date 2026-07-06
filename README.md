@@ -1,6 +1,6 @@
 # dogfu-skills
 
-A plugin marketplace for both **Claude Cowork** and **Codex**. It currently ships one plugin:
+A plugin marketplace for **Claude Cowork**. It currently ships one plugin:
 
 | Plugin | What it does |
 | :-- | :-- |
@@ -24,16 +24,11 @@ groups for all data, and writes only the published audit URL back to Close (`crm
 
 ```
 dogfu-skills/
-├── .agents/
-│   └── plugins/
-│       └── marketplace.json      # Codex marketplace catalog
 ├── .claude-plugin/
-│   └── marketplace.json          # Claude marketplace catalog
+│   └── marketplace.json          # marketplace catalog
 └── dogfu/                         # the dogfu plugin (source directory)
     ├── .claude-plugin/
-    │   └── plugin.json            # Claude plugin manifest
-    ├── .codex-plugin/
-    │   └── plugin.json            # Codex plugin manifest
+    │   └── plugin.json            # plugin manifest
     ├── .mcp.json                  # shared dogfu MCP server configuration
     └── skills/
         ├── lead-research/         # the lead-research skill (scout → checkpoint → deep dive → CRM)
@@ -61,8 +56,8 @@ dogfu-skills/
             └── README.md
 ```
 
-Skills are auto-discovered from each plugin's `skills/` directory — they are not listed
-in the Claude manifest. The Codex manifest points at the same shared `skills/` directory.
+Skills are auto-discovered from the plugin's `skills/` directory — they are not listed
+in the manifest.
 
 ## Install in Cowork
 
@@ -87,32 +82,9 @@ audit on <domain>", "do an SEO/AEO audit for this prospect", "build and publish 
 for <company>"), and **berlin-theme** when you ask Claude to design a Berlin-branded asset ("make
 this landing page on-brand", "build a sales one-pager", "design a social poster in our brand").
 
-## Install in Codex
-
-Add this repository as a Codex marketplace, then install the `dogfu` plugin:
-
-```bash
-codex plugin marketplace add boat-builder/dogfu-skills
-codex plugin add dogfu@dogfu-skills
-```
-
-Alternatively, after adding the marketplace, open `/plugins` in the Codex CLI or
-**Plugins** in the Codex app and install **Dogfu** from **Dogfu Skills**. Start a new
-thread after installation so Codex loads the bundled skills and MCP server.
-
-For local development, replace the GitHub shorthand with the repository path:
-
-```bash
-codex plugin marketplace add /absolute/path/to/dogfu-skills
-codex plugin add dogfu@dogfu-skills
-```
-
-The skills have the same triggers and behavior in Codex. You can also invoke the plugin or
-one of its skills explicitly from the composer.
-
 ## Requirement: the dogfu MCP + CLI
 
-**The plugin bundles the dogfu MCP server** for both Claude and Codex — a remote,
+**The plugin bundles the dogfu MCP server** — a remote,
 OAuth-authenticated MCP at
 `https://backend.agentberlin.ai/dogfu/mcp`, declared in `dogfu/.mcp.json`. In clients that
 honor plugin-declared MCP servers, installing the plugin registers it automatically; approve
@@ -151,6 +123,5 @@ don't:
 
 Edit the markdown under each skill's folder — `dogfu/skills/lead-research/`,
 `dogfu/skills/lead-touch/`, `dogfu/skills/lead-engage/`, `dogfu/skills/lead-worklist/`, `dogfu/skills/crm-cleanup/`, `dogfu/skills/first-audit/`, or `dogfu/skills/berlin-theme/` (see each folder's `README.md`) — then reinstall/update the
-`dogfu` plugin from the relevant marketplace to pick up the changes. When shipping a
-change, keep the `version` fields in `dogfu/.claude-plugin/plugin.json` and
-`dogfu/.codex-plugin/plugin.json` in sync.
+`dogfu` plugin from the marketplace to pick up the changes. When shipping a change, bump
+the `version` field in `dogfu/.claude-plugin/plugin.json`.
