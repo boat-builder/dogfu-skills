@@ -17,7 +17,7 @@ It's the audit counterpart to `lead-touch` (which *operates* the flow) and runs 
   honest scope/limits, and the report format. The YAML frontmatter `name` / `description`
   controls when the skill triggers.
 
-Single self-contained file — no `references/` or `icps/`. The check logic is inline so the
+Single self-contained file — no `references/`. The check logic is inline so the
 agent rarely needs `dogfu --help`.
 
 ## The `dogfu` CLI dependency

@@ -1,289 +1,284 @@
 ---
 name: lead-research
 description: >-
-  Run Agent Berlin's full lead-research pipeline — Discover → Qualify → Enrich → CRM —
-  using the `dogfu` CLI. Use this whenever the user hands you a sales target (a company
-  name, a domain, a person, or a LinkedIn/X URL) and wants it researched, qualified
-  against an ICP, enriched for outreach, or pushed into the Close CRM. Triggers include
-  "research this lead", "qualify this prospect", "is this company a fit / in our ICP",
-  "add this company to the CRM", "find the decision-maker and DM hooks", "prospect this
-  domain", or just a bare LinkedIn/X/company link dropped in with intent to evaluate it.
-  Also use it for batch prospecting and for recording disqualified leads. The skill
-  ships its ICPs in `icps/` and qualifies against the default unless the caller names a
-  specific one or supplies their own. This is the canonical way to do sales lead research
-  at Berlin — prefer it over ad-hoc web searches.
+  Run Agent Berlin's staged lead-research pipeline — Scout → checkpoint → Deep dive →
+  CRM — using the `dogfu` CLI. Use this whenever the user hands you a sales target (a
+  company name, a domain, a person, or a LinkedIn/X URL) and wants it researched, sized
+  up, enriched for outreach, or pushed into the Close CRM. Triggers include "research
+  this lead", "qualify this prospect", "is this company a fit", "add this company to the
+  CRM", "find the decision-maker and DM hooks", "prospect this domain", or just a bare
+  LinkedIn/X/company link dropped in with intent to evaluate it. Also use it for batch
+  prospecting. The skill gathers cheap signals first, presents a succinct decision
+  brief, and the USER decides — pursue or drop — whether to spend on the deep dive and
+  whether the lead is Qualified or Bad Fit. The skill never marks a lead on its own and
+  never writes to the CRM without that human call; there is no auto-qualify, even when
+  the data is clear-cut. Leads the user acts on land in Close with structured company
+  attributes. This is the canonical way to do sales lead research at Berlin — prefer it
+  over ad-hoc web searches.
 ---
 
 # Lead Research (powered by `dogfu`)
 
-Turn a sparse sales **target** into a qualified, enriched CRM record. You discover the
-company and the right people, qualify them against an ICP, and — if they fit — enrich
-them with the raw material for a personalized DM, then persist **everything you found** to
-the CRM (whether or not they fit).
+Turn a sparse sales **target** into a researched CRM record and a **human decision**.
+You gather the cheap, high-signal facts first, compress them into a short decision
+brief, and the user decides whether the lead is worth the expensive deep dive — and
+what status it gets. You research and recommend; **you never decide**.
 
 This skill is the **orchestration layer**. The data and CRM actions come from the
-`dogfu` CLI (CRM writes go via the Close key you connect in the Console — see "Running
-`dogfu`" below). Your job is to run the right `dogfu` commands in the right order, read the
-JSON they return, and reason over it.
+`dogfu` CLI (CRM writes go via the Close key connected in the Console — see "Running
+`dogfu`" below). Your job is to run the right `dogfu` commands in the right order, read
+the JSON they return, and reason over it. The stage-by-stage interpretation logic lives
+in **`references/pipeline.md`** — read it before running the Scout.
 
-## The four stages
+## The flow
 
-1. **Discover** — resolve the target to a company + root domain, read the company, map its social footprint, find the marketing/SEO decision-maker(s) and their profile links. *Always runs.*
-2. **Qualify** — judge ICP fit using the runtime ICP, the discovery findings, and an SEO/AEO profile you build from `dogfu seo` data. *Always runs.* It opens with a **competitive-conflict gate** — exclude companies that build or sell SEO/AEO capability (even adjacent AI/automation/agent platforms), since they're competitors, not customers. Stop the deep, expensive work the moment cheap signals clearly disqualify.
-3. **Enrich** *(fits only)* — pull **Apollo** firmographics (estimated revenue, headcount, marketing-team size, funding) and the decision-maker's **verified work email**, deep-read the decision-maker(s), and pull DM hooks. *Only runs if the verdict is a fit (strong or partial)* — these are the expensive/credit-bearing pulls, so it's the one stage gated on fit.
-4. **CRM write** — persist everything gathered — qualified or not — so a "no" is recorded, the research isn't wasted, and you keep the contact links needed to reach out later. *Always runs.*
+1. **Scout** *(always)* — resolve the target to a company + root domain, read its own
+   pages and socials, find the decision-maker(s), then pull the **cheap** SEO and
+   firmographic signals. Capture every company attribute you find.
+2. **Checkpoint** *(always)* — present the decision brief (format below) and ask the
+   user: **pursue or drop**. This is the only place spend escalates, the only place a
+   status is chosen, and the gate on the CRM write — nothing is created until the user
+   answers. Never skip it, never answer it yourself.
+3. **Deep dive** *(pursue only)* — ranking quality, top pages, technical health,
+   competitive gap, AEO visibility, decision-maker deep-reads, verified emails, DM hooks.
+4. **CRM write** *(only after the pursue/drop answer)* — upsert the lead with a brief
+   description and **every curated attribute flag you can fill**, add every person found
+   as a contact with their links, write the research note. The answer sets the status:
+   pursue → Qualified, drop → Bad Fit.
 
-Be **cost-aware throughout**: every `dogfu` SEO/social call hits a paid backend. Pull
-cheap, high-signal data first; only go deep once the target looks plausibly in-ICP. But
-once you've spent the money to find something, **always save it to the CRM** (Stage D) —
-even for non-fits.
+Cost logic: Scout calls are cheap (one `site:` search, one domain overview, one history
+pull, one LinkedIn company read, ~1 Apollo credit). Deep-dive calls are the expensive
+ones (keyword pulls, Lighthouse, competitor benchmarking, AI-answer queries, async
+social scrapes, per-person email credits) — they run only after the user opts in.
 
-The detailed stage-by-stage profiling logic (the qualification phases, the synthesis
-tiers, the divergence checks, the calibration rules) lives in **`references/pipeline.md`**.
-Read it before running Stage B — it is the substance of the qualification. This SKILL.md
-tells you *which `dogfu` command fulfils each step*; `pipeline.md` tells you *how to
-interpret the result*.
+## Who we are
 
-***
+Berlin — an AI SEO/AEO platform that replaces hiring an SEO agency or building a large
+in-house SEO team. We redirect SEO / content / agency budget a company **already
+spends**. Companies that *build or sell* SEO/AEO capability to others are competitors,
+not customers.
 
-## The ICP — bundled in `icps/`, with a default
+## Competitive-conflict gate — check first, spend nothing on conflicts
 
-This skill **ships its ICPs** in the `icps/` folder — one markdown file per ICP. Each ICP
-file has frontmatter (`name`, a human `label`, and `default: true` on exactly one) and a
-body that is your qualification yardstick — judge against it and map each phase's evidence
-back to its specific criteria. (Files named `README.md` or starting with `_` are
-scaffolding, not ICPs — ignore them.)
+As soon as the site read tells you what the company does, apply one test:
 
-**Choose which ICP to qualify against, in this order:**
+- **Do they USE SEO/AEO for their own growth?** → a prospect. Keep going.
+- **Do they BUILD, SELL, or MARKET SEO/AEO capability to others?** → a competitor.
 
-1. **Caller override** — if the caller pasted an ICP inline or gave a file path, use that.
-2. **Named ICP** — if the caller named one (e.g. "use the enterprise ICP"), match it to an
-   `icps/*.md` file by its `name`/`label` and use that file.
-3. **Default** — otherwise use the file marked `default: true` (or the only ICP, if there
-   is just one).
+"Competitor" is broader than direct rivals: other AI SEO/AEO platforms or agencies; AI
+content / writing / "marketing agent" tools positioned for ranking or answer-engine
+visibility; and general AI automation / agent-builder platforms that offer or market
+SEO/AEO agents or content-automation use cases, even when SEO/AEO isn't their headline.
+Signals: "AI SEO", "AEO / answer-engine optimization", "GEO", "LLM visibility",
+"content automation for ranking", "autonomous SEO", SEO/AEO agents.
 
-Read the chosen file and treat its body as the ICP for this run. **Only ask the caller for
-an ICP** if `icps/` has none and the caller supplied none — never invent one. When several
-ICPs exist but none is marked `default` and the caller didn't name one, **ask which**.
-(Stage A discovery can run meanwhile; it doesn't depend on the ICP.)
+On a conflict: **stop the paid calls**, go straight to the checkpoint with a one-line
+brief recommending **drop — competitor, do not contact**, and after the user confirms,
+record it (status Bad Fit; description and note say "COMPETITOR — do not contact") so
+it is never re-prospected. **Don't over-exclude:** a SaaS doing its own SEO is exactly
+who we want; when genuinely unsure, say so in the brief and let the user call it.
 
-***
+## Decision aids — the four load-bearing signals
 
-## Competitive-conflict gate — exclude competitors before qualifying
+Four signals do the heavy lifting. **Assess and surface every one on every lead**, each
+clearly flagged when it's missing, weak, or borderline — they are what the user's call
+turns on. But they calibrate your **recommendation only**: none of them auto-sets a
+status, skips the checkpoint, or drops a lead on its own. Even a clear miss goes to the
+user as a flag, not an auto-drop.
 
-Berlin is an **AI SEO/AEO platform** that replaces hiring an SEO agency or in-house team.
-We don't pitch companies that compete with that. So before spending on qualification, apply
-one test to what Stage A told you about *what the company does*:
+1. **Not a competitor.** The strongest signal and the one hard gate on *spend* (see the
+   competitive-conflict gate above): a company that builds/sells/markets SEO/AEO
+   capability to others is a competitor. On a conflict, recommend **drop** and stop the
+   paid calls — but still route it through the checkpoint before recording Bad Fit.
+2. **Revenue in the ~$1M–$50M band.** We sell a ~$2k/mo product; below ~$1M it rarely
+   pencils out, and far above the band is enterprise/procurement — the wrong motion for
+   now. Slightly outside (~$900k, ~$60M) is fine — flag it. Far outside (multiples:
+   $200k, $150M) is a strong drop signal. Revenue is a coarse modeled estimate — say the
+   source and confidence; **unknown ARR is not a fail**, present the proxies (headcount,
+   funding) instead.
+3. **Real SEO motion.** An existing content/SEO footprint with real outcomes (keywords,
+   organic traffic) — adopting Berlin must be a budget *reallocation*, not a cold start.
+   Effectively-zero organic presence is a strong drop signal.
+4. **In-house marketing capacity (strongly preferred).** A marketing/SEO team (even 1–3
+   people) or a hands-on operator-founder who can run a platform. Its absence is the one
+   soft-but-heavy signal — flag it clearly; don't silently drop on it.
 
-- **Do they USE SEO/AEO for their own growth?** → that's the ICP. Keep going.
-- **Do they BUILD, SELL, or MARKET SEO/AEO capability to others?** → that's a competitor. **Exclude them.**
-
-"Competitor" is broader than direct rivals — catch the **adjacent** cases too:
-- Other AI SEO/AEO platforms, tools, or agencies productizing AI for SEO/AEO/GEO.
-- AI content / writing / "marketing agent" tools positioned for ranking or answer-engine visibility.
-- **General AI automation / agent-builder platforms that offer or market SEO/AEO agents or content-automation use cases** — even when SEO/AEO isn't their headline. If their platform produces SEO/AEO outcomes for *their* users, it overlaps with what Berlin sells.
-
-Signals on their site / product / pricing / marketing: they offer users things like "AI SEO",
-"AEO / answer-engine optimization", "GEO", "LLM visibility", "content automation at scale for
-ranking", "autonomous SEO", rank-tracking-plus-action, or SEO/AEO agents.
-
-**Run this first — it's the cheapest disqualifier**, right after Stage A tells you what the
-company does and before any paid SEO call. If it's a conflict, the verdict is **excluded
-(competitor)** regardless of how perfect the behavioral fit looks; skip the rest of Stage B
-and Stage C, but still write the CRM record (Stage D) so they aren't re-prospected.
-
-**Don't over-exclude.** Most ICP targets are SaaS companies that legitimately do their own
-SEO — that's exactly who we want. Only exclude when they provide SEO/AEO capability *to
-others*. When genuinely unsure, flag the ambiguity for a human rather than auto-excluding a
-strong behavioral fit.
-
-***
+**Everything else is soft, exploratory color** — vertical, buyer literacy, momentum, AEO
+visibility, footprint size, founder-led shape. Useful in the read and worth a mention,
+but never a gate: we're deliberately ranging across ICPs, so don't down-rank a lead for a
+soft-signal miss. Surface it and let the user weigh it.
 
 ## Running `dogfu`
 
-`dogfu` is a published CLI (`pip install dogfu`, or `uv tool install dogfu`). It is **not**
-bundled with this skill — there is no directory to mount and no `.env`. It talks to the Agent
-Berlin backend as a stateless HTTP client.
+`dogfu` is a published CLI (`pip install dogfu`, or `uv tool install dogfu`). It is
+**not** bundled with this skill — it talks to the Agent Berlin backend as a stateless
+HTTP client.
 
-**First step — authenticate the CLI.** Before running any `dogfu` command, call the dogfu MCP's
-**`get_setup_instructions`** tool and follow what it returns: install the `dogfu` package (if
-needed), then run
+**First step — authenticate the CLI.** Call the dogfu MCP's **`get_setup_instructions`**
+tool and follow what it returns: install the `dogfu` package (if needed), then run
 
 ```bash
 dogfu configure --otp <OTP> --title "Lead research: <target or batch>"
 ```
 
-with the one-time OTP from that response (saved to `~/.dogfu/config.json`). This is always the
-first step when this skill runs.
+with the one-time OTP from that response. This is always the first step when this skill
+runs.
 
-**Invoke it from anywhere** (it's on your PATH — no `uv run`, no mounted directory):
-
-```bash
-dogfu <group> <command> [flags]
-```
-
-**Output is canonical JSON by default** — pipe nothing, just read stdout. Add `-o FILE`
-to save a large payload to a file instead of flooding your context, then read back only
-the fields you need (see the "unique run dir" rule below). `-f table` is for humans, not for you.
-
-You can run calls concurrently if it helps — the CLI is a stateless HTTP client with no
-single-process lock. **Cost discipline still applies:** prefer the cheapest informative call
-next rather than fanning out paid calls speculatively.
-
-**Discovery:** `dogfu --help`, `dogfu <group> --help`, and `dogfu <group> <cmd> --help`
-print exact flags and the `Output:` shape. A full command catalog with output fields is
-in **`references/dogfu-commands.md`** — read it once up front so you don't burn calls on
-`--help`.
+Invoke it from anywhere: `dogfu <group> <command> [flags]`. **Output is canonical JSON
+by default** — read stdout; add `-o FILE` for large payloads and read back only the
+fields you need. Calls may run concurrently. The full command catalog (flags + output
+fields + market codes) is in **`references/dogfu-commands.md`** — read it once up front.
 
 The groups: `linkedin`, `x`, `google`, `chatgpt`, `seo`, `crm`, `apollo`.
 
-***
+## Capability → command map
 
-## Capability → `dogfu` command map
-
-The pipeline is written in terms of *capabilities*. Here is how each maps to a concrete
-command. Where `dogfu` has no command for a capability, use your own tools (web fetch,
-the WebSearch tool) — those cases are called out explicitly.
-
-### Discover (Stage A)
+### Scout
 
 | Capability | How |
 | :-- | :-- |
-| Resolve company / find official site | `dogfu google search --query "<name> official site"` → take the root domain |
-| Read homepage / About / pricing / blog | **Your own web-fetch tool** (`dogfu` has no page-fetch). This is where you derive segment, audience, geography, problem statement. |
-| **Find the LinkedIn / X URLs (company or person) when you don't have them** | Use `dogfu google search` or `dogfu google ai-mode` — e.g. `--query "<company> LinkedIn"`, `--query "<company> X (Twitter)"`, `--query "<person name> <company> LinkedIn"`, `--query "<person name> X / Twitter handle"`. LinkedIn doesn't expose a person's X handle, so X handles in particular almost always come from a Google / AI-mode search. Take the canonical profile URL from the results, then hydrate it with the dedicated command below. |
-| Company LinkedIn page | `dogfu linkedin companies --url <linkedin-company-url>` → description, headcount, industries, funding |
-| Find a person's profile by name | `dogfu linkedin profiles --name "Full Name"` (discovery) or `--url <profile-url>`. **Profiles can come back sparse** — `experience[]` and even `current_title` are sometimes empty (private profiles). Corroborate background from their posts and a web search rather than trusting the profile call alone. |
-| Company X/Twitter profile | `dogfu x profiles --url <x-url>` (find the handle first with `dogfu google search` / `ai-mode` per the row above) |
-| Find a person's X handle | `dogfu google search` / `dogfu google ai-mode` (LinkedIn won't give it) — then `dogfu x profiles --url` |
-| Map employees / find the decision-maker | `dogfu linkedin companies` gives headcount but **not a full employee list**. To find the marketing/SEO owner, `dogfu google search --query "site:linkedin.com/in <company> (marketing OR growth OR SEO OR founder)"`, then resolve names with `dogfu linkedin profiles --name`. |
+| Resolve company / official site | `dogfu google search --query "<name> official site"` → root domain |
+| Read homepage / About / pricing / blog | **your own web-fetch tool** — derive segment, business model, audience, geography, problem statement |
+| Find LinkedIn / X URLs (company or person) | `dogfu google search` / `google ai-mode` (X handles almost always come from search, not LinkedIn) |
+| Company LinkedIn (headcount, funding) | `dogfu linkedin companies --url <url>` |
+| Company X profile | `dogfu x profiles --url <url>` |
+| Find the decision-maker | `dogfu google search --query "site:linkedin.com/in <company> (marketing OR growth OR SEO OR founder)"`, resolve with `dogfu linkedin profiles --url` |
+| Page footprint | `dogfu google search --query "site:<domain>"` → `total_results` (rough; corroborate — see pipeline.md) + web-fetch `/sitemap.xml`, `/llms.txt` |
+| Organic outcomes (keywords, traffic value) | `dogfu seo domain-overview --target <domain>` |
+| Momentum / trend | `dogfu seo historical-rank-overview --target <domain>` |
+| Firmographics (est. revenue, headcount, marketing-team size, funding, founded year) + people list | `dogfu apollo org enrich --domain <d> --with-people` (~1 Apollo credit; the people search is free) |
 
-Capture **every person you find with their LinkedIn and X URLs**, plus the **company's**
-LinkedIn and X URLs — these are the outreach handles you'll persist in Stage D, fit or not.
+Capture **every person found with their LinkedIn and X URLs**, plus the **company's**
+LinkedIn and X URLs — they persist to the CRM whatever the user decides.
 
-### Qualify (Stage B) — SEO/AEO data
-
-| Capability | How |
-| :-- | :-- |
-| Page footprint / scale | `dogfu google search --query "site:<domain>"` → read `total_results`. **Caveat:** a bare `site:rootdomain` is a rough Google estimate often dominated by subdomains and can understate the real content footprint ~10×. Corroborate with the keyword count from `domain-overview` and a narrower `site:www.<domain>/blog` query; treat the numbers as a range. Plus web-fetch `<domain>/sitemap.xml` and `<domain>/llms.txt` (presence is a signal). |
-| Top pages by traffic | `dogfu seo relevant-pages --target <domain>` |
-| Domain organic overview (traffic, traffic value, # keywords) | `dogfu seo domain-overview --target <domain>` — returns organic `count` (≈ keyword count) and `etv` (traffic value). |
-| Momentum / trend over time | `dogfu seo historical-rank-overview --target <domain>` |
-| Ranking quality (positions, branded vs not, intent) | `dogfu seo ranked-keywords --target <domain> --order-by "keyword_data.keyword_info.search_volume,desc" --limit 100` |
-| Keyword demand / TAM | `dogfu seo keyword-ideas --keyword "<seed>"` |
-| Technical health (Core Web Vitals) | `dogfu seo lighthouse --url <url>` |
-| Detected tech stack + domain strength hint | `dogfu seo technologies --target <domain>` — also returns `domain_rank`, a **large integer (DataForSEO-style rank), not a 0–100 score**; its scale/direction is ambiguous, so use it only as a coarse, *relative* signal (target vs competitors), never as an absolute grade. |
-| AI-answer visibility & citations | `dogfu google ai-mode --query "..."` and `dogfu chatgpt search --query "..."` — check whether `<domain>` appears in `citations`. |
-| Competitor benchmarking (footprint/traffic for many domains at once) | `dogfu seo bulk-traffic-estimation --target a.com --target b.com ...` |
-
-### Enrich (Stage C) — fit only
-
-**Runs only for strong/partial fits.** The Apollo calls cost credits, so the ICP verdict
-gates them — never pull Apollo to qualify. They need the Apollo key connected in the
-Console → **Apollo Integration** (a `412` "no Apollo API key configured" means it isn't —
-surface that, like the CRM key).
+### Deep dive (after the user says pursue)
 
 | Capability | How |
 | :-- | :-- |
-| **Firmographics + decision-makers (Apollo)** | `dogfu apollo org enrich --domain <d> --with-people [--title "Head of Marketing" --title "SEO Manager" ...]` → est. `annual_revenue`, `employee_count`, `marketing_headcount`, funding, tech, and `people[]` (name, title, seniority, `linkedin_url` — **no email**). Firms up the ICP size/revenue read (the band the SEO data can't measure) and surfaces who to contact. ~1 Apollo credit; the people search itself is free (needs a master key — without one the org still returns, `people[]` empty). |
-| **Verified work email (Apollo)** | `dogfu apollo people email --linkedin-url <url>` (best) or `--name "<full name>" --domain <d>`. Take the person from the `org enrich --with-people` list (or Stage A discovery). Returns the verified work `email` + `email_status`. Consumes credits — resolve only the **1–2 decision-makers you'll actually contact**, not everyone. |
-| Deep-read decision-maker on LinkedIn | `dogfu linkedin profiles --url <profile>` (background, experience) + `dogfu linkedin posts --profile-url <profile>` (recent posts) |
-| Deep-read decision-maker on X | `dogfu x profiles --url <profile>` + `dogfu x posts --profile <profile>` |
+| Ranking quality (positions, branded share, intent) | `dogfu seo ranked-keywords --target <domain> --order-by "keyword_data.keyword_info.search_volume,desc" --limit 100` |
+| Top pages by traffic (which URLs pull the traffic → DM-hook color) | `dogfu seo relevant-pages --target <domain>` |
+| Technical health / stack | `dogfu seo lighthouse --url <url>` · `dogfu seo technologies --target <domain>` |
+| Competitor benchmarking | discover per pipeline.md, then `dogfu seo bulk-traffic-estimation --target a.com --target b.com ...` |
+| AEO / AI-answer visibility | `dogfu google ai-mode --query "..."` + `dogfu chatgpt search --query "..."` — is `<domain>` in `citations`? |
+| Decision-maker deep-read | `dogfu linkedin profiles --url` + `linkedin posts --profile-url` · `dogfu x profiles --url` + `x posts --profile` (async scrapes — run detached with `-o FILE`, see the catalog) |
+| Verified work email (1–2 people you'll actually contact) | `dogfu apollo people email --linkedin-url <url>` (credits per person) |
+| Keyword demand / TAM (only if it changes the pitch) | `dogfu seo keyword-ideas --keyword "<seed>"` |
 
-> **Discovery social reads (`--profile-url`/`--profile`/`--name`) are async scrapes (~1–10 min) that bill on trigger — run detached with `-o FILE` and poll; prefer `--url`. See `references/dogfu-commands.md`.**
+## The checkpoint brief — succinct, or it defeats the point
 
-### CRM write (Stage D) — Close
+The whole reason the checkpoint exists is that the user can decide **without reading a
+wall of text**. One lead:
 
-CRM writes go through the backend proxy under the caller's **own** Close key (set in the
-Console → CRM Integration; see "Running `dogfu`"). If Close isn't connected, `dogfu crm`
-commands return a "no Close CRM API key configured" / `412` error — surface that to the user
-rather than retrying. Running this skill **is** the go-ahead for its Stage D writes: show the
-planned lead/contact/note in your run summary, but don't pause for per-write confirmation (it
-would break batch prospecting).
+```
+**<Company>** (<domain>) — <one line: what they do, for whom, where>
 
-Put each piece of data **where it belongs in the Close UI**, not all in one blob:
+| Signal | Value |
+| Revenue (est.) | ~$4M (Apollo, coarse) — in band |
+| SEO motion | 1.8k pages · 3.1k keywords · ~$12k/mo traffic value · rising |
+| In-house team | 38 total · 2 marketing |
+| Competitor? | no — uses SEO for its own growth |
+| Funding | Seed, $3.5M (2024) |
+| Model / market | SaaS · US · founder-led |
+| Flags | none |
 
-| What | Where it goes | Command |
+**Read:** <≤3 sentences: strongest signal, weakest signal, what the deep dive would settle.>
+**Pursue** (deep dive: competitive gap, AEO check, top pages, contacts + hooks — the paid calls) or **drop**?
+```
+
+The first four rows are the load-bearing signals (revenue, SEO motion, in-house team,
+competitor) — always present, so the user sees the whole decision at a glance.
+
+Batch prospecting: run the Scout for all targets first, then present **one table** (one
+row per lead: company · revenue · SEO motion · in-house team · competitor? · funding ·
+momentum · flags · one-word read) and ask **once** which to pursue or drop. Never ask
+per lead.
+
+Rules: every number is an estimate — label anything coarse or missing rather than
+implying precision. Flags column carries competitor conflicts, out-of-band size, no SEO
+motion, no in-house team, unknown ARR. A recommendation is welcome; the decision is not
+yours. **If the session can't ask (a non-interactive run), write nothing to the CRM** —
+return the brief (and the scout data) so a human can make the pursue/drop call; a lead is
+never created without that decision.
+
+## CRM write — only after the checkpoint decision, fields in their proper place
+
+Runs **once the user has answered pursue or drop** — never before, and never on a
+non-interactive run with no answer. Upsert on the resolved domain (search before
+create). If Close isn't connected, `dogfu crm` returns a `412` — surface it, don't retry.
+
+**Status — set from the user's checkpoint decision, never from your own judgment.** There
+are only two outcomes; the skill never creates a lead in any other status:
+
+| Decision | Status | Note |
 | :-- | :-- | :-- |
-| Status IDs (account-specific — never hardcode) | — | `dogfu crm status list` |
-| Duplicate check (upsert) | — | `dogfu crm lead list --name "<company>"` (or `--query "<domain>"`) **before** creating |
-| Company name + website + **brief** summary + status | native lead fields | `dogfu crm lead create -n "<company>" -u <domain> -d "<1–2 line summary>" -s <status_id>` / `lead update <lead_id> ...` |
-| Curated company facts (the *only* custom fields to set) | dedicated lead flags | the five `--industry / --employees / --revenue / --business-model / --seo-pages` flags below |
-| **A person's LinkedIn / X links** | **native contact `urls` field** (renders on the contact card in Close) | `dogfu crm contact create <lead_id> -n "<name>" -t "<title>" -u <linkedin-url> -u <x-url>` — `-u` is repeatable; also pass `-e <email>` (the Apollo verified work email, for fits — it unlocks the email outreach channel) / `-p <phone>` when found |
-| Everything else — full profile, metrics, momentum, competitive gap, verdict, **company LinkedIn/X links**, contact location/seniority, DM hooks | the lead **Note** ("Notes & summaries") | `dogfu crm note create <lead_id> -t "<the structured write-up>"` |
+| pursue | **Qualified** | enters the outreach flow (the reach-out task opens on this status) |
+| drop | **Bad Fit** | record the user's reason; competitors additionally get "COMPETITOR — do not contact" in the description |
 
-#### Curated lead custom fields — set these, and only these
+No pursue/drop answer → **no lead is written.** There is no "Potential" / parked bucket
+for this skill: if you can't get a decision (non-interactive run), return the brief and
+stop.
 
-`dogfu` exposes a **specific, curated** set of company custom fields as named flags on
-`crm lead create` / `lead update`. Set each one **when you have the value** (skip the flag
-when you don't — never pass a blank); **anything that isn't one of these goes in the
-description or the note.** Don't try to set other custom fields — there are no flags for
-them by design.
+**Where each piece of data goes** (statuses: `crm status list` — never hardcode ids):
 
-| Flag | Fill from | Notes |
+| What | Where | Command |
 | :-- | :-- | :-- |
-| `--employees <n>` | headcount — LinkedIn `company.employee_count`, or Apollo `employee_count` (fits) | a number |
-| `--revenue <usd>` | annual revenue | a number in USD. **For fits, from Apollo `annual_revenue`** (a modeled estimate — coarse for small private SaaS, so flag it as such); otherwise usually unknown — then skip it and leave the size read in the note. |
-| `--business-model "<...>"` | derived business model (A2) | free text, e.g. `SaaS`, `Marketplace`, `Services`, `Dev tool` |
-| `--industry "<choice>"` | derived vertical, mapped to Close's **allowed choices** | validated server-side. Map your sector to the closest choice (e.g. SaaS → `Software`). If the value is rejected, `dogfu` returns the allowed list — retry with the closest, or omit and note it. Don't block the run on this. |
-| `--seo-pages <n>` | indexed-page footprint from B1 (`site:` estimate) | a number |
+| Duplicate check | — | `dogfu crm lead list -n "<company>"` (or `-q "<domain>"`) before creating |
+| Name, website, **brief** 1–2 line description, status | native lead fields | `dogfu crm lead create -n .. -u .. -d .. -s ..` / `lead update` |
+| **Company attributes — fill every flag you have a value for; skip the rest** | curated lead flags | `--industry` `--business-model` `--primary-market` `--year-founded` `--employees` `--marketing-team-size` `--revenue` `--funding-stage` `--total-funding` `--seo-pages` `--organic-keywords` `--seo-investment-tier` `--seo-momentum` `--aeo-visibility` `--company-linkedin` `--company-x` |
+| Each person found (fit or not) | contact + native `urls` | `dogfu crm contact create <lead_id> -n .. -t .. -u <linkedin> -u <x> [-e <verified email>] [-p <phone>]` |
+| The research depth: what they do, market, metrics with sources, the brief's read, the user's decision + reason, and (pursued) DM hooks + competitive gap | lead note | `dogfu crm note create <lead_id> -t "<write-up>"` |
 
-Example: `dogfu crm lead create -n "Acme" -u acme.com -s <id> -d "<brief>" --business-model SaaS --industry Software --employees 140 --seo-pages 1800`
+The attribute → source mapping (which Scout/deep-dive datum fills which flag) is in
+`references/pipeline.md`. Choices fields (`--industry`, `--funding-stage`, …) validate
+against Close's live options — on a rejection the error lists the allowed values; pick
+the closest or omit and note it. `dogfu crm field get "<name>"` shows a field's options;
+`crm field add-choice`/`remove-choice` edit them, but only on the user's explicit ask.
 
-**Keep the lead `description` brief** — one or two lines, like a headline (segment +
-verdict + the single lead-with angle). The curated facts go in their flags; all remaining
-depth goes in the **note**, so the Close lead view stays scannable.
+The **checkpoint answer is** the go-ahead for these writes — once the user says pursue
+or drop, write the lead, contacts, and note in one pass and show what you wrote in the
+run summary; don't pause again per field. The checkpoint is the only pause.
 
-**Links land in proper fields:** a person's LinkedIn/X go in that contact's native `urls`
-field (so you can message them straight from Close), not buried in prose. Company-level
-LinkedIn/X have no dedicated flag, so include them in the note.
+## Output format (end of run)
 
-**Status mapping** (resolve the live IDs with `crm status list` — labels may differ):
-fit → **Qualified**; not in ICP → **Bad Fit**; unsure / not yet worked → **Potential**.
+After a **drop**: the one-line outcome + the CRM record written. After a
+**pursue** (deep dive done):
 
-***
-
-## Workflow
-
-1. **Pick the ICP.** Use the caller's ICP if they pasted one or named a specific `icps/*.md`; otherwise read the bundled default (see "The ICP" above). Only ask if `icps/` is empty and none was supplied (Stage A can run meanwhile).
-2. **Stage A — Discover.** Resolve the target → domain. Web-fetch the company's own pages to derive segment, audience, geography/language, and the problem statement (you need these to calibrate every SEO threshold and to discover competitors). Find and record the company's LinkedIn + X URLs and each decision-maker's LinkedIn + X URLs (use Google search / AI-mode to locate any you weren't handed) — you persist these regardless of fit.
-3. **Stage B — Qualify.** **First, apply the competitive-conflict gate** (above) using what Stage A told you about the business — if the target builds/sells/markets SEO/AEO capability (directly or via a broader AI/automation/agent platform), stop and mark **excluded (competitor)**, skipping the paid SEO calls. Otherwise read `references/pipeline.md`, then run the phases with the commands above, **cheap signals first**. Set the SEO data's market with `--location-code` / `--language-code` (see the codes in `references/dogfu-commands.md`) from the geography you derived. Calibrate to the segment and to discovered competitors (ratios, not absolute numbers). Stop early and mark "not in ICP" if cheap signals clearly disqualify. Produce a verdict: **strong / partial / weak**.
-4. **Stage C — Enrich** (only if strong/partial — this is where the credit-bearing Apollo pulls live). Run `dogfu apollo org enrich --domain <d> --with-people` to firm up the size/revenue read (est. revenue, headcount, marketing-team size, funding) and surface the decision-makers; then `dogfu apollo people email` (by `--linkedin-url`, else `--name --domain`) for the verified work email of the **1–2 people you'll actually contact**. Deep-read each decision-maker (LinkedIn + X profile and recent posts). Pull personal hooks, company hooks (the SEO/AEO gaps from Stage B, framed as openings), and the relevance bridge to Berlin.
-5. **Stage D — CRM write (always, fields in their proper place).** Upsert the lead on its domain with a **brief** description, and set the curated lead flags (`--employees`, `--business-model`, `--industry`, `--seo-pages`, `--revenue`) for whatever you found — skip any you don't have. Add **every person you found as a contact, with their LinkedIn/X in the native `urls` field**. Write a note with **all the research** — what they do, who they serve, company LinkedIn/X links, SEO/AEO metrics, verdict + reason, and (for fits) the DM hooks. **Do this for non-fits too:** mark them Bad Fit with the reason, but still save the contacts, their links, and everything you found — the research cost real money and effort, so none of it should be discarded. Set status from the verdict.
-6. **Return the run summary** in the output format below.
-
-## Output format
-
-In addition to the CRM write, return:
-
-1. **Snapshot** — target, resolved domain, segment, market, decision-maker(s), ICP-fit verdict, in 2–3 sentences.
-2. **Profile table** — the Stage B dimension table, each row a headline number + one-line read.
-3. **Competitive gap** — target vs leader/median as ratios.
-4. **Contacts & links** — decision-maker(s) with their LinkedIn/X URLs and (if a fit) ready-to-use DM hooks. **For a qualified lead, also include a "touch 0" starter the BDR can act on immediately: the profile(s) to send a connection request to, and 1–3 specific recent posts (with their URLs, from the Stage C reads) to like or comment on. Touch 0 is one or more of just those three actions — connection request, like, or comment; the BDR does it by hand, then records it via the lead-touch skill.**
-5. **Key gaps & angles** — the divergences found, framed as outreach openings.
-6. **Evidence appendix** — the exact `dogfu` commands run and key fields pulled, so the run is reproducible. Keep all traffic/keyword numbers labeled as estimates.
+1. **Snapshot** — target, domain, segment, decision, in 2–3 sentences.
+2. **Profile table** — each signal: headline number + one-line read.
+3. **Competitive gap** — target vs leader/median, as ratios.
+4. **Contacts & links** — decision-maker(s) with LinkedIn/X URLs, verified emails, and
+   ready-to-use DM hooks, plus a **touch-0 starter**: the profile(s) to send a
+   connection request to and 1–3 specific recent posts (with URLs) to like or comment
+   on. The BDR acts by hand and records it via the lead-touch skill.
+5. **Key gaps & angles** — divergences framed as outreach openings.
+6. **Evidence appendix** — the exact `dogfu` commands run, so the run is reproducible.
 
 ## Optional — brand narrative coherence (only on explicit request)
 
-**Not part of the default pipeline.** *Only if the user explicitly asks* to check the brand's
-narrative / category coherence, spawn a **sub-agent** to execute
-`references/brand-narrative-coherence.md`, handing it the domain, the brand brief, the geo
-decision, the competitor shortlist, the decision-maker's LinkedIn/X URL, and an **output path**
-in the run dir. It writes the findings there and returns a headline. Then **persist the
-substantive findings to the CRM note** — the coherence score, the category-placement matrix
-(what each source calls the brand), the key divergences, and the substantiation gaps — so
-downstream outreach and positioning work can use them; don't reduce it to a single line. You
-don't read the playbook yourself. Without a clear ask, skip this.
+*Only if the user explicitly asks* for a brand-narrative / category-coherence check,
+spawn a sub-agent to execute `references/brand-narrative-coherence.md`, handing it the
+domain, brand brief, geo decision, competitor shortlist, decision-maker URLs, and an
+output path in the run dir; persist its substantive findings to the CRM note. Without a
+clear ask, skip it.
 
 ## Operating rules
 
-- **Treat a sparse prompt as normal.** Derive segment, geography, audience, and competitors yourself before qualifying; don't stop to ask for things you can research (the ICP comes from `icps/` — only ask if none is bundled and none was supplied).
-- **Exclude competitors.** Before paid qualification, run the competitive-conflict gate: if the target builds/sells/markets SEO/AEO capability to others (incl. adjacent AI automation/agent platforms), mark it excluded (competitor) and don't reach out — but still record it so it isn't re-prospected.
-- **Cost discipline.** Cheap, high-signal first (`site:` count, `domain-overview`); go deep (`ranked-keywords`, `lighthouse`, `bulk-traffic-estimation` on competitors, deep social reads) only once the target looks plausibly in-ICP.
-- **Apollo is fit-gated.** `apollo org enrich` and `apollo people email` consume Apollo credits — run them **only for strong/partial fits** (Stage C), never to qualify. They supply the revenue/headcount the SEO data can't and the decision-maker's verified work email; resolve emails only for the 1–2 people you'll actually contact.
-- **Never waste research.** Whatever you spent money to discover gets written to the CRM in Stage D — contacts, links, metrics, and findings — fit or not.
-- **Put data in its proper place.** Brief lead description; person links in the contact `urls` field; everything else in the note.
-- **Write scratch files to a unique run dir.** Anything this run saves to disk — `dogfu -o` dumps, research/brand-profile notes, any future scratch file — goes inside **one** directory made with `mktemp -d` at the start; never a fixed or target-derived path. Parallel runs (batch prospecting, concurrent calls) clobber shared paths.
-- **Numbers are modeled estimates.** Use them comparatively (target vs competitor vs segment); say so when one looks implausible rather than reporting it straight.
-- **Specify the market.** SEO data is market-specific. A global SaaS may warrant checking more than one market.
-- **The CRM write always happens** — keyed on the domain to avoid duplicates.
+- **A sparse prompt is normal.** Derive segment, geography, audience, and competitors
+  yourself; don't ask for what you can research. The checkpoint is the one mandatory ask.
+- **Cheap before expensive, always**: competitor gate (free) → SEO motion (`site:`,
+  `domain-overview`) → the rest of the Scout → checkpoint → deep dive. Stop the paid
+  calls the moment the gate says competitor.
+- **Never decide for the user.** No CRM write without a pursue/drop answer; no status the
+  user didn't choose; no deep dive without a pursue. This holds even when the data is
+  clear-cut — recommend, don't decide.
+- **Never waste research.** Once the user decides, everything found gets written to the
+  CRM — contacts, links, attributes, findings — for a drop as much as a pursue. (The one
+  case nothing is written: a non-interactive run with no decision — there, return the
+  brief so a human can still act on it.)
+- **Put data in its proper place.** Brief description; attributes in their flags;
+  person links on the contact; depth in the note.
+- **Scratch files go in one `mktemp -d` run dir** — never a fixed or target-derived
+  path (parallel batch runs clobber shared paths).
+- **Numbers are modeled estimates.** Use them comparatively; flag implausible ones.
+- **Specify the market.** SEO data is market-specific — set `--location-code` /
+  `--language-code` from the derived geography; a global SaaS may warrant two markets.

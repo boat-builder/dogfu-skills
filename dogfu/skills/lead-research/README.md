@@ -2,13 +2,24 @@
 
 This is the `lead-research` skill, shipped inside the **`dogfu`** plugin. It triggers
 automatically when you hand Claude a sales target (a company, domain, person, or
-LinkedIn/X URL) and ask to research, qualify, enrich, or CRM it.
+LinkedIn/X URL) and ask to research, size up, enrich, or CRM it.
+
+The flow is staged around a human decision: a cheap **Scout** pass gathers the signals,
+a succinct **checkpoint brief** puts the **pursue-or-drop** call in the user's hands, and
+only a *pursue* unlocks the expensive **deep dive** (competitive gap, AEO checks, top
+pages, decision-maker reads, verified emails). The skill never sets a status or writes to
+the CRM on its own: a lead lands in Close — Qualified on a pursue, Bad Fit on a drop, with
+structured company attributes attached — only once the user has made that call.
 
 ## Files
-- `SKILL.md` — the operating manual: the four stages, how to invoke `dogfu`, the capability→command map, and the CRM write rules. The YAML frontmatter `name` / `description` controls when the skill triggers.
-- `references/pipeline.md` — how to interpret the qualification (the B1–B8 phases, synthesis, calibration). Read before running Stage B.
-- `references/dogfu-commands.md` — the `dogfu` command catalog (flags + output fields + market codes).
-- `icps/` — the Ideal Customer Profiles the skill qualifies against (one file per ICP, with a default). The skill loads one automatically, so you don't paste an ICP into every request. See `icps/README.md` for the convention.
+- `SKILL.md` — the operating manual: the staged flow, the decision aids, how to invoke
+  `dogfu`, the capability→command map, the checkpoint-brief format, and the CRM write
+  rules. The YAML frontmatter `name` / `description` controls when the skill triggers.
+- `references/pipeline.md` — how to interpret each phase (Scout S1–S9, deep dive
+  D1–D6), how to compose the brief, and the attribute→source map for the CRM fields.
+  Read before running the Scout.
+- `references/dogfu-commands.md` — the `dogfu` command catalog (flags + output fields
+  + market codes).
 
 ## The `dogfu` CLI dependency
 The skill is the orchestration layer; the data and CRM actions come from the `dogfu` CLI.

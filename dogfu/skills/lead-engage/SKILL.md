@@ -241,7 +241,7 @@ An inbound lead (someone reached out to us) skips the cold sequence entirely:
 4. If that first call already **confirmed a deal**, open the opportunity (the gate command above) — that promotes the lead to Engaged and retires the engage task in one motion. Otherwise the engage task is already there to drive landing the qualifying call.
 
 > If the inbound company hasn't been researched, consider a `lead-research` pass first to fill
-> the curated fields and ICP read — but **don't block the conversation on it**; intake as
+> the curated attribute fields — but **don't block the conversation on it**; intake as
 > Connected now, enrich after.
 
 ***
