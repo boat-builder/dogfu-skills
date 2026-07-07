@@ -14,8 +14,8 @@ description: >-
   won or lost, intake an inbound lead, or report the deal pipeline / forecast. The BDR does
   the real-world outreach and calls themselves; this skill is how they tell the CRM what
   happened and ask it what to do next. For the cross-phase worklist of everything to work
-  today ("what should I work on", any or all stages, read-only, with context), use the
-  lead-worklist skill; for researching or qualifying a brand-new target, use the
+  today ("what should I work on", any or all stages, read-only, with context), run
+  `dogfu crm worklist`; for researching or qualifying a brand-new target, use the
   lead-research skill — this is the layer that runs after that.
 ---
 
@@ -128,8 +128,8 @@ most-overdue-first. Because every system next-action is a real Close task, this 
 native Tasks/Inbox are literally the same list.
 
 For the *cross-phase* daily brief ("what should I work on across everything", read-only,
-presented with context), that's the **lead-worklist** skill; in here you pull the slice the
-flow you're working needs.
+most-overdue-first), run plain **`dogfu crm worklist`** with no `--kind`; in here you pull the
+slice the flow you're working needs.
 
 ***
 
