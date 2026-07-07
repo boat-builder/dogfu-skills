@@ -10,9 +10,9 @@ description: >-
   runs `dogfu crm worklist`, which reads the real due-task inbox and classifies every row (reach-out
   / follow-up / engage / deal / ad-hoc), then hands each off to the skill that records the action.
   It is **read-only — it never
-  writes to the CRM**: to record a touch you sent use **lead-touch**, to move a deal use
-  **lead-engage**, for a health / anomaly audit use **crm-cleanup**, and to research a brand-new
-  target use **lead-research**.
+  writes to the CRM**: to record a touch you sent or to move a deal use **lead-touch**, for a
+  health / anomaly audit use **crm-cleanup**, and to research a brand-new target use
+  **lead-research**.
 ---
 
 # Lead worklist — the read-only "what do I work on now" queue (powered by `dogfu`)
@@ -23,10 +23,10 @@ worklist` (the CLI does the composing — reading the actual due-task inbox and 
 presents it with the context to act, and points each row at the skill that records the action. It
 never changes CRM state.
 
-It sits **across** the phase skills, not inside them: **lead-touch** runs the cold cadence and
-**lead-engage** works live deals. This skill is the **cross-phase daily brief** that unifies them, so
-"what's on my plate" has one home. The depth of each model lives in those skills; this one assumes
-them and only recaps what presenting the list needs.
+It sits **across** the phases, not inside them: **lead-touch** owns the actions — its cold flow
+runs the outreach cadence, its warm flow works live deals. This skill is the **cross-phase daily
+brief** that unifies them, so "what's on my plate" has one home. The depth of each model lives in
+that skill's flow references; this one assumes them and only recaps what presenting the list needs.
 
 ***
 
@@ -142,9 +142,9 @@ dogfu crm <command> [flags]
 
 - **Read-only — never write.** This skill assembles and presents; it does **not** record touches,
   move statuses, open or advance deals, or create tasks. End each row with the command/skill that
-  *does*: **lead-touch** (`touch record` / `reply` / `stop`) for cold `reach-out`/`follow-up` rows,
-  **lead-engage** for `engage` rows (land the discovery call → open the opportunity) and `deal` rows
-  (`opportunity …`). Hand off; don't act.
+  *does* — **lead-touch** in the matching flow: `touch record` / `reply` / `stop` for cold
+  `reach-out`/`follow-up` rows; the deals flow for `engage` rows (land the discovery call → open
+  the opportunity) and `deal` rows (`opportunity …`). Hand off; don't act.
 - **Resolve status ids first** (`crm status list`) before filtering by Engaged or any status. Never
   hardcode an id.
 - **Tier the context** (above): Layer 1 inline for all rows; Layer 2 only for the lead being worked.

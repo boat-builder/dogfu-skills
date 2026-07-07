@@ -21,7 +21,8 @@ of the regular outreach flow**, before it silently rots. It is **read-only**: it
 each with the lead, the problem, and the exact command to fix it by hand. It never writes.
 
 It is the audit counterpart to `lead-touch` (which *operates* the flow). The full model lives
-in **lead-touch/SKILL.md**; this skill assumes it and only recaps what the checks need.
+in **lead-touch** (`SKILL.md` + its flow references); this skill assumes it and only recaps
+what the checks need.
 
 ***
 
@@ -187,7 +188,8 @@ task). The keys it can return:
     `whoami`), so you can flag empty assignees (E1) but not invalid ones.
   - *Lead owner missing* — not exposed on the model; use task assignee (E1) as the proxy.
 - **Deal-health judgment is out of scope:** an under-specified deal or a stale value/confidence
-  is `lead-engage`'s call, not this read-only audit's. Everything task-shaped is Section A.
+  is a call for `lead-touch`'s deals flow, not this read-only audit's. Everything task-shaped is
+  Section A.
 
 ***
 

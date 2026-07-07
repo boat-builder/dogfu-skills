@@ -1,33 +1,58 @@
 ---
 name: lead-touch
 description: >-
-  Manage Agent Berlin's leads in the Close CRM after the BDR has done the actual
-  outreach — using the `dogfu` CLI. Use this whenever someone wants to interact with
-  the CRM about leads that already exist: check a lead's status or where it stands in
-  the outreach sequence, pull what's due in the cold cadence and record the touches they
-  just sent (a reach-out or a follow-up, on any channel), mark a lead as replied / engaged
-  / not interested / nurture, change a lead's status, read a lead's touch history, add a
-  note or contact or follow-up task to a lead, or report on the funnel / outreach load. The
-  BDR sends the messages themselves; this skill is how they tell the CRM what happened and
-  ask it what to do next. For the cross-phase worklist of everything to work today ("what
-  should I work on", any or all stages, read-only, with context), use the lead-worklist
-  skill; for researching or qualifying a brand-new target, use the lead-research skill —
-  this is the layer that runs after that.
+  Work Agent Berlin's leads in the Close CRM — everything after research, from cold outreach
+  through a closed deal — using the `dogfu` CLI. Use this whenever someone wants to interact
+  with the CRM about leads that already exist, in either phase. Cold cadence: check a lead's
+  status or where it stands in the outreach sequence, pull what's due and record the touches
+  they just sent (a reach-out or a follow-up, on any channel), mark a lead as replied / not
+  interested / nurture, change a lead's status, read a lead's touch history, add a note or
+  contact or follow-up task, or report on the funnel / outreach load. Live deals: run a
+  discovery / intro call, open or advance or close an **opportunity** (Discovery → Trial →
+  Proposal → Won/Lost), log a call / demo / proposal that just happened, set or check the
+  **next step** on a deal, pull the deals that need action today or have stalled, mark a deal
+  won or lost, intake an inbound lead, or report the deal pipeline / forecast. The BDR does
+  the real-world outreach and calls themselves; this skill is how they tell the CRM what
+  happened and ask it what to do next. For the cross-phase worklist of everything to work
+  today ("what should I work on", any or all stages, read-only, with context), use the
+  lead-worklist skill; for researching or qualifying a brand-new target, use the
+  lead-research skill — this is the layer that runs after that.
 ---
 
-# Lead touch — CRM & outreach ops (powered by `dogfu`)
+# Lead touch — work leads in Close, cold cadence through closed deal (powered by `dogfu`)
 
-This skill is how a BDR **talks to the CRM about leads that are already in it**. The BDR
-does the real-world outreach by hand — sends the LinkedIn request, the DM, the email, the X
-message, whatever fits. Your job is to translate what they tell you into the right `dogfu
-crm` calls: read where a lead stands, pull what's due, record what they sent, move a lead's
-status, and keep notes/tasks/contacts straight. The `dogfu` CLI holds the Close credentials
-and commands; you hold the model of how our leads are organized, below — so you rarely need
+This skill is how a BDR **talks to the CRM about leads that are already in it** — across the
+whole post-research lifecycle. The BDR does the real-world work by hand — sends the LinkedIn
+request, the DM, the email; takes the discovery call; runs the demo. Your job is to translate
+what they tell you into the right `dogfu crm` calls: read where a lead stands, pull what's
+due, record what happened, move statuses and deal stages, and keep notes/tasks/contacts
+straight. The `dogfu` CLI holds the Close credentials and commands; you hold the model of how
+our leads are organized — below, plus the flow reference you load — so you rarely need
 `--help`.
 
-The work here is open-ended — far more than a fixed list of plays. Anything a BDR would do
-in Close, they can ask you to do. The sections that follow are the complete mental model and
-command set; reason from them rather than pattern-matching to a script.
+The work here is open-ended — far more than a fixed list of plays. Anything a BDR would do in
+Close, they can ask you to do. Reason from the model rather than pattern-matching to a script.
+
+***
+
+## Two flows — load the reference for the one in play
+
+The lifecycle has a cold half and a warm half, and they run on different machines: cold runs
+on a **cadence** (a system-computed next touch), warm runs on **next steps** (one explicit
+committed action per deal) and **opportunity stages**. Before acting, read the reference for
+the flow the request touches:
+
+- **Cold outreach — the cadence** → read **`references/cold-outreach.md`**. Leads being
+  *chased*: pulling reach-outs and follow-ups due, recording touches the BDR sent, marking a
+  reply, stopping a chase, touch history, the funnel / outreach-load report.
+- **Live deals — the warm phase** → read **`references/deals.md`**. Leads that *answered* (or
+  came in inbound): landing the discovery call, opening / advancing / closing an
+  **opportunity** (Discovery → Trial → Proposal → Won/Lost), setting next steps, inbound
+  intake, the pipeline / forecast report.
+
+Read **both** when the ask spans the seam — a reply just came in (a cold verb whose outcome
+starts the warm phase), or a report covering funnel *and* pipeline. Everything below is the
+shared foundation both flows assume.
 
 ***
 
@@ -38,126 +63,73 @@ A **lead is a company** (not a person). Each lead carries:
 - **Identity** — `name`, `url` (website), `description` (a short headline).
 - **Status** (`status_id` + `status_label`) — where it sits in the **funnel**. A human
   judgment label, **account-specific** — resolve the live ids with `crm status list`, never
-  hardcode them. Typical labels: *Potential, Qualified, Connected, Engaged, Customer, Bad Fit, Not
-  Interested, Canceled, DNC*.
+  hardcode them. Typical labels: *Potential, Qualified, Connected, Engaged, Customer, Bad
+  Fit, Not Interested, Canceled, DNC*.
 - **Contacts** — the people you actually reach out to. Each has `urls` (their LinkedIn / X —
   what you DM from), `emails`, `phones`, `title`.
-- **Outreach state** — system-managed fields tracking the outreach sequence (below).
+- **Outreach state** — system-managed fields tracking the cold sequence (cold reference).
+- **Opportunities** — the actual deals you forecast, zero or more per lead, each with a
+  pipeline stage, value, deal type, and confidence (deals reference).
 - **Curated company fields** — `industry`, `employees`, `revenue`, `business_model`,
   `seo_pages`. Set by lead-research; you rarely touch them here.
-- Attached **notes** (write-ups, audit trail) and **tasks** (follow-up reminders).
+- Attached **notes** (write-ups, audit trail) and **tasks** (reminders that drive the queue).
 
-**Two layers — don't conflate them.** *Status* is the funnel position (a human label).
-*Outreach state* is the sequence position (machine-tracked). Touches never change status, and
-`record` refuses a lead whose status has left the cold flow (Connected / Engaged / Customer /
-a dead status). Status moves don't advance the sequence — though moving a lead **out of the
-cold flow** ends it (clears `next_touch_due`, closes the cadence task). To end a chase, use
-`touch reply` / `touch stop` — they record the *intent*, not just the label.
+**Three layers — don't conflate them.** *Status* is the funnel position (a human lifecycle
+label). *Outreach state* is the cold-sequence position (machine-tracked; touches never change
+status). *Opportunity* is the deal itself (the thing you forecast; a lead's status mirrors
+whether one is open). Each flow reference covers its layer's mechanics.
 
-***
+**The lifecycle in one line:**
 
-## The outreach model — a touch is an *attempt*, channel is a *label on it*
+```
+Qualified ──cold cadence: reach-out → follow-ups──▶ reply → Connected ──discovery call
+confirms a deal (the gate)──▶ Engaged (opportunity: Discovery → Trial → Proposal) ──won──▶
+Customer   (exits anywhere → Bad Fit / Not Interested / Canceled / DNC)
+```
 
-A lead is worked as a sequence of **touches**. A **touch is one attempt to reach the lead** —
-recorded *after* the BDR sends it. The number is the *attempt order*:
-
-- **Reach-out** — the **first** attempt to make contact (internally touch `0`). On **any**
-  channel the BDR chooses, and it can be a **light touch** — a connection request, a like, or
-  a comment — not only a DM or email.
-- **Follow-up 1, 2, 3, … N** — each subsequent attempt (touch `1..N`). Also on any channel.
-  **There is no fixed limit** — a deal that's too good to ignore can be nudged as many times
-  as the BDR wants. The sequence does **not** auto-end.
-
-**Channel is freeform metadata recorded on each touch.** The BDR
-records which channel they actually used (if they tell you) — LinkedIn, email, X, a call,
-whatever. It's logged so they can later see *how* we reached out at each step and *which
-channels are still untried*. Channel is **optional**: record the touch with or without it.
-
-Each touch can also carry an **optional free-text detail** — the message they sent, or any
-context. Never mandatory; omit it if they don't give you one.
-
-### The system-managed fields
-
-You never set these by hand; the `touch` verbs compute them:
-
-- **`touch_stage`** — count of **completed** touches, as a 0-based index of the last one.
-  `null` = no touch yet (reach-out still pending). `0` after the reach-out, `1` after
-  follow-up 1, and up with no ceiling.
-- **`last_touched`** — date the most recent touch went out.
-- **`next_touch_due`** — date the next follow-up is due. **Empty = the lead has left the
-  sequence** (replied or stopped) and drops out of the follow-up queue.
-- **`touch_channel`** — the **set of channels used so far** (multi-value: e.g.
-  `["linkedin","email"]`) — *channels tried* for the lead. The channel of each *individual*
-  touch lives in that touch's history entry.
-
-**The "due" rule** (the heart of the work queue): a lead is due for a **follow-up** when
-`next_touch_due ≤ today`. A lead is due for a **reach-out** when it's **Qualified and has no
-touch yet** (`touch_stage` is null). The work queue is the union of those two — see below.
-
-**Lifecycle:** `Qualified, untouched → reach-out → follow-up 1 → 2 → … (no cap)`. A **reply**
-or a **stop** at any point ends the sequence (clears `next_touch_due`), which is what keeps a
-lead who answered — or one we've decided to drop — from being messaged again. The sequence
-never ends on its own — no touch cap, no timeout — so `stop` is a deliberate, first-class
-action: it's how the BDR says "I'm done chasing this one."
+The **reply → Connected** move is the seam between the flows: the cold cadence ends and the
+warm phase (land the discovery call, then the gate) begins.
 
 ***
 
-## Touch vs Task — keep them distinct
+## The task discipline — CLI-owned reminders, single writer
 
-| | **Touch** | **Task** |
-| :-- | :-- | :-- |
-| Tense | **Past** — "I reached out / followed up" | **Future** — "do X by this date" |
-| Is | A logged *event* (history / audit) | A *reminder* that drives the work queue |
-| Carries | touch #, date, channel?, optional detail | due date, text, assignee |
-| Created | *after* the BDR does the outreach | *before* — it's the to-do |
+Every stage of the lifecycle drives the work queue through **exactly one open, CLI-owned
+next-action task per unit of work**, each with its tag. **The CLI is the single writer of all
+three — never hand-create or hand-complete a tagged task**; letting the CLI own them is the
+only way the state stays in sync:
 
-They're two faces of one step: **recording a touch closes the reminder that prompted it and
-schedules the next one.** The touch is the receipt; the task is the ticket.
+- **`[dogfu:cadence]`** — the cold next-touch reminder, one open per lead in the sequence.
+  Opened when a lead enters the reach-out status; swapped by each `touch record`; closed by
+  `reply` / `stop` / leaving the cold flow.
+- **`[dogfu:engage]`** — the pre-gate task ("Land the discovery call"), one open per
+  Connected lead. Opened the moment a lead becomes Connected; retired when the lead leaves
+  Connected (a deal opens, or it goes terminal).
+- **`[dogfu:deal:<opp_id>]`** — the next-step task, one open per open opportunity. Its text
+  and due date are a *human decision*, but only the `opportunity` verbs write it.
 
-**Single-writer rule — this is the important part:**
+**Ad-hoc tasks** are the exception: anything that isn't a system next-action ("send the deck
+Friday", "intro to their CTO next week"). Those are fine for you to create on the BDR's
+request via `task create` — they carry no dogfu tag and never touch system state.
 
-- **Cadence task** = the one "next-action" reminder for a lead in the sequence — the
-  reach-out, then each follow-up. **Only the CLI** creates and closes it — on qualification
-  (when a lead enters the reach-out status, the CLI opens the reach-out task) and on each
-  `touch record`. There is **exactly one open per lead** at a time, tagged `[dogfu:cadence]`.
-  **Never** hand-create or hand-complete a cadence task — letting the CLI be the single writer
-  is the only way the outreach state stays in sync.
-- **Ad-hoc task** = anything that isn't the next scheduled touch ("send the deck Friday",
-  "check back after their raise closes", "intro to their CTO next week"). These are fine for
-  you to create on the BDR's request via `task create`; they carry their own due date and
-  **don't** touch outreach state. They're tagged distinctly from cadence tasks so the work
-  queue and reports never confuse the two.
-
-So: **the reach-out and every follow-up stay *touches* (events). The forward reminder is a
-*task*. Discretionary one-offs are *ad-hoc tasks*. Nothing else becomes a task.**
+**`dogfu crm reconcile`** is the backstop that audits these invariants across the whole book
+(missing task, stray task, zombie state) and can auto-repair them — the read-only audit pass
+around it is the **crm-cleanup** skill.
 
 ***
 
-## The cold work queue — one list, two kinds of action
+## The work queue — one command, five kinds
 
-This is the **cold** in-session queue you run while working the cadence here. (For the *cross-phase*
-worklist — cold **plus** live deals plus pre-gate Connected leads, "what should I work on across
-everything", read-only — that's the **lead-worklist** skill. This section is the cold half it pulls.)
+**`dogfu crm worklist`** reads the BDR's actual due-task inbox (every open task due ≤ today)
+and classifies every row with a `kind` and a human `next_action`: `reach-out` and `follow-up`
+(cold — cold reference), `engage` and `deal` (warm — deals reference), and `ad-hoc` (the
+task's own text). `--kind <k>` slices it; plain `worklist` is the whole queue,
+most-overdue-first. Because every system next-action is a real Close task, this and Close's
+native Tasks/Inbox are literally the same list.
 
-When the BDR is working the cadence, **run `dogfu crm worklist`** — the one queue command — and read
-its cold rows, most-overdue first, each labelled with its `next_action`:
-
-1. **Reach-outs** (`--kind reach-out`) — Qualified leads with **no touch yet** (`touch_stage` null).
-   "New people to say hello to."
-2. **Follow-ups** (`--kind follow-up`) — leads whose next cadence touch is due, labelled with which
-   follow-up is next and the channels already tried (so the BDR can vary channel).
-
-**The model: the queue *is* the task list.** Every lead in the sequence carries exactly one open
-cadence task standing for its next action — and **the reach-out is simply the first cadence task**
-(opened when the lead enters the reach-out status), the follow-ups the ones after it. `crm worklist`
-reads those actual open tasks due today, so it and Close's native pending-task list are literally the
-same list. (Ad-hoc tasks the BDR made outside the cadence show up too, as `ad-hoc` rows — real work,
-never invisible.)
-
-> **The task list is complete and trustworthy.** Every reach-out and follow-up is a real Close task,
-> so a BDR can work straight from Close's own Tasks/Inbox, and **`crm reconcile`** is the backstop
-> that keeps it honest (it flags a Qualified lead whose reach-out task never got created, a stray
-> task after exit, and so on). Either way, **`crm worklist` is the command to run here.**
+For the *cross-phase* daily brief ("what should I work on across everything", read-only,
+presented with context), that's the **lead-worklist** skill; in here you pull the slice the
+flow you're working needs.
 
 ***
 
@@ -174,8 +146,8 @@ dogfu crm <command> [flags]
 
 - **First, authenticate the CLI.** Before any `dogfu` command, call the dogfu MCP's
   **`get_setup_instructions`** tool and follow it: install the CLI (if needed), then
-  `dogfu configure --otp <OTP> --title "Lead touch: <who/what>"` with the OTP it returns. This
-  is the first step whenever the skill runs.
+  `dogfu configure --otp <OTP> --title "Lead touch: <who/what>"` with the OTP it returns.
+  This is the first step whenever the skill runs.
 - **Output is JSON by default** — read stdout. Add `-o FILE` to dump a large list to a file
   and read back only what you need. `-f table` is for humans, not you.
 - **CRM (Close) calls** use the Close API key set once in the admin **Console → CRM
@@ -185,10 +157,12 @@ dogfu crm <command> [flags]
 
 ***
 
-## The command surface
+## The shared command surface
 
-Everything you need lives under `dogfu crm`. Popular flags are inline below so you rarely
-need `--help`. All leaf commands take `-f json|table` (default json) and `-o FILE`.
+Everything lives under `dogfu crm`. All leaf commands take `-f json|table` (default json) and
+`-o FILE`. The flow-specific verbs (`touch …`, `opportunity …`) and their queue/report reads
+are in the flow references; these are the shared reads and record-editing commands both flows
+use.
 
 ### Reading state
 
@@ -198,54 +172,12 @@ need `--help`. All leaf commands take `-f json|table` (default json) and `-o FIL
 | Who am I (the Close user) | `dogfu crm whoami` |
 | List or find leads (no filter = newest first; narrow by name / query / status) | `dogfu crm lead list [-n "<name>"] [-q "<query>"] [-s <status_id>] [-l N] [--sort -date_created]` |
 | Full lead incl. contacts + outreach fields | `dogfu crm lead get <lead_id>` |
-| **The work queue** — the cold rows (reach-outs + follow-ups due now) | `dogfu crm worklist --kind reach-out` · `--kind follow-up` (or plain `worklist` for everything) |
-| **Outreach-load summary** (reach-out vs follow-up cadence tasks due + by-touch distribution) | `dogfu crm touch report` |
-| A lead's **touch history** (each touch: #, date, channel, detail) | `dogfu crm touch history <lead_id> [-l N]` |
+| **The work queue** (slice by kind per flow) | `dogfu crm worklist [--kind reach-out\|follow-up\|engage\|deal\|ad-hoc] [-l N]` |
 | A lead's notes / tasks / contacts | `dogfu crm note list <lead_id>` · `dogfu crm task list [-l <lead_id>] [-p]` · `dogfu crm contact list <lead_id>` |
 
-A `Lead` from any of these carries `status_label`, the outreach fields (`touch_stage`,
-`last_touched`, `next_touch_due`, `touch_channel` = channels tried), and embedded `contacts[]`
-(with each person's `urls`). If a queue lead has no embedded contacts, `lead get <id>` to
-fetch them so you can hand the BDR the LinkedIn/X handle to message.
-
-### Recording outreach & moving leads through the sequence
-
-| What happened | Command | Effect |
-| :-- | :-- | :-- |
-| Sent the **next** touch (reach-out or follow-up) | `dogfu crm touch record <lead_id> [-c <channel>] [--detail "<text>"]` | auto-advances to the lead's next touch; stamps `last_touched`=today, computes `next_touch_due`, **adds `<channel>` to the channels-tried set** (if given), appends a structured touch-history entry. **Closes the prior cadence task and opens the next.** Channel and detail are **optional**. |
-| Sent a touch with a **non-default wait** | add `--wait-days N` | overrides the gap before the next follow-up is due |
-| Recorded a touch but **don't** want the auto note/task | add `--no-note` and/or `--no-task` | suppresses the side effect, at a cost (each warns): `--no-note` → the touch won't show in `touch history`; `--no-task` → the lead is due but invisible to `crm worklist` until reconcile repairs it. To end the sequence use `--final`. |
-| Lead **replied / positive** | `dogfu crm touch reply <lead_id>` | ends the sequence (clears `next_touch_due`), moves the lead to **Connected** automatically, and opens its **`[dogfu:engage]` task** ("land the discovery call") — the **handoff out of cold** (see below). Pass `--status <id>` only to override. **Never downgrades**: a lead already Connected / Engaged / Customer keeps its status (warned, cadence still ends). |
-| **Giving up** | `dogfu crm touch stop <lead_id> [--status <Bad Fit or Not Interested id>]` | same mechanism as reply; intent + status differ. Without `--status` the output **warns if the lead is left in a workable status** (limbo) — set the real terminal status. |
-| Change **status only** | `dogfu crm lead update <lead_id> -s <status_id>` | funnel label — plus the safety net: moving out of the cold flow (Connected / Engaged / Customer / dead) also **ends the sequence** (clears the due date, closes the cadence task) |
-
-Notes on the verbs:
-- `record` **auto-advances** from the lead's current touch — on a never-touched lead it logs
-  the **reach-out**; otherwise the **next follow-up**. Don't force a number unless you mean to
-  redo a touch, and don't record the same touch twice (check `touch_stage` if unsure).
-- `record` **errors on a lead that has left the cold flow** (Connected / Engaged / Customer /
-  a dead status) — recording there would re-enroll it. If the BDR really means to re-chase,
-  first move it back to a working status (`lead update -s <Qualified id>`), then record.
-- **Channel is freeform and optional.** Pass `-c linkedin|email|x|call|other` (or whatever the
-  BDR used) when they tell you; omit it when they don't. It's added to the lead's
-  channels-tried set and stamped on that touch's history entry.
-- **Detail is optional.** Pass `--detail "<message or context>"` to store what they actually
-  sent; omit when there's nothing to add.
-- `record` defaults to **logging a note and creating the next-touch reminder task** — that's
-  the BDR's automatic reminder and what `touch history` reads back. Leave them on unless asked.
-- `record` does **not** change status (status stays a human label). `reply` moves the lead to
-  **Connected** on its own; pass `--status` on `reply`/`stop` (or `lead update -s`) only to set a
-  *different* status.
-- `reply` vs `stop`: both end the sequence and pull the lead from the follow-up queue. `reply`
-  = they answered (→ **Connected**, set automatically, with its engage task opened); `stop` =
-  we're done (→ Bad Fit or Not Interested via `--status`). The difference is intent. Since
-  nothing auto-ends the sequence, **`stop` is how a chase ends.**
-- **A `reply` → Connected is the handoff out of this skill.** Cold/`lead-touch` is done with the
-  lead; the **`lead-engage`** skill works it from there — first landing the discovery call (the
-  auto engage task), then, once a deal is confirmed, opening an opportunity (→ **Engaged**) and
-  running it (discovery → trial → proposal → won/lost). Don't keep recording touches on a
-  Connected lead — it has left the cold cadence. (A trial is a deal *stage* that `lead-engage`
-  tracks as an opportunity, not a cold-outreach outcome — there's no Trial lead status.)
+A `Lead` from any of these carries `status_label`, the outreach fields, and embedded
+`contacts[]` (with each person's `urls`). If a queue lead has no embedded contacts,
+`lead get <id>` to fetch them so you can hand the BDR the LinkedIn/X handle to message.
 
 ### Editing the records (leads, contacts, notes, tasks)
 
@@ -255,57 +187,23 @@ Notes on the verbs:
 | Set curated company fields | on `lead create`/`update`: `--industry "<choice>"` (validated against Close's list) · `--employees <n>` · `--revenue <usd>` · `--business-model "<text>"` · `--seo-pages <n>` |
 | Add / update / delete a contact (links go in `-u`, repeatable) | `dogfu crm contact create <lead_id> -n "<name>" [-t "<title>"] [-u <url>]... [-e <email>]... [-p <phone>]...` · `contact update <contact_id> [-n] [-t]` · `contact delete <contact_id> [-y]` |
 | Add / list notes | `dogfu crm note create <lead_id> -t "<text>"` · `note list <lead_id> [-l N]` — note bodies are stored as plain text; don't rely on literal `<`/`>`/`&` for structure |
-| Manage **ad-hoc** follow-up tasks (never the cadence task) | `dogfu crm task create -l <lead_id> -t "<text>" [-d YYYY-MM-DD] [-a <user_id>]` · `task list [-l <lead_id>] [-p]` · `task complete <task_id>` · `task update <task_id> [...]` · `task delete <task_id> [-y]` |
+| Manage **ad-hoc** tasks (never a dogfu-tagged task) | `dogfu crm task create -l <lead_id> -t "<text>" [-d YYYY-MM-DD] [-a <user_id>]` · `task list [-l <lead_id>] [-p]` · `task complete <task_id>` · `task update <task_id> [...]` · `task delete <task_id> [-y]` |
 
 ***
 
-## Reporting the funnel / outreach load
+## Shared operating rules
 
-Two parts: the **outreach load** has a native command; the **funnel by status** you compose.
-
-1. **Outreach load due today — `crm touch report`.** It returns reach-outs-due vs follow-ups-due
-   and the follow-up distribution by next touch number (Follow-up 1 / 2 / 3+), computed for you —
-   don't re-derive it by hand. It's task-grounded, so the counts agree with `crm worklist` (the
-   actionable list behind them); a reach-out *owed but not yet tasked* is a `crm reconcile` gap.
-2. **Funnel by status** (no aggregate endpoint — compose it): `crm status list` → the ids, then
-   per status `crm lead list -s <id> -l <high> -o file` and count → leads in each funnel status.
-
-Lead with the **number that needs work today** (from `touch report`), then a funnel table
-(status → count) and the outreach table (reach-outs due, follow-ups due). **Per-status counts are
-capped by `--limit`** — for a big funnel, raise the limit or report "at least N" and say so.
-
-***
-
-## Operating rules
-
-- **Resolve status ids first** with `crm status list`; map labels at runtime (fit/working →
-  Qualified, replied → Connected, dead → Bad Fit / Not Interested). Never
-  hardcode an id.
-- **Speak in actions, not stage math.** The queue already tells you each lead's next action
-  ("Reach-out" or "Follow-up N") and the channels already tried — relay that. You don't make
-  the BDR compute stage numbers.
-- **Channel and detail are optional but valuable.** Log the channel whenever the BDR mentions
-  it, and the message/detail when they share it — that's what lets them later see how each
-  touch went and which channels are still worth trying. Never block on them.
-- **Never assume a reply.** Close can't see LinkedIn/X replies. Only run `touch reply` when
-  the BDR states the lead responded.
-- **`stop` ends a chase.** Nothing auto-ends the sequence, so when the BDR is done with a lead,
-  `touch stop` it (with the right `--status`) — don't just let it sit due forever.
-- **Don't touch the cadence task by hand.** Let `record`/`reply`/`stop` manage the one
-  system reminder. Create only **ad-hoc** tasks yourself, and only on request.
-- **Don't double-record.** `record` advances from the current touch; running it twice skips
-  one. Check `touch_stage` if unsure.
-- **Put data where it belongs:** a person's LinkedIn/X in that contact's `-u` urls; the
-  message sent on a touch via `--detail`; reusable context in a note; reminders as ad-hoc
-  tasks; the brief headline in the lead `description`.
-
-## Response format
-
-- **Work queue:** a numbered / tabular list — lead name + company, the contact(s) with their
-  LinkedIn/X links, last touched, days overdue, **channels already tried**, and the **next
-  action** (Reach-out, or Follow-up N — suggest a fresh channel if useful). Make it
-  copy-paste actionable so the BDR can go message immediately.
-- **After a write:** one line confirming what changed — lead, the touch just logged (with
-  channel if given), and the next due date (or "sequence ended").
-- **Status/report:** the headline "needs work today" number first, then the funnel + outreach
-  tables.
+- **Resolve ids at runtime.** `crm status list` for statuses (map labels: fit/working →
+  Qualified, replied → Connected, deal open → Engaged, dead → Bad Fit / Not Interested);
+  `crm opportunity pipelines` for deal stages. Never hardcode an id.
+- **Never assume an event.** Close can't see LinkedIn/X/email/calls. Only record a touch, a
+  reply, a call, a trial, or a signature when the BDR states it happened.
+- **Respect the single-writer rule.** The three dogfu-tagged tasks belong to the CLI; you
+  create only ad-hoc tasks, and only on request.
+- **Speak in actions, not internals.** The queue already labels each lead's `next_action` —
+  relay that; don't make the BDR compute touch numbers or stage math.
+- **Put data where it belongs:** a person's LinkedIn/X in that contact's `-u` urls; what
+  happened in a touch's `--detail` or a note; deal economics on the opportunity; reusable
+  context in a note; reminders as ad-hoc tasks; the brief headline in the lead `description`.
+- **After a write:** confirm in one line what changed and what's next (each flow reference
+  has the exact format for its queues and reports).
