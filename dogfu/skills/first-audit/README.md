@@ -6,8 +6,8 @@ you do *not* own) as a sales deliverable: a public-site crawl, keyword/competito
 intelligence, and live Google/AI answers, assembled into **one visual single-page report**
 published to a public bucket, with the audit URL recorded on the prospect's Close lead. It is
 the **diagnosis only** — findings that make the gaps undeniable, ending in a single
-book-a-call CTA — no "what to fix" section. It sits outside the lead-research → lead-touch →
-lead-engage CRM lifecycle.
+book-a-call CTA — no "what to fix" section. It sits outside the lead-research → lead-touch
+CRM lifecycle.
 
 ## Ported from the Agent Berlin plugin
 
