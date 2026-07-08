@@ -40,7 +40,9 @@ which (or default to the decision-maker named in the research note).
     next concrete step (the discovery call, the deal's next step).
 - **Berlin's one-liner** when the message needs a pitch: an AI SEO/AEO platform that
   redirects budget the company **already spends** on SEO / content / agencies — not a new
-  line item.
+  line item. For a **bigger brand**, lead instead with the **founder-led consultancy**
+  (standing up AI-marketing infrastructure with their existing team, broader than SEO/AEO)
+  rather than the self-serve product — pitch the fit the lead's size points to.
 - **Voice:** plain, specific, short. Their language (from the note), not marketing-speak.
 
 **If the record is thin** — no note, no hooks, no contacts — say so and offer a
