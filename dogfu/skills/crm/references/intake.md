@@ -44,9 +44,10 @@ you wrote — don't pause again per field. Upsert on the resolved domain:
    estimates), the brief's read, the **user's decision + reason**, the date — and, for a
    pursued lead, the competitive ratios, DM hooks with evidence, and known gaps.
 
-Which research datum fills which attribute flag is the researching skill's knowledge
-(lead-research keeps that map in its `references/pipeline.md`); this flow just requires
-that every known value lands in its flag, not in prose.
+The researched company attributes map onto the curated flags by name (`records.md`
+lists them); take the values from the findings already in the conversation — don't
+re-research. This flow just requires that every known value lands in its flag, not in
+prose.
 
 **Never waste research** — a drop gets the same contacts, attributes, and note as a
 pursue; only the status differs.

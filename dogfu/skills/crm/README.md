@@ -2,8 +2,9 @@
 
 This is the `crm` skill, shipped inside the **`dogfu`** plugin. It is the **single entry
 point for everything to and from Agent Berlin's Close CRM** — it replaces the former
-`lead-touch` and `crm-cleanup` skills and also owns the CRM reads/writes that used to be
-spelled out inside `lead-research` and `first-audit`.
+`lead-touch` and `crm-cleanup` skills and also owns the CRM writes that used to be
+spelled out inside `lead-research` and `first-audit` (those skills no longer touch the
+CRM at all).
 
 ## The design: a tiny router + per-operation references
 
@@ -40,12 +41,14 @@ add one row to the routing table in `SKILL.md`, and — only if the new operatio
 trigger phrases — extend the frontmatter `description`. Don't grow `SKILL.md` itself:
 anything longer than a routing row belongs in the reference.
 
-## How other skills use it
+## How it composes with the other skills
 
-`lead-research` and `first-audit` do their own research/audit work and **hand off to this
-skill for the CRM step** — their docs point at `../crm/references/intake.md` (writes) and
-`../crm/references/records.md` (reads). Anything CRM-shaped that a future skill needs
-should point here the same way rather than restating commands.
+`lead-research` and `first-audit` don't touch the CRM at all — they research / audit,
+and stop. When the user wants those results in Close (e.g. "`/lead-research` X, then
+update the `/crm`"), *this* skill's intake flow does the write, taking the findings from
+the conversation. That's the pattern for any future producer skill too: it produces, and
+the user invokes `crm` to persist — no skill restates CRM commands or hands off on its
+own.
 
 ## The `dogfu` CLI dependency
 

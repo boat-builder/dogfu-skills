@@ -4,11 +4,9 @@ This is the `first-audit` skill, shipped inside the **`dogfu`** plugin. It trigg
 someone explicitly asks for an **outside-in SEO/AEO audit of a prospect domain** (a domain
 you do *not* own) as a sales deliverable: a public-site crawl, keyword/competitor/traffic
 intelligence, and live Google/AI answers, assembled into **one visual single-page report**
-published to a public bucket, with the audit URL recorded on the prospect's Close lead. It is
-the **diagnosis only** — findings that make the gaps undeniable, ending in a single
-book-a-call CTA — no "what to fix" section. It sits outside the lead-research → crm
-lifecycle, touching the CRM only through the crm skill (the Phase A0 prior read and the
-final URL-attach).
+published to a public bucket, returning its public URL. It is the **diagnosis only** —
+findings that make the gaps undeniable, ending in a single book-a-call CTA — no "what to
+fix" section. The skill audits and publishes, nothing else.
 
 ## Ported from the Agent Berlin plugin
 
@@ -37,13 +35,13 @@ see `references/data-sources.md`.
 
 ## Files
 - `SKILL.md` — the operating manual (runtime only): pre-flight, the six-phase pipeline
-  (read the Close prior → footprint → brand brief + crawl → seeds → keyword/competitor →
-  answer-engine → collect → build/publish/record), and the cost/latency guardrails. Phase A0
-  reads the SEO/AEO profile lead-research already wrote to Close and uses it as a **reference
+  (gather any prior research → footprint → brand brief + crawl → seeds → keyword/competitor →
+  answer-engine → collect → build/publish), and the cost/latency guardrails. Phase A0
+  distils any prior research already at hand (e.g. a lead-research run) into a **reference
   prior** — a warm start that seeds the brand brief, seed keywords, and competitor shortlist,
   never a substitute for this run's fresh audit data. The YAML frontmatter `name`/`description`
   controls when the skill triggers (invoked explicitly).
-- `references/data-sources.md` — the `dogfu` `crm` (read-prior) / `seo` / `google` / `chatgpt`
+- `references/data-sources.md` — the `dogfu` `seo` / `google` / `chatgpt`
   command map (flags, output fields, localization, what dogfu does NOT cover).
 - `references/bluesnake.md` — the Bluesnake crawl lifecycle + SQLite query cookbook
   (technical + AEO on-page signals). Copied verbatim from the original — Bluesnake is the same
@@ -51,7 +49,7 @@ see `references/data-sources.md`.
 - `references/report.md` — how the report is assembled and shipped: the main agent collects
   findings into `<run-dir>/findings/*.md` as it goes, a **report-builder sub-agent** renders
   one `index.html` from those markdowns + the design guide (atoms + its *Composition* section),
-  then the main agent `dogfu report publish`es it and attaches the URL to Close.
+  then the main agent `dogfu report publish`es it and hands the user the URL.
 - `references/design-guide.md` — the authoritative design spec the report is built against:
   the visual atoms (colors, type, components, ECharts theme) **and**, in its final *Composition*
   section, the cold-lead layout — hook-first reading order, the two-tempo (skim → evidence)
@@ -67,12 +65,6 @@ see `references/data-sources.md`.
    CLI verifies the book-a-call CTA (`https://cal.link/berlin`) is in the HTML and rejects the
    report otherwise. Reconcile flags against `dogfu report publish --help` once it ships. Until
    then the skill assembles the report but won't fabricate a URL.
-
-CRM access uses the Close API key set once in the admin **Console → CRM Integration**, like
-the other dogfu skills: a **read** at the start (Phase A0 — `crm lead list/get` + `crm note
-list` to pull the lead-research prior) and a **write** at the end (just the audit URL, as a
-`crm note`). Both are best-effort — if Close isn't connected (`412`), the audit still runs and
-publishes; it just skips the prior and the URL-attach.
 
 ## How to edit
 1. Edit `SKILL.md` (or the references) — or ask Claude to.

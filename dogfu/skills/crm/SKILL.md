@@ -8,9 +8,9 @@ description: >-
   replied / not interested, touch history, funnel report), work live deals (land the
   discovery call, open / advance / close an opportunity, set next steps, inbound intake,
   pipeline / forecast), audit or clean up the CRM ("what's broken in Close", stuck
-  leads, reconcile), save research findings or a published report URL onto a lead, or
-  draft an email / DM / message for a lead from what the CRM knows. Other skills
-  (lead-research, first-audit) route their CRM reads and writes here. This file is
+  leads, reconcile), save research findings or a published report URL onto a lead
+  (e.g. right after a lead-research or first-audit run — "update the CRM with this"),
+  or draft an email / DM / message for a lead from what the CRM knows. This file is
   deliberately tiny: it holds the shared model and routes each operation to one or two
   reference files — load only what the ask needs.
 ---

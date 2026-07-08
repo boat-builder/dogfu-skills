@@ -76,16 +76,8 @@ default to `2840` / `en` and say so. `google` also accepts `--country` (ISO alph
 - **`bulk-traffic-estimation --target <d>... [--location-code] [--language-code] [--item-type organic ..]`** ← efficient **deep-dive competitor benchmarking** (up to 1,000 domains).
   → target, organic{count, etv}, paid.
 
-## `crm` (Close)
-The CRM command surface is owned by the **crm** skill — read
-**`../../crm/references/records.md`** (reads, record editing, the curated attribute
-flags, where data belongs) and, for the post-checkpoint research write,
-**`../../crm/references/intake.md`** (the decision → status contract and the one-pass
-upsert). Quick anchors: resolve status ids with `dogfu crm status list`;
-leads / contacts / notes / tasks live under `dogfu crm lead|contact|note|task …`.
-
 ## `apollo` (firmographics + verified emails)
-Per-user Apollo key, connected in the Console → **Apollo Integration** (like the Close key).
+Per-user Apollo key, connected in the Console → **Apollo Integration**.
 A `412` "no Apollo API key configured" = not connected; surface it, don't retry.
 Identify a company by `--domain` (preferred) or `--name`.
 - **`org enrich --domain <d> | --name <n> [--with-people/--no-people] [--title <t>...] [--seniority <s>...] [--limit N]`** ← **Scout: firmographics (~1 credit).**

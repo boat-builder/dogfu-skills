@@ -4,22 +4,23 @@ A plugin marketplace for **Claude Cowork**. It currently ships one plugin:
 
 | Plugin | What it does |
 | :-- | :-- |
-| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Four skills: **lead-research** (**Scout → checkpoint → Deep dive → CRM** — research a sales target cheaply, brief the user for the **pursue-or-drop** call, then enrich pursued leads; the user's decision (never the skill) puts each lead in Close — Qualified or Bad Fit — with structured company attributes), **crm** (the **single entry point for everything to and from the Close CRM** — a deliberately tiny router SKILL.md over per-operation references: look up or edit records, the **cold** outreach cadence, the **warm** deal flow with **opportunities** (Discovery → Trial → Proposal → Won/Lost), the read-only health audit, writing research findings / report URLs onto a lead, and drafting an email or DM from CRM data), **first-audit** (an outside-in **SEO/AEO** audit of a prospect domain from public data — public-site crawl + keyword/competitor/traffic intelligence + live Google/AI answers — published as a single-page report whose URL is recorded on the lead; also uses the **Bluesnake MCP**), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
+| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Four skills: **lead-research** (**Scout → checkpoint → Deep dive** — research a sales target cheaply, brief the user for the **pursue-or-drop** call, then enrich pursued leads; research only — it never touches the CRM), **crm** (the **single entry point for everything to and from the Close CRM** — a deliberately tiny router SKILL.md over per-operation references: look up or edit records, the **cold** outreach cadence, the **warm** deal flow with **opportunities** (Discovery → Trial → Proposal → Won/Lost), the read-only health audit, saving research findings / report URLs onto a lead, and drafting an email or DM from CRM data), **first-audit** (an outside-in **SEO/AEO** audit of a prospect domain from public data — public-site crawl + keyword/competitor/traffic intelligence + live Google/AI answers — published as a single-page report with a public URL; also uses the **Bluesnake MCP**), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
 
-The two CRM-operating skills form one lifecycle: **lead-research** researches a lead and
-records the user's decision (the CRM write itself runs through the crm skill's
-`references/intake.md`) → **crm** works it from there — the cold flow
-(`references/cold-outreach.md`) runs the outreach cadence until the lead replies
-(→ *Connected*), the warm flow (`references/deals.md`) works the live deal (a Close
-opportunity) to a close, and `references/cleanup.md` audits all of it read-only. The
+The skills compose without cross-references: **lead-research** researches a lead, briefs
+the user for the pursue-or-drop call, and stops. **crm** owns everything in Close —
+saving a research run's findings when the user asks (`references/intake.md`), the cold
+flow (`references/cold-outreach.md`) that runs the outreach cadence until the lead
+replies (→ *Connected*), the warm flow (`references/deals.md`) that works the live deal
+(a Close opportunity) to a close, and the read-only audit (`references/cleanup.md`). The
 opportunity support the warm flow uses is shipped in the `dogfu` CLI; it needs a Close
 opportunity pipeline and the `Engaged` lead status set up once by a Close admin.
 
-**first-audit** sits outside that CRM lifecycle — it's a standalone sales deliverable. It needs
-the **Bluesnake MCP** (a local crawler/auditor, not bundled) for the site crawl, and a
-`dogfu report publish` command to push the assembled report to the public bucket — that publish
-command is being added to the CLI. It reuses the existing `dogfu` `seo` / `google` / `chatgpt`
-groups for all data, and writes only the published audit URL back to Close (`crm note`).
+**first-audit** is a standalone sales deliverable: it audits, publishes, and returns the
+public report URL — nothing else. It needs the **Bluesnake MCP** (a local
+crawler/auditor, not bundled) for the site crawl, and a `dogfu report publish` command to
+push the assembled report to the public bucket — that publish command is being added to
+the CLI. It reuses the existing `dogfu` `seo` / `google` / `chatgpt` groups for all data.
+(Want the audit URL on the lead? That's the crm skill's intake flow, on your ask.)
 
 ## Layout
 
