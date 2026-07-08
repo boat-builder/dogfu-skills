@@ -44,10 +44,18 @@ social scrapes, per-person email credits) — they run only after the user opts 
 
 ## Who we are
 
-Berlin — an AI SEO/AEO platform that replaces hiring an SEO agency or building a large
-in-house SEO team. We redirect SEO / content / agency budget a company **already
-spends**. Companies that *build or sell* SEO/AEO capability to others are competitors,
-not customers.
+Berlin is primarily an **AI SEO/AEO platform (plus human experts)** that replaces hiring an
+SEO agency or building a large in-house SEO team — redirecting SEO / content / agency budget a
+company **already spends**. This is the main motion, and the lens most leads are sized against.
+
+We **also** offer a lighter, **founder-led consultancy**: standing up AI-marketing
+infrastructure for a brand's existing team — broader than just SEO/AEO — on the strength of the
+founder's background in AI agents and marketing. It fits **bigger brands** the self-serve
+product doesn't, so don't assume the platform is the only thing we sell, and don't drop a strong
+brand just for being too big — flag it as a consultancy candidate. The platform stays the
+default lens otherwise.
+
+Companies that *build or sell* SEO/AEO capability to others are competitors, not customers.
 
 ## Competitive-conflict gate — check first, spend nothing on conflicts
 
@@ -81,10 +89,12 @@ user as a flag, not an auto-drop.
    competitive-conflict gate above): a company that builds/sells/markets SEO/AEO
    capability to others is a competitor. On a conflict, recommend **drop** and stop the
    paid calls — but still route it through the checkpoint before the drop is final.
-2. **Revenue in the ~$1M–$50M band.** We sell a ~$2k/mo product; below ~$1M it rarely
-   pencils out, and far above the band is enterprise/procurement — the wrong motion for
-   now. Slightly outside (~$900k, ~$60M) is fine — flag it. Far outside (multiples:
-   $200k, $150M) is a strong drop signal. Revenue is a coarse modeled estimate — say the
+2. **Revenue in the ~$1M–$50M band (for the platform).** The ~$2k/mo product needs this
+   band: below ~$1M it rarely pencils out (far below — ~$200k — is a strong drop), and above
+   ~$50M is enterprise/procurement, the wrong motion for the self-serve product. But being
+   **above** the band is *not* a drop — that's where the **founder-led consultancy** fits, so
+   flag a too-big brand as a consultancy candidate instead of dropping it on size. Slightly
+   outside (~$900k, ~$60M) is fine — flag it. Revenue is a coarse modeled estimate — say the
    source and confidence; **unknown ARR is not a fail**, present the proxies (headcount,
    funding) instead.
 3. **Real SEO motion.** An existing content/SEO footprint with real outcomes (keywords,
