@@ -1,10 +1,10 @@
 # Live deals — the warm flow
 
-This reference covers the **warm half** of lead-touch: the work after a lead answers. The
-cold cadence hands a lead off the moment it replies (→ **Connected**); this flow takes it
-from there to a close — the discovery call, an opportunity, a trial, a proposal, won or lost.
-It assumes the shared model in `SKILL.md` (lead anatomy, task discipline, `dogfu` setup,
-shared commands).
+This reference covers the **warm flow** of the crm skill: the work after a lead answers.
+The cold cadence hands a lead off the moment it replies (→ **Connected**); this flow takes
+it from there to a close — the discovery call, an opportunity, a trial, a proposal, won or
+lost. It assumes the shared model and `dogfu` setup in `SKILL.md` and the shared command
+surface (lead anatomy, reads, record editing) in `records.md`.
 
 The model is two ideas: **a lead's status is its lifecycle label; an opportunity is the
 actual deal you forecast.** Everything below follows from that split.
@@ -143,7 +143,7 @@ Two distinct kinds of write, don't conflate:
 
 - **What happened** (a call, a demo, a trial kickoff, a proposal sent) → log a **note**
   (`crm note create`). It's the audit trail. **Don't** record these as "touches" — a touch is
-  a cold-cadence concept (`references/cold-outreach.md`).
+  a cold-cadence concept (`cold-outreach.md`).
 - **The deal moved** (gate cleared, trial started, terms sent, signed, dead) → use the
   **opportunity verbs** to change the stage, then **reset the next step**.
 
@@ -154,8 +154,8 @@ set the new next step (`opportunity next`, which swaps the single `[dogfu:deal]`
 
 ## The command surface — opportunity verbs & warm reads
 
-Shared reads and record editing (leads, contacts, notes, tasks) are in `SKILL.md`; this flow
-adds the **opportunity** verbs. **Writes here change external CRM state** — before any
+Shared reads and record editing (leads, contacts, notes, tasks) are in `records.md`; this
+flow adds the **opportunity** verbs. **Writes here change external CRM state** — before any
 create/update/delete, show the exact command (or a summary of what changes) and wait for an
 explicit go-ahead. Reads need no confirmation.
 

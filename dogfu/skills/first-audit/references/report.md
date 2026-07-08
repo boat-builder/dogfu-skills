@@ -1,16 +1,16 @@
 # Building & publishing the single-page report
 
 The deliverable is **one** self-contained HTML page, published to Berlin's public report
-bucket via the `dogfu` CLI, which returns a public URL you then attach to the prospect's
-Close CRM lead. Build it to Berlin's house design system.
+bucket via the `dogfu` CLI, which returns a public URL — the thing you hand back to the
+user. Build it to Berlin's house design system.
 
 **Who builds what.** The main agent gathers every finding into markdown files under
 `<run-dir>/findings/` as the audit runs (see `SKILL.md`). Phase F then spawns a
 **report-builder sub-agent** that turns those markdowns into the HTML against one design
 reference: **`references/design-guide.md`** — the visual atoms (Step 1) plus the page
 composition at the end of that file (Step 3). It builds from the markdown only — it doesn't
-re-run any data call. The **main agent** then publishes (Step 5) and records the URL (Step 6).
-Steps 1–4 are for whoever assembles the page (the sub-agent); Steps 5–6 are the main agent's.
+re-run any data call. The **main agent** then publishes (Step 5). Steps 1–4 are for whoever
+assembles the page (the sub-agent); Step 5 is the main agent's.
 
 ## Step 1 — the design guide is `references/design-guide.md` (don't reinvent it)
 
@@ -75,7 +75,7 @@ dogfu report publish --domain <prospect-domain> --html <run-dir>/report.html
 ```
 
 It uploads the single HTML file to the public bucket and returns JSON with a public **`url`**
-— capture it for Step 6. The CLI **requires** the book-a-call CTA (`https://cal.link/berlin`)
+— capture it. The CLI **requires** the book-a-call CTA (`https://cal.link/berlin`)
 to be present in the page and rejects the report otherwise, so make sure Step 3's CTA made it
 in.
 
@@ -83,16 +83,5 @@ in.
 > here, tell the user the report is assembled at `<run-dir>/report.html`, and don't fabricate
 > a URL. Reconcile the exact flags against `dogfu report publish --help` once it ships.
 
-## Step 6 — attach the audit URL to the Close CRM lead
-
-Record the published audit so the BDR can send it. Put it on the prospect's lead:
-
-1. **Find the lead.** If you resolved it in Phase A0 (the reference-prior step), **reuse that `lead_id`** — don't search again. Otherwise find it by domain: `dogfu crm lead list -q <domain>` (most prospects already exist from lead-research). If none matches, create a minimal one: `dogfu crm lead create -n "<company>" -u <domain>` (don't set a status here — this skill only attaches the audit).
-2. **Attach the URL** as a note: `dogfu crm note create <lead_id> -t "First audit published: <url> — overall grade <X>/100 (AEO <a> · Technical <t> · Visibility <v> · Authority <au>)."` Notes are HTML-escaped on write, so use plain text. (If you'd rather have it on the lead headline, you can instead/also drop it in the lead `description` via `crm lead update <lead_id> -d "…"` — but a note keeps the history and is the default home.)
-
-CRM writes go through the caller's own Close key (Console → CRM Integration). A `412` "no
-Close CRM API key configured" means it isn't connected — surface that and skip Step 6
-rather than retrying; the audit is still published and you can hand the user the URL.
-
-After publishing, tell the user the audit is **live at `<url>`** and that the link is
-recorded on the `<company>` lead in Close.
+After publishing, tell the user the audit is **live at `<url>`** — with the overall grade
+and sub-scores (AEO · Technical · Visibility · Authority) in one line.

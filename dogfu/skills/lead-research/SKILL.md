@@ -1,34 +1,30 @@
 ---
 name: lead-research
 description: >-
-  Run Agent Berlin's staged lead-research pipeline — Scout → checkpoint → Deep dive →
-  CRM — using the `dogfu` CLI. Use this whenever the user hands you a sales target (a
+  Run Agent Berlin's staged lead-research pipeline — Scout → checkpoint → Deep dive —
+  using the `dogfu` CLI. Use this whenever the user hands you a sales target (a
   company name, a domain, a person, or a LinkedIn/X URL) and wants it researched, sized
-  up, enriched for outreach, or pushed into the Close CRM. Triggers include "research
-  this lead", "qualify this prospect", "is this company a fit", "add this company to the
-  CRM", "find the decision-maker and DM hooks", "prospect this domain", or just a bare
-  LinkedIn/X/company link dropped in with intent to evaluate it. Also use it for batch
-  prospecting. The skill gathers cheap signals first, presents a succinct decision
-  brief, and the USER decides — pursue or drop — whether to spend on the deep dive and
-  whether the lead is Qualified or Bad Fit. The skill never marks a lead on its own and
-  never writes to the CRM without that human call; there is no auto-qualify, even when
-  the data is clear-cut. Leads the user acts on land in Close with structured company
-  attributes. This is the canonical way to do sales lead research at Berlin — prefer it
-  over ad-hoc web searches.
+  up, qualified, or enriched for outreach. Triggers include "research this lead",
+  "qualify this prospect", "is this company a fit", "find the decision-maker and DM
+  hooks", "prospect this domain", or just a bare LinkedIn/X/company link dropped in
+  with intent to evaluate it. Also use it for batch prospecting. The skill gathers
+  cheap signals first, presents a succinct decision brief, and the USER decides —
+  pursue or drop — whether to spend on the deep dive; there is no auto-qualify, even
+  when the data is clear-cut. This is the canonical way to do sales lead research at
+  Berlin — prefer it over ad-hoc web searches.
 ---
 
 # Lead Research (powered by `dogfu`)
 
-Turn a sparse sales **target** into a researched CRM record and a **human decision**.
-You gather the cheap, high-signal facts first, compress them into a short decision
-brief, and the user decides whether the lead is worth the expensive deep dive — and
-what status it gets. You research and recommend; **you never decide**.
+Turn a sparse sales **target** into a researched company profile and a **human
+decision**. You gather the cheap, high-signal facts first, compress them into a short
+decision brief, and the user decides whether the lead is worth the expensive deep dive.
+You research and recommend; **you never decide**.
 
-This skill is the **orchestration layer**. The data and CRM actions come from the
-`dogfu` CLI (CRM writes go via the Close key connected in the Console — see "Running
-`dogfu`" below). Your job is to run the right `dogfu` commands in the right order, read
-the JSON they return, and reason over it. The stage-by-stage interpretation logic lives
-in **`references/pipeline.md`** — read it before running the Scout.
+This skill is the **orchestration layer**. The data comes from the `dogfu` CLI. Your
+job is to run the right `dogfu` commands in the right order, read the JSON they return,
+and reason over it. The stage-by-stage interpretation logic lives in
+**`references/pipeline.md`** — read it before running the Scout.
 
 ## The flow
 
@@ -36,15 +32,10 @@ in **`references/pipeline.md`** — read it before running the Scout.
    pages and socials, find the decision-maker(s), then pull the **cheap** SEO and
    firmographic signals. Capture every company attribute you find.
 2. **Checkpoint** *(always)* — present the decision brief (format below) and ask the
-   user: **pursue or drop**. This is the only place spend escalates, the only place a
-   status is chosen, and the gate on the CRM write — nothing is created until the user
-   answers. Never skip it, never answer it yourself.
+   user: **pursue or drop**. This is the only place spend escalates — nothing
+   expensive runs until the user answers. Never skip it, never answer it yourself.
 3. **Deep dive** *(pursue only)* — ranking quality, top pages, technical health,
    competitive gap, AEO visibility, decision-maker deep-reads, verified emails, DM hooks.
-4. **CRM write** *(only after the pursue/drop answer)* — upsert the lead with a brief
-   description and **every curated attribute flag you can fill**, add every person found
-   as a contact with their links, write the research note. The answer sets the status:
-   pursue → Qualified, drop → Bad Fit.
 
 Cost logic: Scout calls are cheap (one `site:` search, one domain overview, one history
 pull, one LinkedIn company read, ~1 Apollo credit). Deep-dive calls are the expensive
@@ -73,23 +64,23 @@ Signals: "AI SEO", "AEO / answer-engine optimization", "GEO", "LLM visibility",
 "content automation for ranking", "autonomous SEO", SEO/AEO agents.
 
 On a conflict: **stop the paid calls**, go straight to the checkpoint with a one-line
-brief recommending **drop — competitor, do not contact**, and after the user confirms,
-record it (status Bad Fit; description and note say "COMPETITOR — do not contact") so
-it is never re-prospected. **Don't over-exclude:** a SaaS doing its own SEO is exactly
-who we want; when genuinely unsure, say so in the brief and let the user call it.
+brief recommending **drop — competitor, do not contact**, and flag it unmistakably
+("COMPETITOR — do not contact") so it isn't re-prospected. **Don't over-exclude:** a
+SaaS doing its own SEO is exactly who we want; when genuinely unsure, say so in the
+brief and let the user call it.
 
 ## Decision aids — the four load-bearing signals
 
 Four signals do the heavy lifting. **Assess and surface every one on every lead**, each
 clearly flagged when it's missing, weak, or borderline — they are what the user's call
-turns on. But they calibrate your **recommendation only**: none of them auto-sets a
-status, skips the checkpoint, or drops a lead on its own. Even a clear miss goes to the
+turns on. But they calibrate your **recommendation only**: none of them decides the
+verdict, skips the checkpoint, or drops a lead on its own. Even a clear miss goes to the
 user as a flag, not an auto-drop.
 
 1. **Not a competitor.** The strongest signal and the one hard gate on *spend* (see the
    competitive-conflict gate above): a company that builds/sells/markets SEO/AEO
    capability to others is a competitor. On a conflict, recommend **drop** and stop the
-   paid calls — but still route it through the checkpoint before recording Bad Fit.
+   paid calls — but still route it through the checkpoint before the drop is final.
 2. **Revenue in the ~$1M–$50M band.** We sell a ~$2k/mo product; below ~$1M it rarely
    pencils out, and far above the band is enterprise/procurement — the wrong motion for
    now. Slightly outside (~$900k, ~$60M) is fine — flag it. Far outside (multiples:
@@ -129,7 +120,7 @@ by default** — read stdout; add `-o FILE` for large payloads and read back onl
 fields you need. Calls may run concurrently. The full command catalog (flags + output
 fields + market codes) is in **`references/dogfu-commands.md`** — read it once up front.
 
-The groups: `linkedin`, `x`, `google`, `chatgpt`, `seo`, `crm`, `apollo`.
+The groups this skill uses: `linkedin`, `x`, `google`, `chatgpt`, `seo`, `apollo`.
 
 ## Capability → command map
 
@@ -149,7 +140,7 @@ The groups: `linkedin`, `x`, `google`, `chatgpt`, `seo`, `crm`, `apollo`.
 | Firmographics (est. revenue, headcount, marketing-team size, funding, founded year) + people list | `dogfu apollo org enrich --domain <d> --with-people` (~1 Apollo credit; the people search is free) |
 
 Capture **every person found with their LinkedIn and X URLs**, plus the **company's**
-LinkedIn and X URLs — they persist to the CRM whatever the user decides.
+LinkedIn and X URLs — capture them whatever the user decides.
 
 ### Deep dive (after the user says pursue)
 
@@ -196,70 +187,16 @@ per lead.
 Rules: every number is an estimate — label anything coarse or missing rather than
 implying precision. Flags column carries competitor conflicts, out-of-band size, no SEO
 motion, no in-house team, unknown ARR. A recommendation is welcome; the decision is not
-yours. **If the session can't ask (a non-interactive run), write nothing to the CRM** —
-return the brief (and the scout data) so a human can make the pursue/drop call; a lead is
-never created without that decision.
-
-## CRM write — only after the checkpoint decision, fields in their proper place
-
-Runs **once the user has answered pursue or drop** — never before, and never on a
-non-interactive run with no answer. Upsert on the resolved domain (search before
-create). If Close isn't connected, `dogfu crm` returns a `412` — surface it, don't retry.
-
-**Status — set from the user's checkpoint decision, never from your own judgment.** There
-are only two outcomes; the skill never creates a lead in any other status:
-
-| Decision | Status | Note |
-| :-- | :-- | :-- |
-| pursue | **Qualified** | enters the outreach flow (the reach-out task opens on this status) |
-| drop | **Bad Fit** | record the user's reason; competitors additionally get "COMPETITOR — do not contact" in the description |
-
-No pursue/drop answer → **no lead is written.** There is no "Potential" / parked bucket
-for this skill: if you can't get a decision (non-interactive run), return the brief and
-stop.
-
-**Where each piece of data goes** (statuses: `crm status list` — never hardcode ids):
-
-| What | Where | Command |
-| :-- | :-- | :-- |
-| Duplicate check | — | `dogfu crm lead list -n "<company>"` (or `-q "<domain>"`) before creating |
-| Name, website, **brief** 1–2 line description, status | native lead fields | `dogfu crm lead create -n .. -u .. -d .. -s ..` / `lead update` |
-| **Company attributes — fill every flag you have a value for; skip the rest** | curated lead flags | `--industry` `--business-model` `--primary-market` `--year-founded` `--employees` `--marketing-team-size` `--revenue` `--funding-stage` `--total-funding` `--seo-pages` `--organic-keywords` `--seo-investment-tier` `--seo-momentum` `--aeo-visibility` `--company-linkedin` `--company-x` |
-| Each person found (fit or not) | contact + native `urls` | `dogfu crm contact create <lead_id> -n .. -t .. -u <linkedin> -u <x> [-e <verified email>] [-p <phone>]` |
-| The research depth: what they do, market, metrics with sources, the brief's read, the user's decision + reason, and (pursued) DM hooks + competitive gap | lead note | `dogfu crm note create <lead_id> -t "<write-up>"` |
-
-The attribute → source mapping (which Scout/deep-dive datum fills which flag) is in
-`references/pipeline.md`. Choices fields (`--industry`, `--funding-stage`, …) validate
-against Close's live options — on a rejection the error lists the allowed values; pick
-the closest or omit and note it. `dogfu crm field get "<name>"` shows a field's options;
-`crm field add-choice`/`remove-choice` edit them, but only on the user's explicit ask.
-
-The **checkpoint answer is** the go-ahead for these writes — once the user says pursue
-or drop, write the lead, contacts, and note in one pass and show what you wrote in the
-run summary; don't pause again per field. The checkpoint is the only pause.
-
-## Output format (end of run)
-
-After a **drop**: the one-line outcome + the CRM record written. After a
-**pursue** (deep dive done):
-
-1. **Snapshot** — target, domain, segment, decision, in 2–3 sentences.
-2. **Profile table** — each signal: headline number + one-line read.
-3. **Competitive gap** — target vs leader/median, as ratios.
-4. **Contacts & links** — decision-maker(s) with LinkedIn/X URLs, verified emails, and
-   ready-to-use DM hooks, plus a **touch-0 starter**: the profile(s) to send a
-   connection request to and 1–3 specific recent posts (with URLs) to like or comment
-   on. The BDR acts by hand and records it via the lead-touch skill.
-5. **Key gaps & angles** — divergences framed as outreach openings.
-6. **Evidence appendix** — the exact `dogfu` commands run, so the run is reproducible.
+yours. If the session can't ask (a non-interactive run), return the brief (and the
+scout data) so a human can still make the pursue/drop call.
 
 ## Optional — brand narrative coherence (only on explicit request)
 
 *Only if the user explicitly asks* for a brand-narrative / category-coherence check,
 spawn a sub-agent to execute `references/brand-narrative-coherence.md`, handing it the
 domain, brand brief, geo decision, competitor shortlist, decision-maker URLs, and an
-output path in the run dir; persist its substantive findings to the CRM note. Without a
-clear ask, skip it.
+output path in the run dir; keep its substantive findings with the run's findings.
+Without a clear ask, skip it.
 
 ## Operating rules
 
@@ -268,15 +205,11 @@ clear ask, skip it.
 - **Cheap before expensive, always**: competitor gate (free) → SEO motion (`site:`,
   `domain-overview`) → the rest of the Scout → checkpoint → deep dive. Stop the paid
   calls the moment the gate says competitor.
-- **Never decide for the user.** No CRM write without a pursue/drop answer; no status the
-  user didn't choose; no deep dive without a pursue. This holds even when the data is
-  clear-cut — recommend, don't decide.
-- **Never waste research.** Once the user decides, everything found gets written to the
-  CRM — contacts, links, attributes, findings — for a drop as much as a pursue. (The one
-  case nothing is written: a non-interactive run with no decision — there, return the
-  brief so a human can still act on it.)
-- **Put data in its proper place.** Brief description; attributes in their flags;
-  person links on the contact; depth in the note.
+- **Never decide for the user.** No deep dive without a pursue; no verdict the user
+  didn't give. This holds even when the data is clear-cut — recommend, don't decide.
+- **Never waste research.** Capture everything found — attributes, contacts, links,
+  findings, the user's decision + reason — for a drop as much as a pursue, and keep the
+  raw pulls in the run dir so nothing needs re-fetching.
 - **Scratch files go in one `mktemp -d` run dir** — never a fixed or target-derived
   path (parallel batch runs clobber shared paths).
 - **Numbers are modeled estimates.** Use them comparatively; flag implausible ones.

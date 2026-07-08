@@ -7,9 +7,8 @@ description: >-
   deliverable: "run a first audit on <domain>", "do an SEO/AEO audit for this prospect",
   "build the audit report for <company>", "audit <domain> and publish it". It crawls the
   public site, pulls keyword/competitor/traffic intelligence and live Google/AI answers,
-  then publishes one visual single-page report and records the audit URL on the lead in
-  Close. Invoked explicitly. For researching/qualifying a brand-new target use lead-research;
-  for outreach cadence use lead-touch.
+  then publishes one visual single-page report and returns its public URL. Invoked
+  explicitly. For researching/qualifying a brand-new target use lead-research.
 ---
 
 # First Audit — prospect SEO/AEO audit from public data
@@ -19,8 +18,8 @@ deliverable for a potential customer. You build it from a live crawl of the pros
 third-party keyword/traffic intelligence, and live Google / AI answers.
 
 The output is **one single-page, visual report published to Berlin's public report bucket**
-(cards, charts, tables — no walls of text), styled with Berlin's house design system, with
-its public URL recorded on the prospect's Close lead. The report is the **diagnosis only**:
+(cards, charts, tables — no walls of text), styled with Berlin's house design system; its
+public URL is what you hand back to the user. The report is the **diagnosis only**:
 it makes the gaps undeniable and ends with a single call to action to book a call. It does
 not include a recommendations / "what to fix" section — that conversation happens on the call.
 
@@ -36,9 +35,9 @@ not include a recommendations / "what to fix" section — that conversation happ
   `-o FILE` to dump large payloads to a file (you'll do this constantly). Discover flags
   with `dogfu <group> <cmd> --help`.
 
-Publishing the report and recording its URL on the lead are the **expected deliverables** of
-this skill — it is invoked explicitly to produce and publish a prospect audit, so just run
-them. No separate write-approval step is needed.
+Publishing the report is the **expected deliverable** of this skill — it is invoked
+explicitly to produce and publish a prospect audit, so just run it. No separate
+approval step is needed.
 
 ## How the pipeline flows
 
@@ -48,7 +47,7 @@ Read the reference files as you reach the phases that need them:
 
 * `references/data-sources.md` — every `dogfu` command you'll call (`seo`, `google`, `chatgpt`), with flags, output fields, the localization policy, and cost/latency caveats.
 * `references/bluesnake.md` — the crawl lifecycle and the SQLite query cookbook (technical + AEO signals).
-* `references/report.md` — how to assemble the single-page report, publish it with `dogfu report publish`, and attach the URL to Close (incl. the book-a-call CTA).
+* `references/report.md` — how to assemble the single-page report and publish it with `dogfu report publish` (incl. the book-a-call CTA).
 * `references/design-guide.md` — the authoritative design spec the report is built against: the visual atoms (colors, type, components, charts) **and** the cold-lead composition at the end (hook-first reading order, two-tempo hierarchy, and the three attention components — verdict hero, shock-stat strip, dark spotlight — that make the page skim in ~10s and lead with the AEO / machine-readability findings, the edge *felt* not badged).
 
 ### Collect findings as you go — you write the markdown, a sub-agent writes the HTML
@@ -81,21 +80,16 @@ from the file alone, without re-reading any JSON.
 
 ### Phase A — Pre-flight, then start the two slow things
 
-**A0. Pull the prospect's existing Close profile — a reference *prior*.** The prospect was
-almost certainly run through `lead-research` first, which wrote a cheap SEO/AEO profile to
-Close. Read it (read-only) and distil it into `<run-dir>/prior.md`:
+**A0. Gather any prior research — a reference *prior*.** The prospect has often been
+researched before (e.g. a `lead-research` run). If prior research on this domain is already
+in the conversation — or the user hands it to you — distil it into `<run-dir>/prior.md`:
+the company profile (industry, size, business model), SEO/AEO metrics, ranked keywords,
+competitors + competitive gap, AEO checks, and the verdict.
 
-* `dogfu crm lead list -q <domain>` → the `lead_id` (keep it — Phase F Step 6 reuses it). Pick
-  the match whose `url` is the prospect domain; if none matches, skip A0 (cold domain — fine).
-* `dogfu crm lead get <lead_id>` → curated fields `industry, employees, revenue,
-  business_model, seo_pages` + `description, status_label`.
-* `dogfu crm note list <lead_id>` → the write-up: SEO/AEO metrics, ranked keywords,
-  competitors + competitive gap, AEO checks, verdict.
-
-**Reference, not replacement.** Every number in the report comes from *this* run's fresh pulls
-— never copy a CRM figure in. Use the prior only to **seed** the brand brief (A2), seed
-keywords (Phase B), and competitor shortlist (Phase C), and to **cross-check** fresh findings.
-If Close isn't connected (`412`) or no lead exists, skip A0 and audit cold — it's never a gate.
+**Reference, not replacement.** Every number in the report comes from *this* run's fresh
+pulls — never copy a prior figure in. Use the prior only to **seed** the brand brief (A2),
+seed keywords (Phase B), and competitor shortlist (Phase C), and to **cross-check** fresh
+findings. No prior research at hand → skip A0 and audit cold — it's never a gate.
 
 **A1. Estimate the footprint** so you know how long the crawl will take and can set
 expectations. Run `dogfu google search --query "site:<domain>"` and read `total_results`
@@ -103,14 +97,14 @@ expectations. Run `dogfu google search --query "site:<domain>"` and read `total_
 (count `<loc>`; if it returns gzipped/binary, fall back to the `Sitemap:` line in
 `<domain>/robots.txt`). Also web-fetch `<domain>/llms.txt` and record whether it exists — an
 AEO signal for the report. Treat the page count as a range (cross-check vs the prior's
-`seo_pages`, A0).
+page count, A0).
 
 **A2. Research the brand, then write `brand-brief.md`.** Spawn a **sub-agent** to research
 the prospect from public sources (their site, about/pricing pages, positioning, reviews) and
 return structured facts. This keeps the heavy reading out of your main context. Give it
 `prior.md` as a starting point — it must still verify against live sources, not just echo it.
-Then write the result to **`<run-dir>/brand-brief.md`** — a local markdown file, **not** a CRM
-or platform write.
+Then write the result to **`<run-dir>/brand-brief.md`** — a local markdown file; nothing is
+written anywhere else.
 Capture, at minimum:
 
 * **name** + **positioning / value prop / ICP** (the richest part — what they do, who they serve, the problem they solve)
@@ -188,14 +182,13 @@ finish unless the user says not to.** Then (see `references/bluesnake.md`):
 * `project_comparison` for the prospect-vs-competitor technical scorecard.
 * `dogfu seo lighthouse` on the key URL(s), **mobile and desktop** (separate `--strategy` calls), for Core Web Vitals + opportunities.
 
-### Phase F — Build (sub-agent), publish & record the single-page report
+### Phase F — Build (sub-agent) & publish the single-page report
 
 Follow `references/report.md`. The build itself is delegated, so the design-guide + HTML work
 stays out of your context:
 
 1. **Spawn a report-builder sub-agent.** Hand it: the `<run-dir>/findings/` markdowns + `brand-brief.md` (the content) and `references/design-guide.md` (the design spec — visual atoms + the cold-lead composition/skim layout at the end). Its job: assemble **one self-contained HTML file** at `<run-dir>/report.html` — the skim (verdict hero → shock-stat strip → dark spotlight) then the evidence sections, ECharts for data-series charts, inline SVG for single-value dials, ending with the book-a-call CTA → <https://cal.link/berlin> (required — publish rejects a report without it). **Lead with the findings a prospect's own tools can't surface (AEO, machine-readability); findings only, no recommendations section.** It builds from the markdown you already wrote — it should not need to re-run any `dogfu` call. Have it run the design guide's skim test, return the path to the HTML, and flag anything a findings file left ambiguous.
-2. **Publish** (you, the main agent): **`dogfu report publish --domain <prospect-domain> --html <run-dir>/report.html`** → returns the public URL. Capture it.
-3. **Record** (you, the main agent): **attach that URL to the prospect's Close lead** (`dogfu crm note create`).
+2. **Publish** (you, the main agent): **`dogfu report publish --domain <prospect-domain> --html <run-dir>/report.html`** → returns the public URL. Hand it to the user — that URL is the deliverable.
 
 ## Guardrails that keep this fast and cheap
 

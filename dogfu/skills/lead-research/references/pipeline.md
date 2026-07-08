@@ -2,7 +2,7 @@
 
 The *how to interpret* companion to SKILL.md. SKILL.md says which `dogfu` command
 fulfils each step; this file says what the result means, how to compose the checkpoint
-brief, and which datum fills which CRM field. Read it before running the Scout.
+brief, and which datum fills which company attribute. Read it before running the Scout.
 
 ## Inputs — assume almost nothing is given; derive the rest
 
@@ -41,7 +41,7 @@ put the ambiguity in the brief instead of deciding.
 ### S4 — Map the social footprint
 Company LinkedIn (`linkedin companies`: description, headcount, funding) and company
 X. Search before concluding a profile doesn't exist; absence is itself a signal.
-These URLs fill `--company-linkedin` / `--company-x`.
+These URLs are the company-LinkedIn / company-X attributes.
 
 ### S5 — Identify the decision-maker(s)
 Who owns marketing / SEO / AEO — typically a founder, a marketing/growth lead, or
@@ -81,7 +81,7 @@ customer counts — and mark ARR "unknown (proxies only)".
 
 ### Synthesis — the two derived reads
 
-**SEO investment tier** (fills `--seo-investment-tier`; synthesize, don't average):
+**SEO investment tier** (a derived attribute; synthesize, don't average):
 *Heavy & effective* (strong S7 + rising S8) · *Heavy but inefficient* (large S6, weak
 S7) · *Lean & effective* (modest footprint, high traffic-per-page) · *Light / nascent*
 (little footprint, low outcomes) · *Dormant* (past peak, now declining/stale).
@@ -143,8 +143,8 @@ are robust to estimation error, and the gap is the size of the pitch.
 ### D4 — AEO / LLM visibility
 2–3 high-intent queries the target should win, on `google ai-mode` + `chatgpt search`;
 is `<domain>` in the citations? Cited + `llms.txt` (S6) = ahead of the curve. Absent
-despite decent classic SEO = a clear, timely gap to lead with. Fills
-`--aeo-visibility` (Cited / Partial / Absent).
+despite decent classic SEO = a clear, timely gap to lead with. This is the
+AEO-visibility attribute (Cited / Partial / Absent).
 
 ### D5 — Decision-maker deep-read → DM hooks
 Both LinkedIn and X, profile + recent posts (async scrapes — detached with `-o FILE`).
@@ -157,39 +157,40 @@ hooks — so the DM step knows solid from inferred.
 
 ### D6 — Verified emails
 `apollo people email` for the **1–2 people who will actually be contacted** (credits
-per person). `--linkedin-url` matches best. The email goes on the contact (`-e`).
+per person). `--linkedin-url` matches best. The email belongs to that person in the
+contacts output.
 
 ***
 
-## CRM write — the attribute → source map
+## The structured company profile — the attribute → source map
 
-Statuses and placement rules are in SKILL.md. Fill **every flag you have a value
-for; never pass a blank**. Values for choices fields must match Close's options (the
-error echoes the allowed list; pick the closest or omit and note it).
+Every run captures a fixed set of **structured company attributes** alongside the
+write-up. Capture every attribute you have a value for; leave the rest unset (never
+guess to fill a slot).
 
-| Flag | Source |
+| Attribute | Source |
 | :-- | :-- |
-| `--industry` | S2 vertical, mapped to Close's choices |
-| `--business-model` | S2 (SaaS / Marketplace / …) |
-| `--primary-market` | S2 geography |
-| `--year-founded` | S9 `founded_year` (or LinkedIn / site) |
-| `--employees` | S4 LinkedIn `employee_count` or S9 `employee_count` |
-| `--marketing-team-size` | S9 `marketing_headcount` |
-| `--revenue` | S9 `annual_revenue` (estimate — the note says so) |
-| `--funding-stage` | S9 `latest_funding_round` / S4 LinkedIn `funding.last_round_type`, mapped to Close's choices |
-| `--total-funding` | S9 `total_funding` / S4 LinkedIn funding raised |
-| `--seo-pages` | S6 `site:` estimate |
-| `--organic-keywords` | S7 `organic.count` |
-| `--seo-investment-tier` | Scout synthesis |
-| `--seo-momentum` | S8 (Rising / Flat / Declining) |
-| `--aeo-visibility` | D4 (leave unset if the deep dive didn't run) |
-| `--company-linkedin` / `--company-x` | S4 |
+| Industry | S2 vertical |
+| Business model | S2 (SaaS / Marketplace / …) |
+| Primary market | S2 geography |
+| Year founded | S9 `founded_year` (or LinkedIn / site) |
+| Employees | S4 LinkedIn `employee_count` or S9 `employee_count` |
+| Marketing team size | S9 `marketing_headcount` |
+| Revenue (est.) | S9 `annual_revenue` (estimate — always say so) |
+| Funding stage | S9 `latest_funding_round` / S4 LinkedIn `funding.last_round_type` |
+| Total funding | S9 `total_funding` / S4 LinkedIn funding raised |
+| SEO pages | S6 `site:` estimate |
+| Organic keywords | S7 `organic.count` |
+| SEO investment tier | Scout synthesis |
+| SEO momentum | S8 (Rising / Flat / Declining) |
+| AEO visibility | D4 (unset if the deep dive didn't run) |
+| Company LinkedIn / X | S4 |
 
-The **note** carries the depth: what they do / who they serve, market used, metrics
+The **write-up** carries the depth: what they do / who they serve, market used, metrics
 with sources (labeled as estimates), the brief's read, the **user's decision and
 reason**, date; and — pursued leads — the competitive ratios, DM hooks with evidence,
-and known gaps. Contacts (every person found, any decision) carry name, title, LinkedIn
-+ X in the native `urls` field, verified email when resolved.
+and known gaps. **People** (every person found, any decision) carry name, title,
+LinkedIn + X URLs, and the verified email when resolved.
 
 ***
 

@@ -95,7 +95,7 @@ Never emit a bare number or verdict. Each finding is:
 - **why** — one line on why it costs (or wins) AI selection
 
 **Write the full findings to the given `output` path** (Markdown, self-contained — so a host can
-drop it into a report, a CRM note, or present it as-is):
+drop it into a report or present it as-is):
 - **Coherence score (0–100)** with the triples that produced it.
 - **Category-placement matrix** — what each axis calls the brand, side by side.
 - **Divergence map** — each mismatch as a triple.
@@ -104,5 +104,5 @@ drop it into a report, a CRM note, or present it as-is):
 
 Then **return a short headline** to the host — the coherence score + the single sharpest
 divergence as a triple — so it has the gist without reading the whole file. The host decides what
-to do with the file (present it, fold it into a report, or persist it to the CRM); your job is the
+to do with the file (present it, or fold it into a report); your job is the
 same either way — always produce the full findings.

@@ -8,7 +8,7 @@
       "name": "dogfu",
       "displayName": "Dogfu",
       "source": "./dogfu",
-      "description": "Sales toolkit on the dogfu CLI: lead-research (Scout → checkpoint → Deep dive → CRM — the user makes the pursue-or-drop call off a succinct brief; each lead the user acts on lands in Close — Qualified or Bad Fit — with structured company attributes), lead-touch (work leads in Close from cold outreach cadence through live deals — opportunities — to close), crm-cleanup (read-only CRM health audit), and first-audit (publish a first-touch SEO/AEO prospect audit and record it on the lead), plus berlin-theme — Berlin's brand style guide for on-brand sales collateral."
+      "description": "Sales toolkit on the dogfu CLI: lead-research (Scout → checkpoint → Deep dive — the user makes the pursue-or-drop call off a succinct brief; research only), crm (the single entry point for everything to and from the Close CRM — lookups, cold outreach cadence, live deals/opportunities, read-only health audit, saving research findings and report URLs, drafting outreach from CRM data), and first-audit (publish a first-touch SEO/AEO prospect audit as a single-page report with a public URL), plus berlin-theme — Berlin's brand style guide for on-brand sales collateral."
     }
   ]
 }

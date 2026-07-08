@@ -17,34 +17,16 @@ a minute or two; warm calls are a few seconds). Never fetch the same thing twice
 
 The groups this skill uses: **`seo`** (keyword/competitor/traffic/technical, **backlinks, and the
 LLM-Mentions AEO index**), **`google`**
-(Google web + AI Mode), **`chatgpt`** (the ChatGPT answer surface), and **`crm`** (Close —
-to **read the lead-research profile as a reference prior at the start** and attach the
-published audit URL at the end). The crawl/on-page layer is the **Bluesnake MCP**, documented
-separately in `bluesnake.md`.
+(Google web + AI Mode), and **`chatgpt`** (the ChatGPT answer surface). The crawl/on-page
+layer is the **Bluesnake MCP**, documented separately in `bluesnake.md`.
 
 ## Contents
 
-* [crm — read the lead-research prior (Phase A0)](#crm)
 * [seo — keywords, competitors, traffic, tech, CWV, backlinks, LLM mentions](#seo)
 * [google — Google + AI surfaces](#google)
 * [chatgpt — ChatGPT answers with citations](#chatgpt)
 * [Localization policy](#localization)
 * [What `dogfu` does NOT cover](#not-covered)
-
-***
-
-## crm
-
-Read-only, used at the start (Phase A0) to pull the lead-research profile as a **reference
-prior**. Goes through the caller's Close key (Console → CRM Integration); a `412` means Close
-isn't connected — skip the prior and audit cold. (The end-of-run URL write is in `report.md` Step 6.)
-
-* **`crm lead list -q <domain>`** — resolve the lead by domain (no `search` verb — `list -q` is
-  the search). Take the `lead_id`; reuse it for the Step 6 attach.
-* **`crm lead get <lead_id>`** → curated fields `industry, employees, revenue, business_model,
-  seo_pages` + `name, url, description, status_label, contacts[]`.
-* **`crm note list <lead_id>`** → the write-up notes: SEO/AEO metrics, ranked keywords,
-  competitors + competitive gap, AEO checks, verdict.
 
 ***
 
@@ -140,8 +122,8 @@ Languages: `en, de, fr, pl, nl, es`. `google` also accepts `--country` (ISO alph
 
 ## What `dogfu` does NOT cover
 
-The `dogfu` CLI exposes only the groups above for data (plus `crm`, `apollo`, `linkedin`,
-`x` for the sales pipeline). For this audit that means:
+The `dogfu` CLI exposes only the groups above for data (its other groups serve the
+sales-pipeline skills, not this audit). For this audit that means:
 
 * **No Bing / Trends / Reddit / Maps / backlink-marketplace commands.** If a report section genuinely needs one of these (e.g. a Reddit citation gap, local reviews), reach for your own **WebSearch / web-fetch tools** — don't invent a `dogfu` command for it. Keep it to what the report will actually use.
 * **No brand-profile or report-publish under "data"** — brand context is a local file you build (`brand-brief.md`, see `SKILL.md`), and publishing is `dogfu report publish` (see `report.md`).
