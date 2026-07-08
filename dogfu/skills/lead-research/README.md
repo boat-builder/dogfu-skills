@@ -13,8 +13,9 @@ structured company attributes attached — only once the user has made that call
 
 ## Files
 - `SKILL.md` — the operating manual: the staged flow, the decision aids, how to invoke
-  `dogfu`, the capability→command map, the checkpoint-brief format, and the CRM write
-  rules. The YAML frontmatter `name` / `description` controls when the skill triggers.
+  `dogfu`, the capability→command map, the checkpoint-brief format, and the CRM hand-off
+  (the write itself runs through the crm skill's `references/intake.md`). The YAML
+  frontmatter `name` / `description` controls when the skill triggers.
 - `references/pipeline.md` — how to interpret each phase (Scout S1–S9, deep dive
   D1–D6), how to compose the brief, and the attribute→source map for the CRM fields.
   Read before running the Scout.

@@ -4,15 +4,16 @@ A plugin marketplace for **Claude Cowork**. It currently ships one plugin:
 
 | Plugin | What it does |
 | :-- | :-- |
-| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Five skills: **lead-research** (**Scout → checkpoint → Deep dive → CRM** — research a sales target cheaply, brief the user for the **pursue-or-drop** call, then enrich pursued leads; the user's decision (never the skill) puts each lead in Close — Qualified or Bad Fit — with structured company attributes), **lead-touch** (work an existing lead in Close from cold outreach through a closed deal — the **cold** flow: pull what's due, record touches the BDR sent, mark replies, move statuses, report the funnel; and the **warm** flow: run discovery, open/advance/close an **opportunity** (Discovery → Trial → Proposal → Won/Lost), set the next step, surface deals due or stalled, and forecast the pipeline), **crm-cleanup** (read-only health audit — find the leads and tasks that fell out of the flow, each with the exact fix command), **first-audit** (an outside-in **SEO/AEO** audit of a prospect domain from public data — public-site crawl + keyword/competitor/traffic intelligence + live Google/AI answers — published as a single-page report whose URL is recorded on the lead; also uses the **Bluesnake MCP**), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
+| **`dogfu`** | Sales toolkit powered by the `dogfu` CLI. Four skills: **lead-research** (**Scout → checkpoint → Deep dive → CRM** — research a sales target cheaply, brief the user for the **pursue-or-drop** call, then enrich pursued leads; the user's decision (never the skill) puts each lead in Close — Qualified or Bad Fit — with structured company attributes), **crm** (the **single entry point for everything to and from the Close CRM** — a deliberately tiny router SKILL.md over per-operation references: look up or edit records, the **cold** outreach cadence, the **warm** deal flow with **opportunities** (Discovery → Trial → Proposal → Won/Lost), the read-only health audit, writing research findings / report URLs onto a lead, and drafting an email or DM from CRM data), **first-audit** (an outside-in **SEO/AEO** audit of a prospect domain from public data — public-site crawl + keyword/competitor/traffic intelligence + live Google/AI answers — published as a single-page report whose URL is recorded on the lead; also uses the **Bluesnake MCP**), and **berlin-theme** (Berlin's brand style guide — apply the editorial cream/paper house style to any sales collateral you design: pages, one-pagers, posters, emails. No CLI; theme only). |
 
-The two CRM-operating skills form one lifecycle: **lead-research** researches a lead and records the user's decision →
-**lead-touch** works it from there — the cold flow (`references/cold-outreach.md`) runs the
-outreach cadence until the lead replies (→ *Connected*), and the warm flow
-(`references/deals.md`) works the live deal (a Close opportunity) to a close. **crm-cleanup**
-audits all of it read-only. The opportunity support the warm
-flow uses is shipped in the `dogfu` CLI; it needs a Close opportunity pipeline and the `Engaged`
-lead status set up once by a Close admin.
+The two CRM-operating skills form one lifecycle: **lead-research** researches a lead and
+records the user's decision (the CRM write itself runs through the crm skill's
+`references/intake.md`) → **crm** works it from there — the cold flow
+(`references/cold-outreach.md`) runs the outreach cadence until the lead replies
+(→ *Connected*), the warm flow (`references/deals.md`) works the live deal (a Close
+opportunity) to a close, and `references/cleanup.md` audits all of it read-only. The
+opportunity support the warm flow uses is shipped in the `dogfu` CLI; it needs a Close
+opportunity pipeline and the `Engaged` lead status set up once by a Close admin.
 
 **first-audit** sits outside that CRM lifecycle — it's a standalone sales deliverable. It needs
 the **Bluesnake MCP** (a local crawler/auditor, not bundled) for the site crawl, and a
@@ -35,13 +36,10 @@ dogfu-skills/
         │   ├── SKILL.md
         │   ├── README.md
         │   └── references/
-        ├── lead-touch/            # the lead-touch skill (CRM ops — cold cadence + live deals)
-        │   ├── SKILL.md
+        ├── crm/                   # the crm skill (single entry point for the Close CRM)
+        │   ├── SKILL.md           # tiny router: shared model + per-operation routing table
         │   ├── README.md
-        │   └── references/        # cold-outreach (cadence flow), deals (opportunity flow)
-        ├── crm-cleanup/           # the crm-cleanup skill (read-only CRM health audit)
-        │   ├── SKILL.md
-        │   └── README.md
+        │   └── references/        # records (shared surface), cold-outreach, deals, cleanup, intake, draft-outreach
         ├── first-audit/          # the first-audit skill (outside-in SEO/AEO prospect audit)
         │   ├── SKILL.md
         │   ├── README.md
@@ -64,16 +62,17 @@ install the **Dogfu** plugin:
 
 Once installed, the skills trigger automatically: **lead-research** when you give Claude a
 sales target ("research this lead", "is this company a fit", a bare LinkedIn/company
-link, etc.), **lead-touch** when you want to work an existing lead — cold outreach ("who do I
-follow up with today", "I sent the LinkedIn DM to X", "mark this lead replied",
-"what's our funnel look like") or a live deal ("a lead replied and
-we had an intro call", "open a deal for X", "move this deal to trial", "which deals need action
-today", "what's our pipeline / forecast", "an inbound lead reached out"), **crm-cleanup**
-for a read-only health pass ("audit the CRM", "what's broken in Close", "find leads stuck in the
-flow"), **first-audit** when you explicitly ask for an outside-in prospect audit ("run a first
-audit on <domain>", "do an SEO/AEO audit for this prospect", "build and publish the audit report
-for <company>"), and **berlin-theme** when you ask Claude to design a Berlin-branded asset ("make
-this landing page on-brand", "build a sales one-pager", "design a social poster in our brand").
+link, etc.), **crm** for anything to or from the Close CRM — a lookup ("what do we know about
+X"), cold outreach ("who do I follow up with today", "I sent the LinkedIn DM to X", "mark this
+lead replied", "what's our funnel look like"), a live deal ("a lead replied and we had an
+intro call", "open a deal for X", "move this deal to trial", "which deals need action today",
+"what's our pipeline / forecast", "an inbound lead reached out"), a health pass ("audit the
+CRM", "what's broken in Close", "find leads stuck in the flow"), or drafting from CRM data
+("write an email to <lead>", "draft a DM for X"), **first-audit** when you explicitly ask for
+an outside-in prospect audit ("run a first audit on <domain>", "do an SEO/AEO audit for this
+prospect", "build and publish the audit report for <company>"), and **berlin-theme** when you
+ask Claude to design a Berlin-branded asset ("make this landing page on-brand", "build a sales
+one-pager", "design a social poster in our brand").
 
 ## Requirement: the dogfu MCP + CLI
 
@@ -115,6 +114,8 @@ don't:
 ## Editing
 
 Edit the markdown under each skill's folder — `dogfu/skills/lead-research/`,
-`dogfu/skills/lead-touch/`, `dogfu/skills/crm-cleanup/`, `dogfu/skills/first-audit/`, or `dogfu/skills/berlin-theme/` (see each folder's `README.md`) — then reinstall/update the
-`dogfu` plugin from the marketplace to pick up the changes. When shipping a change, bump
-the `version` field in `dogfu/.claude-plugin/plugin.json`.
+`dogfu/skills/crm/`, `dogfu/skills/first-audit/`, or `dogfu/skills/berlin-theme/` (see each
+folder's `README.md`) — then reinstall/update the `dogfu` plugin from the marketplace to
+pick up the changes. When shipping a change, bump the `version` field in
+`dogfu/.claude-plugin/plugin.json`. New CRM operations go in as new references under
+`dogfu/skills/crm/references/` plus a routing row in its `SKILL.md` — not as new skills.

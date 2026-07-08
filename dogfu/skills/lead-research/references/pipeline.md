@@ -163,7 +163,9 @@ per person). `--linkedin-url` matches best. The email goes on the contact (`-e`)
 
 ## CRM write — the attribute → source map
 
-Statuses and placement rules are in SKILL.md. Fill **every flag you have a value
+The write flow itself (status contract, upsert order, placement rules) is the crm
+skill's `intake.md` + `records.md` — see SKILL.md's CRM-write section. This map is the
+research-side half: which datum fills which flag. Fill **every flag you have a value
 for; never pass a blank**. Values for choices fields must match Close's options (the
 error echoes the allowed list; pick the closest or omit and note it).
 

@@ -35,14 +35,16 @@ separately in `bluesnake.md`.
 
 ## crm
 
-Read-only, used at the start (Phase A0) to pull the lead-research profile as a **reference
-prior**. Goes through the caller's Close key (Console → CRM Integration); a `412` means Close
-isn't connected — skip the prior and audit cold. (The end-of-run URL write is in `report.md` Step 6.)
+Owned by the **crm** skill (`../../crm/references/records.md` is the full surface); this
+audit uses only the three Phase A0 reads below, to pull the lead-research profile as a
+**reference prior**. Goes through the caller's Close key (Console → CRM Integration); a
+`412` means Close isn't connected — skip the prior and audit cold. (The end-of-run URL
+write is in `report.md` Step 6, which routes through the crm skill's intake reference.)
 
 * **`crm lead list -q <domain>`** — resolve the lead by domain (no `search` verb — `list -q` is
   the search). Take the `lead_id`; reuse it for the Step 6 attach.
-* **`crm lead get <lead_id>`** → curated fields `industry, employees, revenue, business_model,
-  seo_pages` + `name, url, description, status_label, contacts[]`.
+* **`crm lead get <lead_id>`** → the curated company/SEO attributes + `name, url, description,
+  status_label, contacts[]`.
 * **`crm note list <lead_id>`** → the write-up notes: SEO/AEO metrics, ranked keywords,
   competitors + competitive gap, AEO checks, verdict.
 

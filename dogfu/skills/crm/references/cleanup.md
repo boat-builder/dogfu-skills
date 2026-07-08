@@ -1,32 +1,17 @@
----
-name: crm-cleanup
-description: >-
-  Audit Agent Berlin's Close CRM for leads and tasks that have fallen out of the regular
-  outreach flow — using the `dogfu` CLI, read-only. Use this whenever someone wants a CRM
-  health check or cleanup pass: "audit the CRM", "what's broken / inconsistent in Close",
-  "find leads that fell out of the flow", "find orphaned / duplicate cadence tasks", "which
-  leads are stuck", "find leads being chased that already replied or are Bad Fit", "find
-  qualified leads with no contacts / no research / no website", "find duplicate leads",
-  "overdue follow-ups", "unassigned tasks", or "reconcile the outreach state". It detects and
-  reports anomalies (and the exact command to fix each); it does **not** write to the CRM.
-  For pulling today's work queue (across all stages, read-only) run `dogfu crm worklist`;
-  for recording outreach use lead-touch; for researching a new target, use lead-research.
----
+# CRM cleanup — the read-only health audit
 
-# CRM cleanup — read-only health audit (powered by `dogfu`)
+This flow **finds everything in the Close CRM that has drifted out of the regular outreach
+flow**, before it silently rots. It is **read-only**: it composes `dogfu crm` *read* calls,
+applies the model's invariants, and returns a report of anomalies — each with the lead, the
+problem, and the exact command to fix it by hand. It never writes.
 
-This skill is how a BDR (or an agent) **finds everything in the Close CRM that has drifted out
-of the regular outreach flow**, before it silently rots. It is **read-only**: it composes
-`dogfu crm` *read* calls, applies the model's invariants, and returns a report of anomalies —
-each with the lead, the problem, and the exact command to fix it by hand. It never writes.
-
-It is the audit counterpart to `lead-touch` (which *operates* the flow). The full model lives
-in **lead-touch** (`SKILL.md` + its flow references); this skill assumes it and only recaps
-what the checks need.
+It is the audit counterpart to the operating flows (`cold-outreach.md`, `deals.md`). The
+full model lives in `SKILL.md` + those references; this file assumes it and only recaps
+what the checks need. (For today's work queue, that's just `dogfu crm worklist`, not this.)
 
 ***
 
-## The model, in one breath (see lead-touch for depth)
+## The model, in one breath (see the flow references for depth)
 
 - A **lead is a company** with a **status** (funnel label: Potential, Qualified, Connected,
   Engaged, Customer, Bad Fit, Not Interested, Canceled, DNC) and **outreach state** in four system-managed
@@ -50,15 +35,8 @@ what the checks need.
 
 ***
 
-## Running `dogfu`
-
-`dogfu` is a published CLI (`pip install dogfu`). **First, authenticate the CLI:** before any
-command, call the dogfu MCP's **`get_setup_instructions`** tool and follow it — install the CLI
-(if needed), then `dogfu configure --otp <OTP> --title "CRM cleanup"` with the OTP it returns.
-Output is **JSON by default** (read stdout; `-o FILE` for big lists). A `412` "no Close CRM API
-key configured" means the Close key isn't set in the admin **Console → CRM Integration** —
-surface that rather than retrying. Read calls are independent HTTP requests — **run them
-concurrently**.
+Setup, auth, and output conventions are in `SKILL.md` (use `--title "CRM cleanup"` when
+configuring). Read calls are independent HTTP requests — **run them concurrently**.
 
 ***
 
@@ -188,8 +166,8 @@ task). The keys it can return:
     `whoami`), so you can flag empty assignees (E1) but not invalid ones.
   - *Lead owner missing* — not exposed on the model; use task assignee (E1) as the proxy.
 - **Deal-health judgment is out of scope:** an under-specified deal or a stale value/confidence
-  is a call for `lead-touch`'s deals flow, not this read-only audit's. Everything task-shaped is
-  Section A.
+  is a call for the deals flow (`deals.md`), not this read-only audit's. Everything task-shaped
+  is Section A.
 
 ***
 
@@ -216,5 +194,6 @@ list was capped by `--limit`, say so and give the real floor ("≥ N"). Close wi
   `note list` / `contact list` the leads a cheap check already flagged.
 - **Respect the single-writer rule.** Route every cadence/deal-task repair to
   `reconcile --apply`. Only suggest hand-fixes that are safe (C3, E1) or clearly a human decision.
-- **Never write.** If the user wants the fixes applied, hand off to `lead-touch` (per-lead) or
-  run `reconcile --apply` (bulk cadence/deal tasks) — say which.
+- **Never write.** If the user wants the fixes applied, that's the operating flows' job —
+  per-lead via `cold-outreach.md` / `deals.md`, or `reconcile --apply` for the bulk
+  cadence/deal-task repairs — say which.

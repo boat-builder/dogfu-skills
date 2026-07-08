@@ -77,27 +77,12 @@ default to `2840` / `en` and say so. `google` also accepts `--country` (ISO alph
   → target, organic{count, etv}, paid.
 
 ## `crm` (Close)
-- **`whoami`** → current user (id, name, email).
-- **`status list`** → LeadStatus[] (id, label). Resolve IDs here; never hardcode.
-- **Leads** (`crm lead ...`): `create -n <name> [-u url] [-d desc] [-s status_id] [curated flags]` · `list [-n name] [-q query] [-s status_id] [-l N] [--sort ..]` (no filter = newest-first; --name/--query/--status-id narrow it — this is also how you search) · `get <lead_id>` · `update <lead_id> [-n] [-u] [-d] [-s] [curated flags]` · `delete <lead_id> [-y]`. → Lead: id, name, url, description, status_id, status_label, contacts[], and the curated attributes below (null when unset).
-  - **Curated custom-field flags** (on `create`/`update`) — set every one you have a value for; skip the rest (never pass blanks). Numbers: `--employees`, `--marketing-team-size`, `--revenue` (USD), `--total-funding` (USD), `--year-founded`, `--seo-pages`, `--organic-keywords`. Choices (validated against Close's live options; a rejection echoes the allowed list — pick the closest or omit): `--industry`, `--business-model`, `--primary-market`, `--funding-stage`, `--seo-investment-tier`, `--seo-momentum`, `--aeo-visibility`. Text: `--company-linkedin`, `--company-x` (the company's own profile URLs). These are the *only* custom fields dogfu sets.
-- **Custom-field schema** (`crm field ...`): `list [-t lead|contact|opportunity]` (compact: name, type, choice count, writing flag) · `get <name|cf_id>` (one field incl. its choices) · `add-choice <name> <choice>` · `remove-choice <name> <choice> [-y]`. Use `get` when you need a choices field's allowed values up front; edit choices **only on the user's explicit ask**. Field definitions themselves are admin-only.
-- **Contacts** (`crm contact ...`): `create <lead_id> -n <name> [-t title] [-e email]... [-p phone]... [-u url]...` · `list <lead_id>` · `get <contact_id>` · `update <contact_id> [-n] [-t]` · `delete <contact_id> [-y]`. **`-u`/`-e`/`-p` are native Close fields** (urls/emails/phones) — a person's LinkedIn/X go in `-u` and render on the contact card; repeatable.
-- **Tasks** (`crm task ...`): `create -l <lead_id> -t <text> [-d due] [-a user]` · `list [-l lead_id] [-p]` · `update <task_id> ...` · `complete <task_id>` · `delete <task_id> [-y]`.
-- **Notes** (`crm note ...`): `create <lead_id> -t "<text>"` · `list <lead_id> [-l N]`. ← put the rich research write-up + DM hooks here. **Note bodies are HTML-escaped** on write (`&`→`&amp;`, `<`/`>`/`'`→entities); use plain text, not literal `<`/`>`/`&` for structure.
-
-**Fields & their proper home.** Native: lead `-u` = website; contact `-u` = a person's
-LinkedIn/X (repeatable, renders on the card). Curated lead custom fields = the flags
-above — the structured company attributes, filled on every researched lead. Everything
-else (the brief's read, metrics with sources, the user's decision + reason, hooks) → the
-lead description (brief, 1–2 lines) or the note. dogfu exposes **no other** custom-field
-setters by design.
-
-### Upsert pattern
-1. `crm status list` → resolve the status_id for the **user's checkpoint decision** (pursue → Qualified, drop → Bad Fit — the only two outcomes) — never hardcode ids, never write a status the user didn't choose, and if there's no decision (non-interactive run) don't create the lead at all.
-2. `crm lead list -n "<company>"` (or `-q` with the domain) → if a match exists, `lead update`; else `lead create` with a **brief** `-d` description **plus every curated flag you have a value for**.
-3. `crm contact create <lead_id> -n "<name>" -t "<title>" -u <linkedin> -u <x> [-e <email>]` for each person (links in the native `urls` field; `-e` = the verified email once resolved in the deep dive).
-4. `crm note create <lead_id> -t "<profile + metrics with sources + the brief's read + the user's decision and reason + hooks>"`.
+The CRM command surface is owned by the **crm** skill — read
+**`../../crm/references/records.md`** (reads, record editing, the curated attribute
+flags, where data belongs) and, for the post-checkpoint research write,
+**`../../crm/references/intake.md`** (the decision → status contract and the one-pass
+upsert). Quick anchors: resolve status ids with `dogfu crm status list`;
+leads / contacts / notes / tasks live under `dogfu crm lead|contact|note|task …`.
 
 ## `apollo` (firmographics + verified emails)
 Per-user Apollo key, connected in the Console → **Apollo Integration** (like the Close key).

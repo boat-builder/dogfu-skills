@@ -1,8 +1,9 @@
 # Cold outreach — the cadence flow
 
-This reference covers the **cold half** of lead-touch: leads being chased through the
-outreach sequence, from the first reach-out until they reply or the BDR stops. It assumes the
-shared model in `SKILL.md` (lead anatomy, task discipline, `dogfu` setup, shared commands).
+This reference covers the **cold flow** of the crm skill: leads being chased through the
+outreach sequence, from the first reach-out until they reply or the BDR stops. It assumes
+the shared model and `dogfu` setup in `SKILL.md` and the shared command surface (lead
+anatomy, reads, record editing) in `records.md`.
 
 ***
 
@@ -100,7 +101,7 @@ show up too, as `ad-hoc` rows — real work, never invisible.)
 
 ## The command surface — cadence reads & touch verbs
 
-Shared reads and record editing are in `SKILL.md`; these are the cold-flow additions.
+Shared reads and record editing are in `records.md`; these are the cold-flow additions.
 
 ### Reading cadence state
 
@@ -145,7 +146,7 @@ Notes on the verbs:
   `stop` = we're done (→ Bad Fit or Not Interested via `--status`). The difference is intent.
   Since nothing auto-ends the sequence, **`stop` is how a chase ends.**
 - **A `reply` → Connected is the handoff out of this flow.** The cold cadence is done with
-  the lead; the **deals flow** (`references/deals.md`) works it from there — first landing
+  the lead; the **deals flow** (`deals.md`) works it from there — first landing
   the discovery call (the auto engage task), then, once a deal is confirmed, opening an
   opportunity (→ **Engaged**) and running it (discovery → trial → proposal → won/lost). Don't
   keep recording touches on a Connected lead — it has left the cold cadence. (A trial is a

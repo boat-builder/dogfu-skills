@@ -41,10 +41,10 @@ in **`references/pipeline.md`** — read it before running the Scout.
    answers. Never skip it, never answer it yourself.
 3. **Deep dive** *(pursue only)* — ranking quality, top pages, technical health,
    competitive gap, AEO visibility, decision-maker deep-reads, verified emails, DM hooks.
-4. **CRM write** *(only after the pursue/drop answer)* — upsert the lead with a brief
-   description and **every curated attribute flag you can fill**, add every person found
-   as a contact with their links, write the research note. The answer sets the status:
-   pursue → Qualified, drop → Bad Fit.
+4. **CRM write** *(only after the pursue/drop answer)* — hand off to the **crm** skill's
+   intake flow: upsert the lead with a brief description and **every curated attribute
+   flag you can fill**, add every person found as a contact with their links, write the
+   research note. The answer sets the status: pursue → Qualified, drop → Bad Fit.
 
 Cost logic: Scout calls are cheap (one `site:` search, one domain overview, one history
 pull, one LinkedIn company read, ~1 Apollo credit). Deep-dive calls are the expensive
@@ -200,43 +200,29 @@ yours. **If the session can't ask (a non-interactive run), write nothing to the 
 return the brief (and the scout data) so a human can make the pursue/drop call; a lead is
 never created without that decision.
 
-## CRM write — only after the checkpoint decision, fields in their proper place
+## CRM write — owned by the `crm` skill, gated on the checkpoint decision
 
 Runs **once the user has answered pursue or drop** — never before, and never on a
-non-interactive run with no answer. Upsert on the resolved domain (search before
-create). If Close isn't connected, `dogfu crm` returns a `412` — surface it, don't retry.
+non-interactive run with no answer. No decision → **no lead is written**; there is no
+"Potential" / parked bucket for this skill — return the brief and stop.
 
-**Status — set from the user's checkpoint decision, never from your own judgment.** There
-are only two outcomes; the skill never creates a lead in any other status:
+The write itself belongs to the **crm** skill — follow its intake flow,
+**`../crm/references/intake.md`** (the decision → status contract: pursue → Qualified,
+drop → Bad Fit; the one-pass domain upsert of lead + curated attributes + contacts +
+research note; failure modes), with **`../crm/references/records.md`** for the command
+surface. What this skill hands that flow:
 
-| Decision | Status | Note |
-| :-- | :-- | :-- |
-| pursue | **Qualified** | enters the outreach flow (the reach-out task opens on this status) |
-| drop | **Bad Fit** | record the user's reason; competitors additionally get "COMPETITOR — do not contact" in the description |
-
-No pursue/drop answer → **no lead is written.** There is no "Potential" / parked bucket
-for this skill: if you can't get a decision (non-interactive run), return the brief and
-stop.
-
-**Where each piece of data goes** (statuses: `crm status list` — never hardcode ids):
-
-| What | Where | Command |
-| :-- | :-- | :-- |
-| Duplicate check | — | `dogfu crm lead list -n "<company>"` (or `-q "<domain>"`) before creating |
-| Name, website, **brief** 1–2 line description, status | native lead fields | `dogfu crm lead create -n .. -u .. -d .. -s ..` / `lead update` |
-| **Company attributes — fill every flag you have a value for; skip the rest** | curated lead flags | `--industry` `--business-model` `--primary-market` `--year-founded` `--employees` `--marketing-team-size` `--revenue` `--funding-stage` `--total-funding` `--seo-pages` `--organic-keywords` `--seo-investment-tier` `--seo-momentum` `--aeo-visibility` `--company-linkedin` `--company-x` |
-| Each person found (fit or not) | contact + native `urls` | `dogfu crm contact create <lead_id> -n .. -t .. -u <linkedin> -u <x> [-e <verified email>] [-p <phone>]` |
-| The research depth: what they do, market, metrics with sources, the brief's read, the user's decision + reason, and (pursued) DM hooks + competitive gap | lead note | `dogfu crm note create <lead_id> -t "<write-up>"` |
-
-The attribute → source mapping (which Scout/deep-dive datum fills which flag) is in
-`references/pipeline.md`. Choices fields (`--industry`, `--funding-stage`, …) validate
-against Close's live options — on a rejection the error lists the allowed values; pick
-the closest or omit and note it. `dogfu crm field get "<name>"` shows a field's options;
-`crm field add-choice`/`remove-choice` edit them, but only on the user's explicit ask.
+- the resolved **domain** (the upsert key) and a brief 1–2 line description;
+- a value for **every curated attribute flag you found** — the attribute → source map
+  (which Scout / deep-dive datum fills which flag) is in `references/pipeline.md`;
+- **every person found** with their LinkedIn/X URLs (and the verified email after a
+  deep dive);
+- the **note content**: profile + metrics with sources + the brief's read + the user's
+  decision and reason + (pursued) DM hooks and competitive gap.
 
 The **checkpoint answer is** the go-ahead for these writes — once the user says pursue
-or drop, write the lead, contacts, and note in one pass and show what you wrote in the
-run summary; don't pause again per field. The checkpoint is the only pause.
+or drop, write in one pass and show what you wrote in the run summary; don't pause
+again per field. The checkpoint is the only pause.
 
 ## Output format (end of run)
 
@@ -249,7 +235,7 @@ After a **drop**: the one-line outcome + the CRM record written. After a
 4. **Contacts & links** — decision-maker(s) with LinkedIn/X URLs, verified emails, and
    ready-to-use DM hooks, plus a **touch-0 starter**: the profile(s) to send a
    connection request to and 1–3 specific recent posts (with URLs) to like or comment
-   on. The BDR acts by hand and records it via the lead-touch skill.
+   on. The BDR acts by hand and records it via the crm skill (cold outreach flow).
 5. **Key gaps & angles** — divergences framed as outreach openings.
 6. **Evidence appendix** — the exact `dogfu` commands run, so the run is reproducible.
 

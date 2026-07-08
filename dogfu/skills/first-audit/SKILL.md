@@ -9,7 +9,8 @@ description: >-
   public site, pulls keyword/competitor/traffic intelligence and live Google/AI answers,
   then publishes one visual single-page report and records the audit URL on the lead in
   Close. Invoked explicitly. For researching/qualifying a brand-new target use lead-research;
-  for outreach cadence use lead-touch.
+  for everything else to and from the CRM (outreach cadence, deals, lookups) use the crm
+  skill.
 ---
 
 # First Audit — prospect SEO/AEO audit from public data
@@ -83,12 +84,13 @@ from the file alone, without re-reading any JSON.
 
 **A0. Pull the prospect's existing Close profile — a reference *prior*.** The prospect was
 almost certainly run through `lead-research` first, which wrote a cheap SEO/AEO profile to
-Close. Read it (read-only) and distil it into `<run-dir>/prior.md`:
+Close. CRM access is owned by the **crm** skill (`../crm/references/records.md` is the full
+surface); this step needs only three reads, distilled into `<run-dir>/prior.md`:
 
 * `dogfu crm lead list -q <domain>` → the `lead_id` (keep it — Phase F Step 6 reuses it). Pick
   the match whose `url` is the prospect domain; if none matches, skip A0 (cold domain — fine).
-* `dogfu crm lead get <lead_id>` → curated fields `industry, employees, revenue,
-  business_model, seo_pages` + `description, status_label`.
+* `dogfu crm lead get <lead_id>` → the curated company/SEO attributes + `description`,
+  `status_label`.
 * `dogfu crm note list <lead_id>` → the write-up: SEO/AEO metrics, ranked keywords,
   competitors + competitive gap, AEO checks, verdict.
 
@@ -195,7 +197,7 @@ stays out of your context:
 
 1. **Spawn a report-builder sub-agent.** Hand it: the `<run-dir>/findings/` markdowns + `brand-brief.md` (the content) and `references/design-guide.md` (the design spec — visual atoms + the cold-lead composition/skim layout at the end). Its job: assemble **one self-contained HTML file** at `<run-dir>/report.html` — the skim (verdict hero → shock-stat strip → dark spotlight) then the evidence sections, ECharts for data-series charts, inline SVG for single-value dials, ending with the book-a-call CTA → <https://cal.link/berlin> (required — publish rejects a report without it). **Lead with the findings a prospect's own tools can't surface (AEO, machine-readability); findings only, no recommendations section.** It builds from the markdown you already wrote — it should not need to re-run any `dogfu` call. Have it run the design guide's skim test, return the path to the HTML, and flag anything a findings file left ambiguous.
 2. **Publish** (you, the main agent): **`dogfu report publish --domain <prospect-domain> --html <run-dir>/report.html`** → returns the public URL. Capture it.
-3. **Record** (you, the main agent): **attach that URL to the prospect's Close lead** (`dogfu crm note create`).
+3. **Record** (you, the main agent): **attach that URL to the prospect's Close lead** — Step 6 of `references/report.md`, which routes through the crm skill's intake flow.
 
 ## Guardrails that keep this fast and cheap
 
